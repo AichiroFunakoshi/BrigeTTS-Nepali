@@ -177,6 +177,24 @@ body.modal-open {
     color: #dc3545;
 }
 
+.network-status {
+    display: none;
+    max-width: min(92vw, 680px);
+    padding: 7px 12px;
+    border-radius: 8px;
+    background-color: #fff4d6;
+    color: #7a4b00;
+    border: 1px solid #f3c35d;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.network-status.visible {
+    display: block;
+}
+
 /* メイン画面のフォントサイズコントロールは非表示（設定モーダルに移動） */
 .font-size-controls {
     display: none;

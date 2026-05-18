@@ -73,7 +73,7 @@
 
 ## デモ
 
-ライブデモ URL は GitHub Pages 設定後に更新します。
+[GitHub Pagesで開く](https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/)
 
 ## 使用技術
 
@@ -97,6 +97,8 @@
 
 - OpenAI APIキー（[こちらで取得](https://platform.openai.com/api-keys)）
 - 最新のモバイルブラウザ（Chrome、Safari、Edge）
+
+APIキーはリポジトリ内には保存されません。ユーザーが端末上で入力したキーは、その端末のブラウザ `localStorage` に保存され、翻訳時にブラウザからOpenAI APIへ直接送信されます。共有端末で使う場合は、使用後に「APIキーリセット」を実行してください。
 
 ### インストール方法
 
@@ -141,6 +143,8 @@
 - マイクへのアクセス
 - PWAインストール
 - Service Worker機能
+
+GitHub Pagesで公開する場合は、`main` ブランチのルートを公開元に設定してください。`manifest.json` はサブパス公開でも動きやすいように相対パスを使用しています。
 
 ## 使用方法
 
@@ -208,6 +212,7 @@ const getOptimalDebounce = (selectedLanguage) => {
 ## 既知の制限事項
 
 - API利用にはインターネット接続が必要
+- オフライン時もアプリシェルは起動できますが、翻訳APIの呼び出しはできません
 - 翻訳品質は明瞭な発話と良好なマイク入力に依存
 - 日本語-英語言語ペアのみ対応
 - API利用料金は使用量に応じて発生
