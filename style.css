@@ -1,0 +1,1526 @@
+/* Real-time Voice Translator Mobile - Complete CSS */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh; /* iOS Safari対応 */
+    background-color: #f5f5f7;
+    color: #333;
+    padding: 5px;
+    touch-action: manipulation;
+}
+
+/* モーダル表示時のbodyスクロールロック */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 5px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ヘッダーを非表示（画面最大化のため） */
+.app-header {
+    display: none;
+}
+
+.app-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a73e8;
+    margin-bottom: 2px;
+}
+
+.app-subtitle {
+    font-size: 11px;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.control-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px; /* 10px→8px 余白削減（タッチターゲットは維持）*/
+    justify-content: center;
+    min-height: 44px;
+    flex-wrap: wrap;
+}
+
+.language-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background-color: #1a73e8;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.language-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.language-button.japanese {
+    background-color: #e74c3c;
+}
+
+.language-button.english {
+    background-color: #2ecc71;
+}
+
+.language-button.stop {
+    background-color: #dc3545;
+    display: none;
+}
+
+.language-button.reset {
+    background-color: #f39c12;
+}
+
+.language-button.stop.visible {
+    display: flex;
+}
+
+.language-button:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.language-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recording .stop-button {
+    animation: pulse-button 1.5s infinite;
+}
+
+@keyframes pulse-button {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+.status {
+    font-size: 14px;
+    padding: 4px 12px;
+    background-color: #e8f0fe;
+    border-radius: 16px;
+    color: #1a73e8;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status.recording {
+    background-color: #ffebee;
+    color: #dc3545;
+}
+
+.status.idle {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+}
+
+.status.processing {
+    background-color: #fff8e1;
+    color: #ff9800;
+}
+
+.status.error {
+    background-color: #ffebee;
+    color: #dc3545;
+}
+
+/* メイン画面のフォントサイズコントロールは非表示（設定モーダルに移動） */
+.font-size-controls {
+    display: none;
+}
+
+.result-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 0;
+    flex: 1;
+    min-height: 0;
+}
+
+.result-box {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px 12px;
+    width: 100%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    min-height: 80px;
+    border-left: 3px solid #1a73e8;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex: 1;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.result-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-content {
+    font-size: 24px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    flex: 1;
+}
+
+.result-content.size-small {
+    font-size: 20px;
+}
+
+.result-content.size-medium {
+    font-size: 24px;
+}
+
+.result-content.size-large {
+    font-size: 28px;
+}
+
+.result-content.size-xlarge {
+    font-size: 32px;
+}
+
+.language-indicator {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: #e8f0fe;
+    color: #1a73e8;
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(26, 115, 232, 0.3);
+    border-radius: 50%;
+    border-top-color: #1a73e8;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.translating-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #fff8e1;
+    color: #ff9800;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    display: none;
+}
+
+.translating-indicator.visible {
+    display: inline-block;
+}
+
+/* TTS再生中インジケータのスタイル */
+#speakingIndicator {
+    background-color: #e8f5e9;
+    color: #2ecc71;
+    animation: pulse-speaking 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-speaking {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ========================================
+   録音中・翻訳中の視覚的状態
+   ======================================== */
+
+/* 録音中（話し中）の原文ボックス */
+.result-box.recording {
+    border-left-color: #1a73e8;
+    background-color: #e3f2fd;
+    animation: recording-pulse 2s ease-in-out infinite;
+}
+
+@keyframes recording-pulse {
+    0%, 100% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 0 0 rgba(26, 115, 232, 0.4);
+    }
+    50% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 0 8px rgba(26, 115, 232, 0);
+    }
+}
+
+/* 翻訳中の翻訳ボックス */
+.translation-box.translating {
+    border-left-color: #ff9800;
+    background-color: #fff8e1;
+    animation: translating-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes translating-pulse {
+    0%, 100% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 0 0 rgba(255, 152, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 0 6px rgba(255, 152, 0, 0);
+    }
+}
+
+/* 翻訳完了の翻訳ボックス */
+.translation-box.translation-complete {
+    border-left-color: #4CAF50;
+    background-color: #f1f8e9;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+}
+
+/* フッターを非表示（画面最大化のため） */
+.app-footer {
+    display: none;
+}
+
+.settings-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(255,255,255,0.8);
+    border: none;
+    color: #1a73e8;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    z-index: 10;
+}
+
+.settings-button:hover {
+    background-color: rgba(26, 115, 232, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* iOS スムーズスクロール */
+    overscroll-behavior: contain; /* スクロールチェーン防止 */
+    padding: 20px 0;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    max-height: none; /* 高さ制限を解除 */
+    overflow-y: visible; /* コンテンツは親でスクロール */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(0);
+    animation: modal-in 0.3s ease-out;
+    margin: 20px auto;
+    flex-shrink: 0; /* 縮小防止 */
+}
+
+@keyframes modal-in {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a73e8;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.modal-title svg {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.tts-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #1a73e8;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #DADCE0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+.form-help {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.reset-keys {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #666;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 5px; /* 余白削減を維持 */
+    }
+
+    .container {
+        padding: 0; /* 余白削減を維持 */
+    }
+
+    .app-title {
+        font-size: 24px;
+    }
+
+    .app-subtitle {
+        font-size: 13px;
+    }
+
+    /* ボタンは横並びに変更（縦並びから改善） */
+    .button-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: auto;
+        max-width: 100%;
+        justify-content: center;
+    }
+
+    .language-button {
+        width: auto;
+        justify-content: center;
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    /* モバイルでのアイコンサイズ調整 */
+    .language-button .language-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .language-button.reset {
+        padding: 8px 10px;
+    }
+
+    .result-container {
+        gap: 5px; /* 15px→5px 余白削減 */
+    }
+
+    .result-box {
+        padding: 10px 12px; /* 15px→10px 12px 余白削減 */
+        min-height: 80px; /* 120px→80px 余白削減 */
+    }
+
+    .result-content {
+        font-size: 20px;
+    }
+
+    .result-content.size-small {
+        font-size: 16px;
+    }
+
+    .result-content.size-medium {
+        font-size: 20px;
+    }
+
+    .result-content.size-large {
+        font-size: 24px;
+    }
+
+    .result-content.size-xlarge {
+        font-size: 28px;
+    }
+
+    .modal-content {
+        padding: 20px;
+        width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-title {
+        font-size: 22px;
+    }
+    
+    .settings-button {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
+    
+    .font-size-controls {
+        gap: 8px;
+    }
+    
+    .font-size-button {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* ========================================
+   エラーレポートボタン
+   ======================================== */
+.error-report-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    z-index: 10000;
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+}
+
+.error-report-button:hover {
+    background-color: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.5);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(255, 107, 107, 0.7);
+    }
+}
+
+/* ========================================
+   エラーレポートモーダル
+   ======================================== */
+.error-report-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    padding: 20px;
+}
+
+.error-report-content {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.error-report-content h2 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 24px;
+}
+
+.error-report-content p {
+    margin: 0 0 15px 0;
+    color: #666;
+}
+
+.error-report-content textarea {
+    width: 100%;
+    height: 300px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    resize: vertical;
+    background-color: #f5f5f5;
+    margin-bottom: 20px;
+}
+
+.error-report-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.error-report-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#copyReportBtn {
+    background-color: #6c757d;
+    color: white;
+}
+
+#copyReportBtn:hover {
+    background-color: #5a6268;
+}
+
+#sendReportBtn {
+    background-color: #28a745;
+    color: white;
+}
+
+#sendReportBtn:hover {
+    background-color: #218838;
+}
+
+#closeReportBtn {
+    background-color: #dc3545;
+    color: white;
+}
+
+#closeReportBtn:hover {
+    background-color: #c82333;
+}
+
+@media (max-width: 600px) {
+    .error-report-content {
+        padding: 20px;
+    }
+
+    .error-report-content textarea {
+        height: 200px;
+        font-size: 11px;
+    }
+
+    .error-report-buttons {
+        flex-direction: column;
+    }
+
+    .error-report-buttons button {
+        width: 100%;
+    }
+
+    .error-report-button {
+        bottom: 15px;
+        right: 15px;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+
+/* TTS再生ボタン */
+.play-tts-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.play-tts-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.play-tts-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+}
+
+.play-tts-button:disabled {
+    background: linear-gradient(135deg, #9e9e9e, #757575);
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
+}
+
+.play-tts-button.has-content {
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(76, 175, 80, 0.5);
+    }
+}
+
+.play-tts-button svg {
+    flex-shrink: 0;
+}
+
+/* モバイル対応 */
+@media (max-width: 600px) {
+    .play-tts-button {
+        padding: 12px 16px;
+        font-size: 15px;
+        border-radius: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .play-tts-button {
+        padding: 10px 14px;
+        font-size: 14px;
+        gap: 6px;
+    }
+
+    .play-tts-button svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* ========================================
+   翻訳ボックス タップで再生
+   ======================================== */
+.translation-box {
+    cursor: default;
+    transition: all 0.3s ease;
+    border-left: 4px solid #4CAF50;
+}
+
+/* TTS有効かつコンテンツがある場合のみインタラクティブ */
+/* 注意: background-colorは状態別スタイル（translating, translation-complete）と競合するため除外 */
+.translation-box.has-content {
+    cursor: pointer;
+}
+
+.translation-box.has-content:hover {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.translation-box.has-content:active {
+    transform: scale(0.99);
+}
+
+.translation-box.tts-playing {
+    animation: tts-glow 1.5s ease-in-out infinite;
+    border-left-color: #2ecc71;
+    background-color: #f0fff4;
+}
+
+@keyframes tts-glow {
+    0%, 100% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+    50% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 20px rgba(76, 175, 80, 0.5);
+    }
+}
+
+/* タップヒント */
+.tap-hint {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background-color: #e8f5e9;
+    color: #4CAF50;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.translation-box.has-content .tap-hint {
+    opacity: 1;
+}
+
+.translation-box.tts-playing .tap-hint {
+    background-color: #ffebee;
+    color: #e74c3c;
+}
+
+.translation-box.tts-playing .tap-hint {
+    font-size: 0;
+}
+
+.translation-box.tts-playing .tap-hint::after {
+    content: 'タップで停止';
+    font-size: 11px;
+}
+
+/* ========================================
+   設定モーダル内フォントサイズコントロール
+   ======================================== */
+.font-size-preview {
+    background-color: #f5f5f7;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.font-size-preview .preview-text {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+    transition: font-size 0.3s ease;
+}
+
+.font-size-preview.size-small .preview-text {
+    font-size: 18px;
+}
+
+.font-size-preview.size-medium .preview-text {
+    font-size: 24px;
+}
+
+.font-size-preview.size-large .preview-text {
+    font-size: 30px;
+}
+
+.font-size-preview.size-xlarge .preview-text {
+    font-size: 36px;
+}
+
+.font-size-controls-modal {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.font-size-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.font-size-btn:hover {
+    border-color: #1a73e8;
+    color: #1a73e8;
+}
+
+.font-size-btn.active {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+    color: white;
+}
+
+/* ========================================
+   TTS速度コントロール
+   ======================================== */
+.speed-controls {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.speed-btn {
+    flex: 1;
+    padding: 8px 6px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.speed-btn:hover {
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.speed-btn.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+
+.speed-btn:focus-visible {
+    outline: 2px solid #1a73e8;
+    outline-offset: 2px;
+}
+
+/* ========================================
+   デバウンス最適化UI
+   ======================================== */
+.debounce-optimizer {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.debounce-status {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 12px;
+}
+
+.debounce-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.debounce-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.debounce-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a73e8;
+}
+
+.debounce-type {
+    font-size: 11px;
+    color: #888;
+}
+
+.debounce-type.optimized {
+    color: #4CAF50;
+}
+
+.debounce-progress {
+    margin-bottom: 12px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1a73e8, #4CAF50);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+}
+
+.debounce-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.debounce-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.debounce-btn:focus-visible {
+    outline: 2px solid #1a73e8;
+    outline-offset: 2px;
+}
+
+.debounce-btn.optimize {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.debounce-btn.optimize:hover:not(:disabled) {
+    background-color: #1557b0;
+}
+
+.debounce-btn.optimize:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.debounce-btn.reset {
+    background-color: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.debounce-btn.reset:hover {
+    background-color: #e8e8e8;
+}
+
+.debounce-btn.full-reset {
+    background-color: #fff0f0;
+    color: #d32f2f;
+    border: 1px solid #ffcdd2;
+}
+
+.debounce-btn.full-reset:hover {
+    background-color: #ffebee;
+    border-color: #ef9a9a;
+}
+
+.debounce-btn.optimize.disabled {
+    background-color: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+}
+
+.debounce-btn.optimize.ready {
+    background-color: #4CAF50;
+    color: white;
+    animation: pulse-ready 2s infinite;
+}
+
+.debounce-btn.optimize.ready:hover {
+    background-color: #388E3C;
+}
+
+@keyframes pulse-ready {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
+}
+
+/* 最適化日時表示 */
+.debounce-optimized-at {
+    font-size: 11px;
+    color: #4CAF50;
+    text-align: center;
+    margin: 8px 0;
+    padding: 4px 8px;
+    background-color: #e8f5e9;
+    border-radius: 4px;
+}
+
+/* 残りサンプル数表示 */
+.remaining-info {
+    font-size: 12px;
+    color: #f57c00;
+    text-align: center;
+    margin: 8px 0;
+    padding: 6px 10px;
+    background-color: #fff3e0;
+    border-radius: 4px;
+}
+
+.remaining-info.ready {
+    color: #4CAF50;
+    background-color: #e8f5e9;
+}
+
+/* フッターリンク */
+.footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.footer-link {
+    color: #1a73e8;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* ========================================
+   リセットボタン調整（小さく）
+   ======================================== */
+.language-button.reset {
+    padding: 8px 12px;
+    font-size: 0;
+}
+
+.language-button.reset .language-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* ========================================
+   横画面（ランドスケープ）レイアウト
+   原文と翻訳を左右に並べて表示
+   ======================================== */
+@media (orientation: landscape) {
+    body {
+        padding: 3px;
+    }
+
+    .container {
+        max-width: 100%;
+        gap: 3px;
+    }
+
+    .control-container {
+        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 3px;
+    }
+
+    .button-group {
+        flex-direction: row;
+        gap: 6px;
+    }
+
+    .language-button {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 16px;
+    }
+
+    .language-button .language-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .status {
+        font-size: 12px;
+        padding: 3px 10px;
+    }
+
+    /* 翻訳エリアを左右分割 */
+    .result-container {
+        flex-direction: row;
+        gap: 5px;
+    }
+
+    .result-box {
+        flex: 1;
+        min-height: 0;
+        padding: 8px 10px;
+        border-left-width: 3px;
+    }
+
+    .result-title {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+
+    .result-content {
+        font-size: 18px;
+        line-height: 1.4;
+    }
+
+    .result-content.size-small {
+        font-size: 14px;
+    }
+
+    .result-content.size-medium {
+        font-size: 18px;
+    }
+
+    .result-content.size-large {
+        font-size: 22px;
+    }
+
+    .result-content.size-xlarge {
+        font-size: 26px;
+    }
+
+    .language-indicator {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+
+    .tap-hint {
+        font-size: 9px;
+        padding: 1px 5px;
+    }
+
+    .settings-button {
+        top: 3px;
+        right: 3px;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    /* 横画面では翻訳ボックスの上部にボーダーを追加して視覚的に区別 */
+    .translation-box {
+        border-left-color: #4CAF50;
+    }
+}
+
+/* モバイル対応追加 */
+@media (max-width: 600px) {
+    .font-size-controls-modal {
+        gap: 6px;
+    }
+
+    .font-size-btn {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .translation-box {
+        padding: 10px 12px; /* 15px→10px 12px 余白削減 */
+    }
+
+    .tap-hint {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}
+
+/*
+ * 注意: 縦画面モバイル用スタイルは @media (max-width: 600px) に統合済み
+ * 横画面は @media (orientation: landscape) で別途定義
+ */
+
+@media (max-width: 480px) {
+    .font-size-btn {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .font-size-preview {
+        padding: 12px;
+    }
+
+    .language-button.reset {
+        padding: 6px 10px;
+    }
+
+    .language-button.reset .language-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/*
+ * 小さい画面の縦画面：さらにコンパクトに
+ * 480px以下の縦画面ではボタンとアイコンをさらに縮小
+ * アイコン: 14px → 12px（タイトなレイアウト対応）
+ */
+@media (max-width: 480px) and (orientation: portrait) {
+    .language-button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .language-button .language-icon {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* 翻訳品質警告スタイル */
+.translation-quality-warning {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    z-index: 100;
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.warning-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.warning-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.warning-text {
+    flex: 1;
+    font-size: 13px;
+    color: #856404;
+    font-weight: 500;
+    min-width: 150px;
+}
+
+.retry-translation-btn {
+    background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(255, 149, 0, 0.3);
+}
+
+.retry-translation-btn:hover {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff4500 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 149, 0, 0.4);
+}
+
+.retry-translation-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(255, 149, 0, 0.3);
+}
+
+.close-warning-btn {
+    background: transparent;
+    border: none;
+    color: #856404;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-warning-btn:hover {
+    background: rgba(133, 100, 4, 0.1);
+    color: #533f03;
+}
+
+/* 小さい画面用の調整 */
+@media (max-width: 600px) {
+    .translation-quality-warning {
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        padding: 8px 10px;
+    }
+
+    .warning-text {
+        font-size: 12px;
+        min-width: 120px;
+    }
+
+    .warning-icon {
+        font-size: 16px;
+    }
+
+    .retry-translation-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .close-warning-btn {
+        font-size: 18px;
+        padding: 10px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* 横向き（ランドスケープ）モードでの調整 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .translation-quality-warning {
+        top: 3px;
+        left: 5px;
+        right: 5px;
+        padding: 6px 8px;
+    }
+
+    .warning-content {
+        gap: 6px;
+    }
+
+    .warning-icon {
+        font-size: 14px;
+    }
+
+    .warning-text {
+        font-size: 11px;
+        min-width: 100px;
+    }
+
+    .retry-translation-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+        min-height: 36px;
+    }
+
+    .close-warning-btn {
+        font-size: 16px;
+        padding: 8px;
+        min-width: 36px;
+        min-height: 36px;
+    }
+}
