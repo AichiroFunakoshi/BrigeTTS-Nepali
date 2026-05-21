@@ -1,9 +1,10 @@
-const CACHE_VERSION = 'bridge-tts-codex-v1';
+const CACHE_VERSION = 'bridge-tts-codex-v2';
 const APP_SHELL = [
     './',
     './index.html',
     './howto.html',
     './style.css',
+    './error-reporter.js',
     './app.js',
     './manifest.json',
     './images/icons/icon-120x120.png',
