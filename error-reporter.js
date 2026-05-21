@@ -39,10 +39,48 @@ const ErrorReporter = {
         });
     },
 
+    safeSerialize: function(value) {
+        if (typeof value === 'string') return value;
+        const seen = new WeakSet();
+        try {
+            return JSON.stringify(value, (key, nestedValue) => {
+                if (typeof nestedValue === 'object' && nestedValue !== null) {
+                    if (seen.has(nestedValue)) return '[Circular]';
+                    seen.add(nestedValue);
+                }
+                return nestedValue;
+            });
+        } catch (error) {
+            return `[Unserializable: ${error.message}]`;
+        }
+    },
+
+    sanitizeText: function(text) {
+        return String(text)
+            .replace(/\bsk-[A-Za-z0-9_-]{10,}\b/g, '[REDACTED_OPENAI_KEY]')
+            .replace(/\bBearer\s+[A-Za-z0-9._-]+\b/gi, 'Bearer [REDACTED_TOKEN]')
+            .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]')
+            .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi, '[REDACTED_UUID]');
+    },
+
+    sanitizeReport: function(report) {
+        return {
+            ...report,
+            userAgent: this.sanitizeText(report.userAgent),
+            platform: this.sanitizeText(report.platform),
+            language: this.sanitizeText(report.language),
+            url: this.sanitizeText(report.url),
+            logs: report.logs.map(log => ({
+                ...log,
+                message: this.sanitizeText(log.message)
+            }))
+        };
+    },
+
     addLog: function(level, args) {
         const timestamp = new Date().toISOString();
         const message = args.map(arg =>
-            typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            typeof arg === 'object' && arg !== null ? this.safeSerialize(arg) : String(arg)
         ).join(' ');
 
         this.logs.push({
@@ -63,7 +101,7 @@ const ErrorReporter = {
         const button = document.createElement('button');
         button.id = 'errorReportButton';
         button.className = 'error-report-button';
-        button.innerHTML = '⚠️ エラーを報告';
+        button.textContent = '⚠️ エラーを報告';
         button.onclick = () => this.generateReport();
         document.body.appendChild(button);
     },
@@ -80,39 +118,59 @@ const ErrorReporter = {
             logs: this.logs.slice(-50)
         };
 
-        this.showReportModal(report);
+        this.showReportModal(this.sanitizeReport(report));
     },
 
     showReportModal: function(report) {
         const modal = document.createElement('div');
         modal.className = 'error-report-modal';
-        modal.innerHTML = `
-            <div class="error-report-content">
-                <h2>エラーレポート</h2>
-                <p>以下の内容が報告されます：</p>
-                <textarea readonly>${JSON.stringify(report, null, 2)}</textarea>
-                <div class="error-report-buttons">
-                    <button id="copyReportBtn">コピー</button>
-                    <button id="sendReportBtn">GitHubで報告</button>
-                    <button id="closeReportBtn">キャンセル</button>
-                </div>
-            </div>
-        `;
+
+        const content = document.createElement('div');
+        content.className = 'error-report-content';
+
+        const title = document.createElement('h2');
+        title.textContent = 'エラーレポート';
+
+        const description = document.createElement('p');
+        description.textContent = '以下の内容が報告されます：';
+
+        const textarea = document.createElement('textarea');
+        textarea.readOnly = true;
+        textarea.value = JSON.stringify(report, null, 2);
+
+        const buttonRow = document.createElement('div');
+        buttonRow.className = 'error-report-buttons';
+
+        const copyButton = document.createElement('button');
+        copyButton.type = 'button';
+        copyButton.textContent = 'コピー';
+
+        const sendButton = document.createElement('button');
+        sendButton.type = 'button';
+        sendButton.textContent = 'GitHubで報告';
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.textContent = 'キャンセル';
+
+        buttonRow.append(copyButton, sendButton, closeButton);
+        content.append(title, description, textarea, buttonRow);
+        modal.appendChild(content);
 
         document.body.appendChild(modal);
 
-        document.getElementById('copyReportBtn').onclick = () => {
+        copyButton.addEventListener('click', () => {
             navigator.clipboard.writeText(JSON.stringify(report, null, 2));
             alert('レポートをクリップボードにコピーしました');
-        };
+        });
 
-        document.getElementById('sendReportBtn').onclick = () => {
+        sendButton.addEventListener('click', () => {
             this.openGitHubIssue(report);
-        };
+        });
 
-        document.getElementById('closeReportBtn').onclick = () => {
+        closeButton.addEventListener('click', () => {
             modal.remove();
-        };
+        });
     },
 
     analyzeErrorType: function(logs) {
@@ -186,7 +244,8 @@ const ErrorReporter = {
     },
 
     openGitHubIssue: function(report) {
-        const errorAnalysis = this.analyzeErrorType(report.logs);
+        const safeReport = this.sanitizeReport(report);
+        const errorAnalysis = this.analyzeErrorType(safeReport.logs);
         const title = this.generateErrorTitle(errorAnalysis.category);
         const analysisSection = errorAnalysis.category !== 'other'
             ? `**エラー分類**: ${errorAnalysis.category}\n**検出キーワード**: ${errorAnalysis.keywords.join(', ')}\n\n`
@@ -195,14 +254,14 @@ const ErrorReporter = {
         const encodedTitle = encodeURIComponent(title);
         const body = encodeURIComponent(
             `## エラーレポート\n\n` +
-            `**発生日時**: ${report.timestamp}\n\n` +
+            `**発生日時**: ${safeReport.timestamp}\n\n` +
             analysisSection +
             `**環境情報**:\n` +
-            `- ブラウザ: ${report.userAgent}\n` +
-            `- プラットフォーム: ${report.platform}\n` +
-            `- 言語: ${report.language}\n` +
-            `- 画面サイズ: ${report.screenSize}\n\n` +
-            `**ログ**:\n\`\`\`json\n${JSON.stringify(report.logs, null, 2)}\n\`\`\`\n\n` +
+            `- ブラウザ: ${safeReport.userAgent}\n` +
+            `- プラットフォーム: ${safeReport.platform}\n` +
+            `- 言語: ${safeReport.language}\n` +
+            `- 画面サイズ: ${safeReport.screenSize}\n\n` +
+            `**ログ**:\n\`\`\`json\n${JSON.stringify(safeReport.logs, null, 2)}\n\`\`\`\n\n` +
             `**再現手順**:\n` +
             `1. \n` +
             `2. \n` +
