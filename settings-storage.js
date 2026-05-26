@@ -10,6 +10,16 @@ const AppSettingsStorage = {
         debounceOptimizedAt: 'translatorDebounceOptimizedAt'
     },
 
+    fontSizeValues: ['small', 'medium', 'large', 'xlarge'],
+
+    normalizeFontSize: function(value, fallback = 'medium') {
+        const normalizedFallback = this.fontSizeValues.includes(String(fallback).trim().toLowerCase())
+            ? String(fallback).trim().toLowerCase()
+            : 'medium';
+        const normalizedValue = String(value).trim().toLowerCase();
+        return this.fontSizeValues.includes(normalizedValue) ? normalizedValue : normalizedFallback;
+    },
+
     getString: function(key, fallback = '') {
         const value = localStorage.getItem(key);
         return value === null ? fallback : value;
@@ -63,11 +73,20 @@ const AppSettingsStorage = {
     },
 
     getFontSize: function(defaultValue = 'medium') {
-        return this.getString(this.keys.fontSize, defaultValue);
+        const fallback = this.normalizeFontSize(defaultValue);
+        const savedValue = localStorage.getItem(this.keys.fontSize);
+        if (savedValue === null) return fallback;
+
+        const normalizedValue = this.normalizeFontSize(savedValue, fallback);
+        if (normalizedValue !== savedValue) {
+            this.setFontSize(normalizedValue);
+        }
+
+        return normalizedValue;
     },
 
     setFontSize: function(value) {
-        this.setString(this.keys.fontSize, value);
+        this.setString(this.keys.fontSize, this.normalizeFontSize(value));
     },
 
     getJson: function(key, fallback = null) {
@@ -78,6 +97,7 @@ const AppSettingsStorage = {
             return JSON.parse(value);
         } catch (error) {
             console.error('設定JSONの読み込みに失敗:', key, error);
+            this.remove(key);
             return fallback;
         }
     },
