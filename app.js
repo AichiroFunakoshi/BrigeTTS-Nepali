@@ -1649,95 +1649,27 @@ document.addEventListener('DOMContentLoaded', function() {
         errorMessage.textContent = '';
         
         try {
-            // 選択された言語ボタンに基づいて元言語を決定
-            const sourceLanguageStr = selectedLanguage === 'ja' ? '日本語' : '英語';
-            
             // 新しいAbortControllerを作成
             currentTranslationController = new AbortController();
             const signal = currentTranslationController.signal;
             
             console.log(`テキスト翻訳中 (${text.length} 文字): "${text.substring(0, 30)}..."`);
-            
-            // gpt-4.1-nanoモデルを使用したOpenAIリクエストを作成
-            const translationPayload = {
-                model: "gpt-4.1-nano",
-                messages: [
-                    {
-                        role: "system",
-                        content: window.SYSTEM_PROMPT
-                    },
-                    {
-                        role: "user",
-                        content: `以下の${sourceLanguageStr}テキストを翻訳してください:\n\n${text}`
-                    }
-                ],
-                stream: true,  // リアルタイムレスポンスのためストリーミングを有効化
-                temperature: 0.3  // 翻訳精度向上のため低めの値を設定
-            };
-            
             console.log('OpenAI APIに翻訳リクエストを送信中...');
-            
-            // 翻訳リクエスト
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + OPENAI_API_KEY.trim()
-                },
-                body: JSON.stringify(translationPayload),
-                signal: signal
-            });
-            
-            if (!response.ok) {
-                let errorData = null;
-                try {
-                    errorData = await response.json();
-                } catch (e) {
-                    errorData = { error: { message: `HTTPエラー: ${response.status}` } };
-                }
-                
-                console.error('OpenAI APIエラー:', errorData);
-                const errorCode = errorData?.error?.code;
-                if (errorCode === 'insufficient_quota') {
-                    throw new Error('APIキーのクォータ（利用上限）を超えました。OpenAIのダッシュボードで残高・プランを確認し、APIキーを更新してください。');
-                }
-                throw new Error(errorData?.error?.message || `OpenAI APIがステータスを返しました: ${response.status}`);
-            }
-            
             console.log('翻訳ストリーム開始');
-            
-            // ストリーミングレスポンスを処理
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-            let translationResult = '';
             
             // 新しい翻訳開始時は以前の内容をクリア
             translatedText.textContent = '';
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                
-                // チャンクをデコード
-                const chunk = decoder.decode(value);
-                
-                // チャンクから各行を処理
-                const lines = chunk.split('\n');
-                for (const line of lines) {
-                    if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-                        try {
-                            const data = JSON.parse(line.substring(6));
-                            if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
-                                const content = data.choices[0].delta.content;
-                                translationResult += content;
-                                translatedText.textContent = translationResult;
-                            }
-                        } catch (e) {
-                            console.error('ストリーミングレスポンス解析エラー:', e);
-                        }
-                    }
+
+            const translationResult = await TranslatorService.translateStream({
+                apiKey: OPENAI_API_KEY,
+                text: text,
+                sourceLanguage: selectedLanguage,
+                systemPrompt: window.SYSTEM_PROMPT,
+                signal: signal,
+                onChunk: (currentText) => {
+                    translatedText.textContent = currentText;
                 }
-            }
+            });
             
             console.log('翻訳完了:', {
                 resultLength: translationResult.length,
