@@ -42,59 +42,79 @@ const TranslatorService = {
         return new Error(errorData?.error?.message || `OpenAI APIがステータスを返しました: ${response.status}`);
     },
 
-    translateStream: async function({ apiKey, text, sourceLanguage, systemPrompt, signal, onChunk }) {
-        const response = await fetch(this.endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + String(apiKey).trim()
-            },
-            body: JSON.stringify(this.createPayload({ text, sourceLanguage, systemPrompt })),
-            signal: signal
-        });
+    translateStream: async function({ apiKey, text, sourceLanguage, systemPrompt, signal, onChunk, timeoutMs = 30000 }) {
+        const requestController = new AbortController();
+        const relayAbort = () => requestController.abort();
 
-        if (!response.ok) {
-            throw await this.createErrorFromResponse(response);
+        if (signal) {
+            if (signal.aborted) {
+                requestController.abort();
+            } else {
+                signal.addEventListener('abort', relayAbort, { once: true });
+            }
         }
 
-        if (!response.body) {
-            throw new Error('OpenAI APIのストリーミングレスポンスを読み取れませんでした。');
-        }
+        const timeoutId = setTimeout(() => requestController.abort(), timeoutMs);
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let buffer = '';
-        let translationResult = '';
+        try {
+            const response = await fetch(this.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + String(apiKey).trim()
+                },
+                body: JSON.stringify(this.createPayload({ text, sourceLanguage, systemPrompt })),
+                signal: requestController.signal
+            });
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+            if (!response.ok) {
+                throw await this.createErrorFromResponse(response);
+            }
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
+            if (!response.body) {
+                throw new Error('OpenAI APIのストリーミングレスポンスを読み取れませんでした。');
+            }
 
-            for (const line of lines) {
-                const content = this.parseStreamLine(line);
-                if (!content) continue;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+            let translationResult = '';
 
-                translationResult += content;
-                if (typeof onChunk === 'function') {
-                    onChunk(translationResult, content);
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const content = this.parseStreamLine(line);
+                    if (!content) continue;
+
+                    translationResult += content;
+                    if (typeof onChunk === 'function') {
+                        onChunk(translationResult, content);
+                    }
                 }
             }
-        }
 
-        buffer += decoder.decode();
-        const remainingContent = this.parseStreamLine(buffer);
-        if (remainingContent) {
-            translationResult += remainingContent;
-            if (typeof onChunk === 'function') {
-                onChunk(translationResult, remainingContent);
+            buffer += decoder.decode();
+            const remainingContent = this.parseStreamLine(buffer);
+            if (remainingContent) {
+                translationResult += remainingContent;
+                if (typeof onChunk === 'function') {
+                    onChunk(translationResult, remainingContent);
+                }
+            }
+
+            return translationResult;
+        } finally {
+            clearTimeout(timeoutId);
+            if (signal) {
+                signal.removeEventListener('abort', relayAbort);
             }
         }
-
-        return translationResult;
     },
 
     parseStreamLine: function(line) {

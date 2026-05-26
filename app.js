@@ -1660,7 +1660,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // 新しい翻訳開始時は以前の内容をクリア
             translatedText.textContent = '';
 
-            const translationResult = await TranslatorService.translateStream({
+            if (!window.TranslatorService || typeof window.TranslatorService.translateStream !== 'function') {
+                throw new Error('翻訳モジュールの読み込みに失敗しました。ページを再読み込みしてください。');
+            }
+
+            const translationResult = await window.TranslatorService.translateStream({
                 apiKey: OPENAI_API_KEY,
                 text: text,
                 sourceLanguage: selectedLanguage,
