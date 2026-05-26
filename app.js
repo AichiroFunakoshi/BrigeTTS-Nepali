@@ -629,31 +629,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // APIキー読み込み
     function loadApiKeys() {
-        const storedOpenaiKey = localStorage.getItem('translatorOpenaiKey');
-
-        OPENAI_API_KEY = storedOpenaiKey ? storedOpenaiKey.trim() : '';
+        OPENAI_API_KEY = AppSettingsStorage.getOpenaiKey();
 
         // TTS設定を読み込み
-        const storedTTSEnabled = localStorage.getItem('translatorTTSEnabled');
-        if (storedTTSEnabled !== null) {
-            isTTSEnabled = storedTTSEnabled === 'true';
-        } else {
-            // デフォルトでTTS有効
-            isTTSEnabled = true;
-        }
+        isTTSEnabled = AppSettingsStorage.getTtsEnabled(true);
 
         // TTS速度を読み込み（検証付き）
-        const storedTTSSpeed = localStorage.getItem('translatorTTSSpeed');
-        if (storedTTSSpeed !== null) {
-            const parsedSpeed = parseFloat(storedTTSSpeed);
-            // NaNまたは範囲外の場合はデフォルト値を使用
-            if (isNaN(parsedSpeed) || parsedSpeed < TTS_SPEED_MIN || parsedSpeed > TTS_SPEED_MAX) {
-                ttsSpeed = TTS_SPEED_DEFAULT;
-                localStorage.setItem('translatorTTSSpeed', TTS_SPEED_DEFAULT.toString());
-            } else {
-                ttsSpeed = parsedSpeed;
-            }
-        }
+        ttsSpeed = AppSettingsStorage.getTtsSpeed(TTS_SPEED_DEFAULT, TTS_SPEED_MIN, TTS_SPEED_MAX);
         updateSpeedButtonsUI(ttsSpeed);
 
         // デバウンスデータを読み込み
@@ -662,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('TTS設定読み込み:', {
             isTTSEnabled: isTTSEnabled,
             ttsSpeed: ttsSpeed,
-            storedValue: storedTTSEnabled
+            storedValue: AppSettingsStorage.getTtsEnabled(true)
         });
 
         if (!OPENAI_API_KEY) {
@@ -678,9 +660,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadDebounceData() {
         try {
             // デバウンスデータ
-            const storedDebounceData = localStorage.getItem('translatorDebounceData');
-            if (storedDebounceData) {
-                const parsed = JSON.parse(storedDebounceData);
+            const parsed = AppSettingsStorage.getDebounceData();
+            if (parsed) {
                 // 型と構造の検証
                 if (parsed && typeof parsed === 'object') {
                     // 各言語のデータを検証してフィルタリング
@@ -699,9 +680,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // 最適化されたデバウンス値
-            const storedOptimizedDebounce = localStorage.getItem('translatorOptimizedDebounce');
-            if (storedOptimizedDebounce) {
-                const optimized = JSON.parse(storedOptimizedDebounce);
+            const optimized = AppSettingsStorage.getOptimizedDebounce();
+            if (optimized) {
                 // 型と範囲の検証
                 if (optimized && typeof optimized === 'object') {
                     ['ja', 'en'].forEach(lang => {
@@ -717,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // 最適化日時を読み込み
-            const storedOptimizedAt = localStorage.getItem('translatorDebounceOptimizedAt');
+            const storedOptimizedAt = AppSettingsStorage.getDebounceOptimizedAt();
             if (storedOptimizedAt) {
                 debounceOptimizedAt = storedOptimizedAt;
             }
@@ -737,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // デバウンスデータの保存
     function saveDebounceData() {
         try {
-            localStorage.setItem('translatorDebounceData', JSON.stringify(debounceData));
+            AppSettingsStorage.setDebounceData(debounceData);
         } catch (e) {
             console.error('デバウンスデータ保存エラー:', e);
         }
@@ -883,14 +863,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // APIキーを保存する前に不要なスペースを確実に削除
-        localStorage.setItem('translatorOpenaiKey', openaiKey.trim());
+        AppSettingsStorage.setOpenaiKey(openaiKey);
         
         OPENAI_API_KEY = openaiKey.trim();
         
         // TTS設定も保存
         if (ttsToggle) {
             isTTSEnabled = ttsToggle.checked;
-            localStorage.setItem('translatorTTSEnabled', isTTSEnabled.toString());
+            AppSettingsStorage.setTtsEnabled(isTTSEnabled);
         }
         
         apiModal.style.display = 'none';
@@ -911,8 +891,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // APIキーリセット
     resetKeysBtn.addEventListener('click', () => {
         if (confirm('APIキーをリセットしますか？')) {
-            localStorage.removeItem('translatorOpenaiKey');
-            localStorage.removeItem('translatorTTSEnabled');
+            AppSettingsStorage.clearApiSettings();
             unlockBodyScroll();
             location.reload();
         }
@@ -930,7 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ttsToggle) {
         ttsToggle.addEventListener('change', () => {
             isTTSEnabled = ttsToggle.checked;
-            localStorage.setItem('translatorTTSEnabled', isTTSEnabled.toString());
+            AppSettingsStorage.setTtsEnabled(isTTSEnabled);
             console.log('TTS設定変更:', isTTSEnabled ? '有効' : '無効');
             // TTS設定変更時に再生ボタンの状態を更新
             updateTranslationBoxState(!!lastTranslationResult);
@@ -948,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             ttsSpeed = speed;
-            localStorage.setItem('translatorTTSSpeed', speed.toString());
+            AppSettingsStorage.setTtsSpeed(speed);
             updateSpeedButtonsUI(speed);
             console.log('TTS速度変更:', speed);
         });
@@ -977,8 +956,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // 保存
-            localStorage.setItem('translatorOptimizedDebounce', JSON.stringify(currentDebounce));
-            localStorage.setItem('translatorDebounceOptimizedAt', debounceOptimizedAt);
+            AppSettingsStorage.setOptimizedDebounce(currentDebounce);
+            AppSettingsStorage.setDebounceOptimizedAt(debounceOptimizedAt);
 
             // UI更新
             updateDebounceUI();
@@ -1003,8 +982,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 isDebounceOptimized = false;
                 debounceOptimizedAt = null;
 
-                localStorage.removeItem('translatorOptimizedDebounce');
-                localStorage.removeItem('translatorDebounceOptimizedAt');
+                AppSettingsStorage.clearOptimizedDebounce();
 
                 updateDebounceUI();
 
@@ -1029,9 +1007,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSpeechEndTime = 0;
 
                 // ストレージをクリア
-                localStorage.removeItem('translatorOptimizedDebounce');
-                localStorage.removeItem('translatorDebounceOptimizedAt');
-                localStorage.removeItem('translatorDebounceData');
+                AppSettingsStorage.clearOptimizedDebounce();
+                AppSettingsStorage.clearDebounceData();
 
                 updateDebounceUI();
 
@@ -1048,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fontSizeXLargeBtn) fontSizeXLargeBtn.addEventListener('click', () => changeFontSize('xlarge'));
 
     // 保存されたフォントサイズ設定を早期適用（APIキー入力前から反映）
-    const initialFontSize = localStorage.getItem('translatorFontSize') || 'medium';
+    const initialFontSize = AppSettingsStorage.getFontSize('medium');
     changeFontSize(initialFontSize);
 
     // フォントサイズプレビューの更新関数
@@ -1096,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
         translatedText.classList.add(`size-${size}`);
 
         // ローカルストレージに保存してユーザー設定を記憶
-        localStorage.setItem('translatorFontSize', size);
+        AppSettingsStorage.setFontSize(size);
 
         // プレビューも更新
         updateFontSizePreview(size);

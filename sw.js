@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'bridge-tts-codex-v3';
+const CACHE_VERSION = 'bridge-tts-codex-v4';
 const APP_SHELL = [
     './',
     './index.html',
@@ -6,6 +6,7 @@ const APP_SHELL = [
     './style.css',
     './error-reporter.js',
     './pwa-support.js',
+    './settings-storage.js',
     './app.js',
     './manifest.json',
     './images/icons/icon-120x120.png',
