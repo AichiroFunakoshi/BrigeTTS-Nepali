@@ -8,8 +8,8 @@
     "doc": "docs"
   },
   "scripts": {
-    "playwright:install": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright install chromium",
-    "playwright:version": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright --version"
+    "playwright:install": "playwright install chromium",
+    "playwright:version": "playwright --version"
   },
   "repository": {
     "type": "git",
