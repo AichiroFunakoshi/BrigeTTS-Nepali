@@ -9,7 +9,8 @@
   },
   "scripts": {
     "playwright:install": "playwright install chromium",
-    "playwright:version": "playwright --version"
+    "playwright:version": "playwright --version",
+    "test:smoke": "playwright test"
   },
   "repository": {
     "type": "git",
