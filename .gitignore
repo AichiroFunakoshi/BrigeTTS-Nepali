@@ -10,6 +10,8 @@ Thumbs.db
 # Dependencies and build output
 node_modules/
 .playwright-browsers/
+test-results/
+playwright-report/
 dist/
 build/
 .cache/
