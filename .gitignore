@@ -9,6 +9,7 @@ Thumbs.db
 
 # Dependencies and build output
 node_modules/
+.playwright-browsers/
 dist/
 build/
 .cache/

@@ -1,0 +1,29 @@
+{
+  "name": "bridge-tts-codex",
+  "version": "1.0.0",
+  "private": true,
+  "description": "![Bridge(Ver.4.1-nano)](images/icons/icon-192x192.png)",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "playwright:install": "playwright install chromium",
+    "playwright:version": "playwright --version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues"
+  },
+  "homepage": "https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
