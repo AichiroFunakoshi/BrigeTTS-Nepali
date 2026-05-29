@@ -938,20 +938,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTranslationBoxState(false);
         }
 
-        // 翻訳システムプロンプト
-        window.SYSTEM_PROMPT = `あなたは日本語と英語の専門的な同時通訳者です。
-音声入力データを以下のルールに従って読みやすいテキストに変換して翻訳してください：
-
-1. 元のテキストが日本語の場合は英語に翻訳する。
-2. 元のテキストが英語の場合は日本語に翻訳する。
-3. 「えー」「うー」などのフィラーや冗長な表現は除去する。
-4. データが不足している場合は文脈に基づいて補完する。
-5. 人名、地名、企業名などの固有名詞は適切に翻訳または音訳する（例：「デビさん」→「Devi」）。
-6. 専門用語や業務用語は必ず翻訳する（例：「担当者会議」→「staff meeting」、「報告書」→「report」）。文脈から判断して一般的な業務用語であれば必ず翻訳し、不明な場合は翻訳を優先して括弧で原文を併記する（例：「staff meeting (担当者会議)」）。
-7. 文化的な概念（例：お盆、正月など）は翻訳し、括弧内に簡潔な説明を追加する（例：「お盆」→「Obon (summer holiday)」）。
-8. 出力は自然で会話的にする。
-9. 翻訳のみを出力し、解説や補足コメントは含めない（文化的な概念の括弧内説明は除く）。`;
-
         // 初期化完了フラグを設定
         appInitialized = true;
         console.log('アプリ初期化完了');
@@ -1466,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 apiKey: OPENAI_API_KEY,
                 text: text,
                 sourceLanguage: selectedLanguage,
-                systemPrompt: window.SYSTEM_PROMPT,
+                systemPrompt: window.PromptService.getTranslationSystemPrompt(),
                 signal: signal,
                 onChunk: (currentText) => {
                     translatedText.textContent = currentText;
