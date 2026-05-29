@@ -8,116 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // TTS関連変数
     let isTTSEnabled = true; // デフォルトでTTS有効
-    let currentSpeechUtterance = null; // 現在再生中の音声
     let isTTSPlaying = false; // TTS再生中フラグ
     let ttsInitialized = false; // iOS Safari用: TTS初期化済みフラグ
     let ttsSpeed = 1.0; // TTS再生速度（デフォルト: 1.0）
-    let cachedVoices = []; // 利用可能な音声のキャッシュ
-
-    /**
-     * 利用可能な音声一覧を取得・キャッシュ
-     * macOS/Windowsでは音声の読み込みが非同期のため、voiceschangedイベントを監視
-     */
-    function loadVoices() {
-        if (!window.speechSynthesis) {
-            console.warn('speechSynthesis APIが利用できません');
-            cachedVoices = [];
-            return;
-        }
-        cachedVoices = window.speechSynthesis.getVoices();
-        console.log('利用可能な音声:', cachedVoices.length, '件');
-    }
-
-    /**
-     * 高品質音声かどうかを判定
-     * Apple デバイスのEnhanced/Premium音声を検出
-     * @param {SpeechSynthesisVoice} voice - 判定する音声
-     * @returns {boolean} - 高品質音声の場合true
-     */
-    function isPremiumVoice(voice) {
-        if (!voice || !voice.name) {
-            return false;
-        }
-        const name = voice.name.toLowerCase();
-        // Enhanced, Premium, 拡張 などの高品質音声を検出
-        return name.includes('enhanced') ||
-               name.includes('premium') ||
-               name.includes('拡張') ||
-               name.includes('siri') ||
-               // Apple の高品質日本語音声名
-               name.includes('o-ren') ||
-               name.includes('hattori') ||
-               name.includes('ayumi');
-    }
-
-    /**
-     * 指定言語に最適な音声を選択
-     * @param {string} langCode - 言語コード（'en-US' または 'ja-JP'）
-     * @returns {SpeechSynthesisVoice|null} - 最適な音声、見つからない場合はnull
-     */
-    function getBestVoiceForLanguage(langCode) {
-        // パラメータ検証
-        if (!langCode || typeof langCode !== 'string') {
-            console.warn('無効な言語コード:', langCode);
-            return null;
-        }
-
-        if (cachedVoices.length === 0) {
-            loadVoices();
-        }
-
-        const langPrefix = langCode.split('-')[0]; // 'en' or 'ja'
-        const isJapanese = langPrefix === 'ja';
-
-        // 日本語の場合はEnhanced/Premium音声を最優先
-        if (isJapanese) {
-            // 1. 日本語のPremium/Enhanced音声を優先
-            let voice = cachedVoices.find(v =>
-                v.lang.startsWith('ja') && isPremiumVoice(v)
-            );
-            if (voice) {
-                console.log('音声選択（日本語・高品質）:', voice.name, voice.lang);
-                return voice;
-            }
-        }
-
-        // 優先順位（英語 または 日本語のフォールバック）:
-        // 1. 完全一致するローカル音声（高品質）
-        // 2. 言語プレフィックスが一致するローカル音声
-        // 3. 完全一致するネットワーク音声
-        // 4. 言語プレフィックスが一致する音声
-
-        // 完全一致 + ローカル音声を優先
-        let voice = cachedVoices.find(v => v.lang === langCode && v.localService);
-        if (voice) {
-            console.log('音声選択（完全一致・ローカル）:', voice.name, voice.lang);
-            return voice;
-        }
-
-        // 言語プレフィックス一致 + ローカル音声
-        voice = cachedVoices.find(v => v.lang.startsWith(langPrefix) && v.localService);
-        if (voice) {
-            console.log('音声選択（プレフィックス一致・ローカル）:', voice.name, voice.lang);
-            return voice;
-        }
-
-        // 完全一致（ネットワーク含む）
-        voice = cachedVoices.find(v => v.lang === langCode);
-        if (voice) {
-            console.log('音声選択（完全一致）:', voice.name, voice.lang);
-            return voice;
-        }
-
-        // 言語プレフィックス一致
-        voice = cachedVoices.find(v => v.lang.startsWith(langPrefix));
-        if (voice) {
-            console.log('音声選択（プレフィックス一致）:', voice.name, voice.lang);
-            return voice;
-        }
-
-        console.warn('適切な音声が見つかりません:', langCode);
-        return null;
-    }
     
     // DOM要素
     const startJapaneseBtn = document.getElementById('startJapaneseBtn');
@@ -300,157 +193,65 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // iOS Safari用: TTS初期化関数
     function initializeTTSForIOS() {
-        if (ttsInitialized) return;
-
-        console.log('iOS Safari用TTS初期化を実行');
-
-        // ダミー音声を再生してSpeech Synthesisを初期化
-        const utterance = new SpeechSynthesisUtterance('');
-        utterance.volume = 0; // 無音
-        window.speechSynthesis.speak(utterance);
-
-        ttsInitialized = true;
-        console.log('TTS初期化完了');
+        window.TtsService.initializeForIOS();
+        ttsInitialized = window.TtsService.isInitialized();
     }
 
     // TTS機能: 翻訳結果を音声で読み上げ
     function speakTranslation(text, language) {
-        console.log('speakTranslation呼び出し:', {
-            text: text ? text.substring(0, 50) + '...' : 'null',
-            language: language,
-            isTTSEnabled: isTTSEnabled,
-            ttsInitialized: ttsInitialized,
-            speechSynthesisAvailable: 'speechSynthesis' in window
+        window.TtsService.speak({
+            text: text,
+            sourceLanguage: language,
+            enabled: isTTSEnabled,
+            speed: ttsSpeed,
+            onBeforeSpeak: () => {
+                // 音声認識を一時停止（TTSの音声を拾わないようにするため）
+                if (isRecording && recognition && isRecognitionRunning) {
+                    try {
+                        console.log('TTS再生のため音声認識を一時停止');
+                        recognition.stop();
+                    } catch (e) {
+                        console.error('音声認識の停止に失敗:', e?.message || e);
+                    }
+                }
+            },
+            onStart: () => {
+                if (speakingIndicator) {
+                    speakingIndicator.classList.add('visible');
+                }
+                updateTTSPlayingState(true);
+            },
+            onEnd: () => {
+                if (speakingIndicator) {
+                    speakingIndicator.classList.remove('visible');
+                }
+                safeRestartRecognition(200, 'TTS終了');
+            },
+            onError: () => {
+                if (speakingIndicator) {
+                    speakingIndicator.classList.remove('visible');
+                }
+                safeRestartRecognition(200, 'TTSエラー後');
+            },
+            onPlayingChange: (isPlaying) => {
+                isTTSPlaying = isPlaying;
+                updateTTSPlayingState(isPlaying);
+            }
         });
-
-        // TTS無効の場合は何もしない
-        if (!isTTSEnabled) {
-            console.log('TTS無効: isTTSEnabled = false');
-            return;
-        }
-
-        if (!text || !text.trim()) {
-            console.log('TTS無効: テキストが空');
-            return;
-        }
-
-        // Web Speech API対応確認
-        if (!('speechSynthesis' in window)) {
-            console.warn('このブラウザはWeb Speech API (TTS)に対応していません');
-            return;
-        }
-
-        // iOS Safari対策: 初期化されていない場合は初期化
-        if (!ttsInitialized) {
-            console.warn('TTS未初期化: ユーザー操作時に初期化されていません');
-            initializeTTSForIOS();
-        }
-
-        // 前の音声を停止
-        if (window.speechSynthesis.speaking) {
-            console.log('前のTTS再生を停止');
-            window.speechSynthesis.cancel();
-        }
-
-        // TTS再生中フラグを立てる
-        isTTSPlaying = true;
-
-        // 音声認識を一時停止（TTSの音声を拾わないようにするため）
-        if (isRecording && recognition && isRecognitionRunning) {
-            try {
-                console.log('TTS再生のため音声認識を一時停止');
-                recognition.stop();
-            } catch (e) {
-                console.error('音声認識の停止に失敗:', e?.message || e);
-            }
-        }
-
-        // 新しい音声合成オブジェクトを作成
-        const utterance = new SpeechSynthesisUtterance(text);
-
-        // 言語設定（日本語→英語翻訳なら英語で、英語→日本語翻訳なら日本語で読み上げ）
-        const targetLang = language === 'ja' ? 'en-US' : 'ja-JP';
-        utterance.lang = targetLang;
-
-        // 最適な音声を選択（macOS/Windows対応）
-        const selectedVoice = getBestVoiceForLanguage(targetLang);
-        if (selectedVoice) {
-            utterance.voice = selectedVoice;
-        }
-
-        console.log('TTS設定:', {
-            lang: utterance.lang,
-            voice: selectedVoice ? selectedVoice.name : 'デフォルト',
-            textLength: text.length
-        });
-
-        // 音声設定
-        utterance.rate = ttsSpeed;  // ユーザー設定の速度を適用
-        utterance.pitch = 1.0;   // 通常ピッチ
-        utterance.volume = 1.0;  // 最大音量
-
-        // イベントハンドラ
-        utterance.onstart = function() {
-            console.log('✓ TTS再生開始:', language === 'ja' ? '英語' : '日本語');
-            if (speakingIndicator) {
-                speakingIndicator.classList.add('visible');
-            }
-            updateTTSPlayingState(true);
-        };
-
-        utterance.onend = function() {
-            console.log('✓ TTS再生終了');
-            if (speakingIndicator) {
-                speakingIndicator.classList.remove('visible');
-            }
-            currentSpeechUtterance = null;
-            isTTSPlaying = false;
-            updateTTSPlayingState(false);
-
-            // TTS終了後、録音中であれば音声認識を再開
-            safeRestartRecognition(200, 'TTS終了');
-        };
-
-        utterance.onerror = function(event) {
-            console.error('✗ TTS再生エラー:', event.error, event);
-            if (speakingIndicator) {
-                speakingIndicator.classList.remove('visible');
-            }
-            currentSpeechUtterance = null;
-            isTTSPlaying = false;
-            updateTTSPlayingState(false);
-
-            // エラー時も音声認識を再開
-            safeRestartRecognition(200, 'TTSエラー後');
-        };
-
-        // 音声を再生
-        currentSpeechUtterance = utterance;
-        console.log('window.speechSynthesis.speak() を呼び出し');
-        window.speechSynthesis.speak(utterance);
-
-        // 再生キューの状態を確認
-        setTimeout(() => {
-            console.log('TTS状態確認:', {
-                speaking: window.speechSynthesis.speaking,
-                pending: window.speechSynthesis.pending,
-                paused: window.speechSynthesis.paused
-            });
-        }, 100);
+        ttsInitialized = window.TtsService.isInitialized();
     }
     
     // TTS停止関数
     function stopTTS() {
-        if (window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
+        window.TtsService.stop({
+            onPlayingChange: (isPlaying) => {
+                isTTSPlaying = isPlaying;
+                updateTTSPlayingState(isPlaying);
+            }
+        });
         if (speakingIndicator) {
             speakingIndicator.classList.remove('visible');
         }
-        currentSpeechUtterance = null;
-        isTTSPlaying = false;
-        updateTTSPlayingState(false);
-        console.log('TTS停止');
     }
 
     // 音声認識の状態を監視する関数（新規追加）
@@ -1106,11 +907,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // TTS対応確認と音声リストの初期化
-        if ('speechSynthesis' in window) {
-            // 音声リストを初期読み込み
-            loadVoices();
-            // 音声リストが非同期で読み込まれる場合（macOS/Windows）
-            window.speechSynthesis.onvoiceschanged = loadVoices;
+        if (window.TtsService.isSupported()) {
+            window.TtsService.bindVoiceChanges();
         } else {
             console.warn('このブラウザはTTSに対応していません');
         }
