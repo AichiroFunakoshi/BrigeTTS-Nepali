@@ -40,3 +40,14 @@ test('loads app shell and core browser modules', async ({ page }) => {
     expect(consoleErrors).toEqual([]);
     expect(failedRequests).toEqual([]);
 });
+
+test('loads the default translation prompt rules', async ({ page }) => {
+    await page.goto('/');
+
+    const prompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt());
+
+    expect(prompt).toContain('日本語の場合は英語');
+    expect(prompt).toContain('英語の場合は日本語');
+    expect(prompt).toContain('フィラー');
+    expect(prompt).toContain('翻訳のみを出力');
+});
