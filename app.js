@@ -1448,6 +1448,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('翻訳モジュールの読み込みに失敗しました。ページを再読み込みしてください。');
             }
 
+            if (!window.PromptService || typeof window.PromptService.getTranslationSystemPrompt !== 'function') {
+                throw new Error('翻訳モジュールの読み込みに失敗しました。ページを再読み込みしてください。');
+            }
+
             const translationResult = await window.TranslatorService.translateStream({
                 apiKey: OPENAI_API_KEY,
                 text: text,
