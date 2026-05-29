@@ -26,12 +26,14 @@ test('loads app shell and core browser modules', async ({ page }) => {
 
     const modules = await page.evaluate(() => ({
         settingsStorage: Boolean(window.AppSettingsStorage),
+        promptService: Boolean(window.PromptService && typeof window.PromptService.getTranslationSystemPrompt === 'function'),
         translatorService: Boolean(window.TranslatorService && typeof window.TranslatorService.translateStream === 'function'),
         ttsService: Boolean(window.TtsService && typeof window.TtsService.speak === 'function')
     }));
 
     expect(modules).toEqual({
         settingsStorage: true,
+        promptService: true,
         translatorService: true,
         ttsService: true
     });
