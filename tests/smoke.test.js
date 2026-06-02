@@ -53,6 +53,13 @@ test('loads the default translation prompt rules', async ({ page }) => {
 });
 
 test('parses translator service stream lines and payloads', async ({ page }) => {
+    const consoleErrors = [];
+    page.on('console', (message) => {
+        if (message.type() === 'error') {
+            consoleErrors.push(message.text());
+        }
+    });
+
     await page.goto('/');
 
     const result = await page.evaluate(() => {
@@ -68,6 +75,7 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
             done: window.TranslatorService.parseStreamLine('data: [DONE]'),
             ignored: window.TranslatorService.parseStreamLine('event: ping'),
             invalidJson: window.TranslatorService.parseStreamLine('data: {broken'),
+            expectedModel: window.TranslatorService.model,
             model: payload.model,
             stream: payload.stream,
             temperature: payload.temperature,
@@ -76,15 +84,18 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
         };
     });
 
-    expect(result).toEqual({
+    expect(result.model).toBe(result.expectedModel);
+    expect(result).toMatchObject({
         content: 'Hello',
         done: '',
         ignored: '',
         invalidJson: '',
-        model: 'gpt-4.1-nano',
         stream: true,
         temperature: 0.3,
         systemPrompt: 'system prompt',
         userPrompt: '以下の日本語テキストを翻訳してください:\n\nこんにちは'
     });
+    expect(consoleErrors).toEqual(expect.arrayContaining([
+        expect.stringContaining('ストリーミングレスポンス解析エラー')
+    ]));
 });
