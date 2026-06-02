@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const translationBox = document.getElementById('translationBox');
     const originalBox = document.getElementById('originalBox');
     const tapHint = document.getElementById('tapHint');
+    const copyTranslationBtn = document.getElementById('copyTranslationBtn');
     const fontSizePreview = document.getElementById('fontSizePreview');
 
     // 音声認識変数
@@ -358,6 +359,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 translationBox.classList.remove('has-content');
             }
         }
+
+        if (copyTranslationBtn) {
+            copyTranslationBtn.disabled = !hasContent;
+        }
     }
 
     // TTS再生中の視覚的フィードバックを更新
@@ -427,6 +432,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('手動TTS再生を開始:', lastTranslationResult.substring(0, 50) + '...');
         speakTranslation(lastTranslationResult, selectedLanguage);
+    }
+
+    async function copyTranslation(event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        const textToCopy = lastTranslationResult.trim();
+        if (!textToCopy || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            if (copyTranslationBtn) {
+                copyTranslationBtn.classList.add('copied');
+                copyTranslationBtn.querySelector('span').textContent = 'コピー済み';
+                setTimeout(() => {
+                    copyTranslationBtn.classList.remove('copied');
+                    copyTranslationBtn.querySelector('span').textContent = 'コピー';
+                }, 1200);
+            }
+        } catch (error) {
+            console.error('翻訳結果のコピーに失敗:', error);
+        }
     }
 
     // APIキー読み込み
@@ -930,6 +960,9 @@ document.addEventListener('DOMContentLoaded', function() {
             translationBox.addEventListener('click', playTranslation);
             // キーボードアクセシビリティ対応（Enter/Space）
             translationBox.addEventListener('keydown', (e) => {
+                if (e.target.closest('button')) {
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     playTranslation();
@@ -937,6 +970,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             // 初期状態は無効
             updateTranslationBoxState(false);
+        }
+
+        if (copyTranslationBtn) {
+            copyTranslationBtn.addEventListener('click', copyTranslation);
         }
 
         // 初期化完了フラグを設定

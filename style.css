@@ -267,6 +267,36 @@ body.modal-open {
     color: #1a73e8;
 }
 
+.copy-translation-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 26px;
+    padding: 3px 9px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #3c4043;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.copy-translation-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.copy-translation-btn:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+.copy-translation-btn.copied {
+    border-color: #34a853;
+    background-color: #e6f4ea;
+    color: #137333;
+}
+
 .spinner {
     display: inline-block;
     width: 16px;
