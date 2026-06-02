@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isRecording = false;
     let currentTranslationController = null;
     let translationInProgress = false;
+    let activeTranslationId = 0;
     let selectedLanguage = ''; // 'ja' は日本語、'en' は英語
     let lastTranslationTime = 0;
     let isRecognitionRunning = false; // 音声認識が実行中かどうか
@@ -1423,6 +1424,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         translationInProgress = true;
+        activeTranslationId += 1;
+        const translationId = activeTranslationId;
         lastTranslationTime = Date.now();
         translatingIndicator.classList.add('visible');
 
@@ -1459,9 +1462,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 systemPrompt: window.PromptService.getTranslationSystemPrompt(),
                 signal: signal,
                 onChunk: (currentText) => {
+                    if (translationId !== activeTranslationId) {
+                        return;
+                    }
                     translatedText.textContent = currentText;
                 }
             });
+
+            if (translationId !== activeTranslationId) {
+                return;
+            }
             
             console.log('翻訳完了:', {
                 resultLength: translationResult.length,
@@ -1489,6 +1499,10 @@ document.addEventListener('DOMContentLoaded', function() {
             currentTranslationController = null;
             
         } catch (error) {
+            if (translationId !== activeTranslationId) {
+                return;
+            }
+
             // 中断エラーは無視
             if (error.name === 'AbortError') {
                 console.log('翻訳リクエストが中断されました');
@@ -1500,10 +1514,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } finally {
-            translationInProgress = false;
-            translatingIndicator.classList.remove('visible');
-            // 翻訳中の視覚的フィードバックを解除
-            updateTranslatingState(false);
+            if (translationId === activeTranslationId) {
+                currentTranslationController = null;
+                translationInProgress = false;
+                translatingIndicator.classList.remove('visible');
+                // 翻訳中の視覚的フィードバックを解除
+                updateTranslatingState(false);
+            }
         }
     }
     
