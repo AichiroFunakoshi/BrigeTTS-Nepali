@@ -51,3 +51,40 @@ test('loads the default translation prompt rules', async ({ page }) => {
     expect(prompt).toContain('フィラー');
     expect(prompt).toContain('翻訳のみを出力');
 });
+
+test('parses translator service stream lines and payloads', async ({ page }) => {
+    await page.goto('/');
+
+    const result = await page.evaluate(() => {
+        const contentLine = 'data: {"choices":[{"delta":{"content":"Hello"}}]}';
+        const payload = window.TranslatorService.createPayload({
+            text: 'こんにちは',
+            sourceLanguage: 'ja',
+            systemPrompt: 'system prompt'
+        });
+
+        return {
+            content: window.TranslatorService.parseStreamLine(contentLine),
+            done: window.TranslatorService.parseStreamLine('data: [DONE]'),
+            ignored: window.TranslatorService.parseStreamLine('event: ping'),
+            invalidJson: window.TranslatorService.parseStreamLine('data: {broken'),
+            model: payload.model,
+            stream: payload.stream,
+            temperature: payload.temperature,
+            systemPrompt: payload.messages[0].content,
+            userPrompt: payload.messages[1].content
+        };
+    });
+
+    expect(result).toEqual({
+        content: 'Hello',
+        done: '',
+        ignored: '',
+        invalidJson: '',
+        model: 'gpt-4.1-nano',
+        stream: true,
+        temperature: 0.3,
+        systemPrompt: 'system prompt',
+        userPrompt: '以下の日本語テキストを翻訳してください:\n\nこんにちは'
+    });
+});
