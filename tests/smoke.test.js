@@ -20,6 +20,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
+    await expect(page.locator('#copyTranslationBtn')).toBeDisabled();
 
     await expect(page.locator('#apiModal')).toBeVisible();
     await expect(page.locator('#openaiKey')).toBeVisible();

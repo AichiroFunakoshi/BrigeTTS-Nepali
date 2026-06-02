@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const translationBox = document.getElementById('translationBox');
     const originalBox = document.getElementById('originalBox');
     const tapHint = document.getElementById('tapHint');
+    const copyTranslationBtn = document.getElementById('copyTranslationBtn');
     const fontSizePreview = document.getElementById('fontSizePreview');
 
     // 音声認識変数
@@ -68,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // TTS用の最終翻訳結果を保存
     let lastTranslationResult = '';
+    let copyStateTimeoutId = null;
 
     // 翻訳品質警告の表示履歴（無限ループ防止）
     const translationQualityWarningHistory = new Map(); // key: originalText, value: warningCount
@@ -358,6 +360,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 translationBox.classList.remove('has-content');
             }
         }
+
+        if (copyTranslationBtn) {
+            copyTranslationBtn.disabled = !hasContent;
+        }
     }
 
     // TTS再生中の視覚的フィードバックを更新
@@ -427,6 +433,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('手動TTS再生を開始:', lastTranslationResult.substring(0, 50) + '...');
         speakTranslation(lastTranslationResult, selectedLanguage);
+    }
+
+    async function copyTranslation(event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        const textToCopy = lastTranslationResult.trim();
+        if (!textToCopy || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+            errorMessage.textContent = 'このブラウザではコピー機能を利用できません';
+            setTimeout(() => { errorMessage.textContent = ''; }, 3000);
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            if (copyTranslationBtn) {
+                const label = copyTranslationBtn.querySelector('span');
+                if (!label) {
+                    console.error('コピーボタンのラベル要素が見つかりません');
+                    return;
+                }
+
+                if (copyStateTimeoutId) {
+                    clearTimeout(copyStateTimeoutId);
+                }
+
+                copyTranslationBtn.classList.add('copied');
+                label.textContent = 'コピー済み';
+                copyStateTimeoutId = setTimeout(() => {
+                    copyTranslationBtn.classList.remove('copied');
+                    label.textContent = 'コピー';
+                    copyStateTimeoutId = null;
+                }, 1200);
+            }
+        } catch (error) {
+            console.error('翻訳結果のコピーに失敗:', error);
+            errorMessage.textContent = 'クリップボードへのコピーに失敗しました';
+            setTimeout(() => { errorMessage.textContent = ''; }, 3000);
+        }
     }
 
     // APIキー読み込み
@@ -930,6 +976,9 @@ document.addEventListener('DOMContentLoaded', function() {
             translationBox.addEventListener('click', playTranslation);
             // キーボードアクセシビリティ対応（Enter/Space）
             translationBox.addEventListener('keydown', (e) => {
+                if (e.target.closest('button')) {
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     playTranslation();
@@ -937,6 +986,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             // 初期状態は無効
             updateTranslationBoxState(false);
+        }
+
+        if (copyTranslationBtn) {
+            copyTranslationBtn.addEventListener('click', copyTranslation);
         }
 
         // 初期化完了フラグを設定
