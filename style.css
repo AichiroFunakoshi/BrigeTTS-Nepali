@@ -1375,8 +1375,8 @@ body.modal-open {
     }
 
     .copy-translation-btn {
-        min-height: 24px;
-        padding: 2px 7px;
+        min-height: 32px;
+        padding: 4px 8px;
     }
 }
 
