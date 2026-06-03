@@ -53,6 +53,31 @@ test('loads the default translation prompt rules', async ({ page }) => {
     expect(prompt).toContain('翻訳のみを出力');
 });
 
+test('uses side-by-side result boxes in landscape', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.goto('/');
+    await page.locator('#apiModal').evaluate((modal) => {
+        modal.style.display = 'none';
+    });
+
+    const layout = await page.evaluate(() => {
+        const containerStyle = getComputedStyle(document.querySelector('.result-container'));
+        const originalRect = document.querySelector('#originalBox').getBoundingClientRect();
+        const translationRect = document.querySelector('#translationBox').getBoundingClientRect();
+
+        return {
+            direction: containerStyle.flexDirection,
+            sameRow: Math.abs(originalRect.top - translationRect.top) < 4,
+            originalLeft: originalRect.left,
+            translationLeft: translationRect.left
+        };
+    });
+
+    expect(layout.direction).toBe('row');
+    expect(layout.sameRow).toBe(true);
+    expect(layout.translationLeft).toBeGreaterThan(layout.originalLeft);
+});
+
 test('parses translator service stream lines and payloads', async ({ page }) => {
     const consoleErrors = [];
     page.on('console', (message) => {

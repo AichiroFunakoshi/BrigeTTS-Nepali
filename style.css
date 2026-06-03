@@ -1352,6 +1352,34 @@ body.modal-open {
     }
 }
 
+@media (orientation: landscape) and (max-height: 420px) {
+    .control-container {
+        gap: 5px;
+    }
+
+    .button-group {
+        min-height: 36px;
+    }
+
+    .language-button {
+        min-height: 36px;
+        padding: 5px 10px;
+    }
+
+    .result-box {
+        padding: 7px 9px;
+    }
+
+    .result-content {
+        line-height: 1.35;
+    }
+
+    .copy-translation-btn {
+        min-height: 24px;
+        padding: 2px 7px;
+    }
+}
+
 /* モバイル対応追加 */
 @media (max-width: 600px) {
     .font-size-controls-modal {
