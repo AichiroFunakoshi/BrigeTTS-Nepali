@@ -12,6 +12,9 @@
     "playwright:version": "playwright --version",
     "test:smoke": "playwright test"
   },
+  "engines": {
+    "node": ">=22 <23"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-.git"
