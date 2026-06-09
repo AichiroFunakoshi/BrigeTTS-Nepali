@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const originalBox = document.getElementById('originalBox');
     const tapHint = document.getElementById('tapHint');
     const copyTranslationBtn = document.getElementById('copyTranslationBtn');
+    const conversationLog = document.getElementById('conversationLog');
+    const conversationOriginal = document.getElementById('conversationOriginal');
+    const conversationTranslation = document.getElementById('conversationTranslation');
     const fontSizePreview = document.getElementById('fontSizePreview');
 
     // 音声認識変数
@@ -409,6 +412,22 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 translationBox.classList.remove('translation-complete');
             }
+        }
+    }
+
+    function updateConversationLog(original, translation) {
+        if (!conversationLog || !conversationOriginal || !conversationTranslation) {
+            return;
+        }
+
+        const hasEntry = Boolean(original && original.trim() && translation && translation.trim());
+        conversationLog.hidden = !hasEntry;
+        if (hasEntry) {
+            conversationOriginal.textContent = original;
+            conversationTranslation.textContent = translation;
+        } else {
+            conversationOriginal.textContent = '';
+            conversationTranslation.textContent = '';
         }
     }
 
@@ -1008,6 +1027,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lastTranslationResult = ''; // TTS用の翻訳結果もクリア
         originalText.textContent = '';
         translatedText.textContent = '';
+        updateConversationLog('', '');
 
         // 翻訳品質警告の履歴もクリア
         translationQualityWarningHistory.clear();
@@ -1539,6 +1559,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 翻訳完了の視覚的フィードバック
                 updateTranslationCompleteState(true);
                 console.log('翻訳結果を保存しました。再生ボタンで読み上げ可能です。');
+                updateConversationLog(text, translationResult);
 
                 // 翻訳品質チェック
                 checkTranslationQuality(text, translationResult, selectedLanguage, translationBox);

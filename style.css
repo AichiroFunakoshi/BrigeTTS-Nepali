@@ -243,6 +243,45 @@ body.modal-open {
     flex: 1;
 }
 
+.conversation-log {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.conversation-log-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #5f6368;
+    margin-bottom: 6px;
+}
+
+.conversation-log-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.conversation-log-row + .conversation-log-row {
+    margin-top: 5px;
+}
+
+.conversation-log-label {
+    color: #6b7280;
+    font-weight: 700;
+}
+
+.conversation-log-text {
+    color: #202124;
+    overflow-wrap: anywhere;
+}
+
 .result-content.size-small {
     font-size: 20px;
 }
