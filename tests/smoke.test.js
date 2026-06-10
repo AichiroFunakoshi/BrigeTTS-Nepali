@@ -22,6 +22,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#translationBox')).toBeVisible();
     await expect(page.locator('#copyTranslationBtn')).toBeDisabled();
     await expect(page.locator('#conversationLog')).toHaveCount(1);
+    await expect(page.locator('#conversationLogList')).toHaveCount(1);
+    await expect(page.locator('#clearConversationLogBtn')).toHaveCount(1);
     await expect(page.locator('#conversationLog')).toBeHidden();
 
     await expect(page.locator('#apiModal')).toBeVisible();

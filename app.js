@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const tapHint = document.getElementById('tapHint');
     const copyTranslationBtn = document.getElementById('copyTranslationBtn');
     const conversationLog = document.getElementById('conversationLog');
-    const conversationOriginal = document.getElementById('conversationOriginal');
-    const conversationTranslation = document.getElementById('conversationTranslation');
+    const conversationLogList = document.getElementById('conversationLogList');
+    const clearConversationLogBtn = document.getElementById('clearConversationLogBtn');
     const fontSizePreview = document.getElementById('fontSizePreview');
 
     // 音声認識変数
@@ -60,6 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let processedResultIds = new Set(); // 処理済みの結果IDを追跡
     let lastTranslatedText = ''; // 最後に翻訳した内容を記録
     let translationDebounceTimer = null;
+    let conversationEntries = [];
+    const MAX_CONVERSATION_ENTRIES = 5;
 
     // 音声認識の再起動管理（マイク問題対策）
     let recognitionRestartAttempts = 0; // 再起動試行回数
@@ -415,20 +417,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateConversationLog(original, translation) {
-        if (!conversationLog || !conversationOriginal || !conversationTranslation) {
+    function renderConversationLog() {
+        if (!conversationLog || !conversationLogList) {
             return;
         }
 
-        const hasEntry = Boolean(original && original.trim() && translation && translation.trim());
-        conversationLog.hidden = !hasEntry;
-        if (hasEntry) {
-            conversationOriginal.textContent = original;
-            conversationTranslation.textContent = translation;
-        } else {
-            conversationOriginal.textContent = '';
-            conversationTranslation.textContent = '';
+        conversationLog.hidden = conversationEntries.length === 0;
+        conversationLogList.replaceChildren();
+
+        conversationEntries.forEach((entry) => {
+            const item = document.createElement('div');
+            item.className = 'conversation-log-item';
+
+            const originalRow = document.createElement('div');
+            originalRow.className = 'conversation-log-row';
+
+            const originalLabel = document.createElement('div');
+            originalLabel.className = 'conversation-log-label';
+            originalLabel.textContent = '原文';
+
+            const originalTextElement = document.createElement('div');
+            originalTextElement.className = 'conversation-log-text';
+            originalTextElement.textContent = entry.original;
+
+            const translationRow = document.createElement('div');
+            translationRow.className = 'conversation-log-row';
+
+            const translationLabel = document.createElement('div');
+            translationLabel.className = 'conversation-log-label';
+            translationLabel.textContent = '翻訳';
+
+            const translationTextElement = document.createElement('div');
+            translationTextElement.className = 'conversation-log-text';
+            translationTextElement.textContent = entry.translation;
+
+            originalRow.append(originalLabel, originalTextElement);
+            translationRow.append(translationLabel, translationTextElement);
+            item.append(originalRow, translationRow);
+            conversationLogList.appendChild(item);
+        });
+    }
+
+    function addConversationLogEntry(original, translation) {
+        const trimmedOriginal = original && original.trim();
+        const trimmedTranslation = translation && translation.trim();
+        if (!trimmedOriginal || !trimmedTranslation) {
+            return;
         }
+
+        conversationEntries = [
+            { original: trimmedOriginal, translation: trimmedTranslation },
+            ...conversationEntries
+        ].slice(0, MAX_CONVERSATION_ENTRIES);
+        renderConversationLog();
+    }
+
+    function clearConversationLog() {
+        conversationEntries = [];
+        renderConversationLog();
     }
 
     // 手動TTS再生関数（再生ボタン用）
@@ -1011,6 +1057,10 @@ document.addEventListener('DOMContentLoaded', function() {
             copyTranslationBtn.addEventListener('click', copyTranslation);
         }
 
+        if (clearConversationLogBtn) {
+            clearConversationLogBtn.addEventListener('click', clearConversationLog);
+        }
+
         // 初期化完了フラグを設定
         appInitialized = true;
         console.log('アプリ初期化完了');
@@ -1027,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lastTranslationResult = ''; // TTS用の翻訳結果もクリア
         originalText.textContent = '';
         translatedText.textContent = '';
-        updateConversationLog('', '');
+        clearConversationLog();
 
         // 翻訳品質警告の履歴もクリア
         translationQualityWarningHistory.clear();
@@ -1559,7 +1609,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 翻訳完了の視覚的フィードバック
                 updateTranslationCompleteState(true);
                 console.log('翻訳結果を保存しました。再生ボタンで読み上げ可能です。');
-                updateConversationLog(text, translationResult);
+                addConversationLogEntry(text, translationResult);
 
                 // 翻訳品質チェック
                 checkTranslationQuality(text, translationResult, selectedLanguage, translationBox);

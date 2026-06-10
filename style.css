@@ -252,11 +252,48 @@ body.modal-open {
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
+.conversation-log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
 .conversation-log-title {
     font-size: 12px;
     font-weight: 700;
     color: #5f6368;
-    margin-bottom: 6px;
+}
+
+.conversation-log-clear {
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #5f6368;
+    font-size: 11px;
+    font-weight: 700;
+    min-height: 28px;
+    padding: 4px 10px;
+}
+
+.conversation-log-clear:active {
+    background: #f3f4f6;
+}
+
+.conversation-log-list {
+    display: grid;
+    gap: 8px;
+}
+
+.conversation-log-item {
+    padding-top: 8px;
+    border-top: 1px solid #edf0f3;
+}
+
+.conversation-log-item:first-child {
+    padding-top: 0;
+    border-top: 0;
 }
 
 .conversation-log-row {
