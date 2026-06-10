@@ -82,6 +82,33 @@ test('uses side-by-side result boxes in landscape', async ({ page }) => {
     expect(layout.translationLeft).toBeGreaterThan(layout.originalLeft);
 });
 
+test('keeps primary controls thumb-friendly in portrait', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.locator('#apiModal').evaluate((modal) => {
+        modal.style.display = 'none';
+    });
+
+    const layout = await page.evaluate(() => {
+        const japaneseRect = document.querySelector('#startJapaneseBtn').getBoundingClientRect();
+        const englishRect = document.querySelector('#startEnglishBtn').getBoundingClientRect();
+        const resetRect = document.querySelector('#resetBtn').getBoundingClientRect();
+
+        return {
+            sameRow: Math.abs(japaneseRect.top - englishRect.top) < 4,
+            similarPrimaryWidth: Math.abs(japaneseRect.width - englishRect.width) < 8,
+            primaryMinHeight: Math.min(japaneseRect.height, englishRect.height),
+            resetWidth: resetRect.width,
+            japaneseWidth: japaneseRect.width
+        };
+    });
+
+    expect(layout.sameRow).toBe(true);
+    expect(layout.similarPrimaryWidth).toBe(true);
+    expect(layout.primaryMinHeight).toBeGreaterThanOrEqual(44);
+    expect(layout.resetWidth).toBeLessThan(layout.japaneseWidth);
+});
+
 test('parses translator service stream lines and payloads', async ({ page }) => {
     const consoleErrors = [];
     page.on('console', (message) => {
