@@ -72,6 +72,8 @@ body.modal-open {
     justify-content: center;
     min-height: 44px;
     flex-wrap: wrap;
+    width: 100%;
+    max-width: 520px;
 }
 
 .language-button {
@@ -80,6 +82,7 @@ body.modal-open {
     justify-content: center;
     gap: 6px;
     padding: 8px 16px;
+    min-height: 44px;
     border-radius: 20px;
     background-color: #1a73e8;
     color: white;
@@ -100,10 +103,12 @@ body.modal-open {
 
 .language-button.japanese {
     background-color: #e74c3c;
+    flex: 1 1 132px;
 }
 
 .language-button.english {
     background-color: #2ecc71;
+    flex: 1 1 132px;
 }
 
 .language-button.stop {
@@ -113,6 +118,7 @@ body.modal-open {
 
 .language-button.reset {
     background-color: #f39c12;
+    flex: 0 0 44px;
 }
 
 .language-button.stop.visible {
@@ -636,16 +642,20 @@ body.modal-open {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 6px;
-        width: auto;
+        width: 100%;
         max-width: 100%;
         justify-content: center;
     }
 
     .language-button {
-        width: auto;
         justify-content: center;
         padding: 8px 14px;
         font-size: 13px;
+    }
+
+    .language-button.japanese,
+    .language-button.english {
+        flex-basis: calc((100% - 56px) / 2);
     }
 
     /* モバイルでのアイコンサイズ調整 */
@@ -655,6 +665,7 @@ body.modal-open {
     }
 
     .language-button.reset {
+        flex-basis: 44px;
         padding: 8px 10px;
     }
 
@@ -1347,9 +1358,12 @@ body.modal-open {
     .button-group {
         flex-direction: row;
         gap: 6px;
+        width: auto;
+        max-width: none;
     }
 
     .language-button {
+        flex: 0 0 auto;
         padding: 6px 12px;
         font-size: 13px;
         border-radius: 16px;
