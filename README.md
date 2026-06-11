@@ -6,7 +6,23 @@
 
 このリポジトリは、既存の Bridge TTS PWA をベースに、Codex で継続的に改善するための作業用リポジトリです。現状の問題点、改善方針、開発ゴールは [docs/PROJECT_GOALS_AND_IMPROVEMENT_PLAN.md](docs/PROJECT_GOALS_AND_IMPROVEMENT_PLAN.md) にまとめています。
 
+## iOSネイティブアプリ（AltStore対応）
+
+PWAに加えて、**iOSネイティブアプリ**としてもビルドできます。WKWebViewでWebアプリをそのまま動かしつつ、WKWebViewでは利用できない音声認識をネイティブの `SFSpeechRecognizer` ブリッジ（`native-speech.js` + Swift）で補完しています。
+
+- GitHub Actionsが**未署名IPA**を自動ビルド（Actions → Build iOS App → Artifacts）
+- AltStore / SideStoreでサイドロードしてインストール
+- ビルド方法・インストール手順の詳細は [docs/IOS_APP.md](docs/IOS_APP.md) を参照
+
 ## 新機能
+
+### ダークモード / テーマ切り替え
+
+設定画面から「自動（端末設定に追従）/ ライト / ダーク」を選択できます。配色はデザイントークン（CSSカスタムプロパティ）で管理されています。
+
+### 会話履歴の保存
+
+直近20件の会話（原文と翻訳）を端末のlocalStorageに保存します。各エントリには翻訳方向と時刻が表示され、「再生」（読み上げ）と「コピー」が行えます。履歴はリロードしても保持され、「消去」ボタンで削除できます。
 
 ### TTS（音声読み上げ）機能
 

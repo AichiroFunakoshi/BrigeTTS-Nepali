@@ -7,10 +7,13 @@ const AppSettingsStorage = {
         fontSize: 'translatorFontSize',
         debounceData: 'translatorDebounceData',
         optimizedDebounce: 'translatorOptimizedDebounce',
-        debounceOptimizedAt: 'translatorDebounceOptimizedAt'
+        debounceOptimizedAt: 'translatorDebounceOptimizedAt',
+        theme: 'translatorTheme',
+        conversationLog: 'translatorConversationLog'
     },
 
     fontSizeValues: ['small', 'medium', 'large', 'xlarge'],
+    themeValues: ['auto', 'light', 'dark'],
 
     normalizeFontSize: function(value, fallback = 'medium') {
         const normalizedFallback = this.fontSizeValues.includes(String(fallback).trim().toLowerCase())
@@ -137,6 +140,35 @@ const AppSettingsStorage = {
 
     setDebounceOptimizedAt: function(value) {
         this.setString(this.keys.debounceOptimizedAt, value);
+    },
+
+    getTheme: function(defaultValue = 'auto') {
+        const value = localStorage.getItem(this.keys.theme);
+        return this.themeValues.includes(value) ? value : defaultValue;
+    },
+
+    setTheme: function(value) {
+        this.setString(this.keys.theme, this.themeValues.includes(value) ? value : 'auto');
+    },
+
+    getConversationLog: function() {
+        const entries = this.getJson(this.keys.conversationLog, []);
+        if (!Array.isArray(entries)) return [];
+
+        return entries.filter((entry) =>
+            entry && typeof entry === 'object' &&
+            typeof entry.original === 'string' && entry.original.trim() !== '' &&
+            typeof entry.translation === 'string' && entry.translation.trim() !== '' &&
+            (entry.sourceLanguage === 'ja' || entry.sourceLanguage === 'en')
+        );
+    },
+
+    setConversationLog: function(entries) {
+        this.setJson(this.keys.conversationLog, Array.isArray(entries) ? entries : []);
+    },
+
+    clearConversationLog: function() {
+        this.remove(this.keys.conversationLog);
     }
 };
 

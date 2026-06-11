@@ -1,0 +1,5 @@
+# 生成物（prepare-www.sh / xcodegen / xcodebuild が生成）
+App/www/
+App/Assets.xcassets/AppIcon.appiconset/
+BridgeTTS.xcodeproj/
+build/

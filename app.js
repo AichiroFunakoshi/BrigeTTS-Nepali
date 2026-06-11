@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastTranslatedText = ''; // 最後に翻訳した内容を記録
     let translationDebounceTimer = null;
     let conversationEntries = [];
-    const MAX_CONVERSATION_ENTRIES = 5;
+    const MAX_CONVERSATION_ENTRIES = 20;
 
     // 音声認識の再起動管理（マイク問題対策）
     let recognitionRestartAttempts = 0; // 再起動試行回数
@@ -417,6 +417,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function formatConversationTimestamp(timestamp) {
+        if (typeof timestamp !== 'number' || !Number.isFinite(timestamp)) {
+            return '';
+        }
+        try {
+            return new Date(timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return '';
+        }
+    }
+
     function renderConversationLog() {
         if (!conversationLog || !conversationLogList) {
             return;
@@ -432,6 +443,43 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemHeader = document.createElement('div');
             itemHeader.className = 'conversation-log-item-header';
 
+            const meta = document.createElement('div');
+            meta.className = 'conversation-log-meta';
+
+            const direction = document.createElement('span');
+            direction.className = 'conversation-log-direction';
+            direction.textContent = entry.sourceLanguage === 'ja' ? '日 → 英' : '英 → 日';
+            meta.appendChild(direction);
+
+            const timeLabel = formatConversationTimestamp(entry.timestamp);
+            if (timeLabel) {
+                const time = document.createElement('span');
+                time.className = 'conversation-log-time';
+                time.textContent = timeLabel;
+                meta.appendChild(time);
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'conversation-log-actions';
+
+            const copyButton = document.createElement('button');
+            copyButton.className = 'conversation-log-copy';
+            copyButton.type = 'button';
+            copyButton.textContent = 'コピー';
+            copyButton.setAttribute('aria-label', 'この翻訳をコピー');
+            copyButton.addEventListener('click', async () => {
+                if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(entry.translation);
+                    copyButton.textContent = 'コピー済';
+                    setTimeout(() => { copyButton.textContent = 'コピー'; }, 1200);
+                } catch (error) {
+                    console.error('会話履歴のコピーに失敗:', error);
+                }
+            });
+
             const replayButton = document.createElement('button');
             replayButton.className = 'conversation-log-replay';
             replayButton.type = 'button';
@@ -440,6 +488,8 @@ document.addEventListener('DOMContentLoaded', function() {
             replayButton.addEventListener('click', () => {
                 playConversationEntry(entry);
             });
+
+            actions.append(copyButton, replayButton);
 
             const originalRow = document.createElement('div');
             originalRow.className = 'conversation-log-row';
@@ -463,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
             translationTextElement.className = 'conversation-log-text';
             translationTextElement.textContent = entry.translation;
 
-            itemHeader.appendChild(replayButton);
+            itemHeader.append(meta, actions);
             originalRow.append(originalLabel, originalTextElement);
             translationRow.append(translationLabel, translationTextElement);
             item.append(itemHeader, originalRow, translationRow);
@@ -479,9 +529,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         conversationEntries = [
-            { original: trimmedOriginal, translation: trimmedTranslation, sourceLanguage },
+            { original: trimmedOriginal, translation: trimmedTranslation, sourceLanguage, timestamp: Date.now() },
             ...conversationEntries
         ].slice(0, MAX_CONVERSATION_ENTRIES);
+        saveConversationLog();
         renderConversationLog();
     }
 
@@ -489,8 +540,27 @@ document.addEventListener('DOMContentLoaded', function() {
         return language === 'ja' || language === 'en';
     }
 
+    function saveConversationLog() {
+        try {
+            AppSettingsStorage.setConversationLog(conversationEntries);
+        } catch (e) {
+            console.error('会話履歴の保存に失敗:', e);
+        }
+    }
+
+    function loadConversationLog() {
+        try {
+            conversationEntries = AppSettingsStorage.getConversationLog().slice(0, MAX_CONVERSATION_ENTRIES);
+        } catch (e) {
+            console.error('会話履歴の読み込みに失敗:', e);
+            conversationEntries = [];
+        }
+        renderConversationLog();
+    }
+
     function clearConversationLog() {
         conversationEntries = [];
+        AppSettingsStorage.clearConversationLog();
         renderConversationLog();
     }
 
@@ -975,6 +1045,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const initialFontSize = AppSettingsStorage.getFontSize('medium');
     changeFontSize(initialFontSize);
 
+    // ========================================
+    // テーマ（ライト/ダーク/自動）切り替え
+    // ========================================
+    const themeButtons = document.querySelectorAll('.theme-btn');
+
+    function applyTheme(theme) {
+        // 'auto' は属性を外してシステム設定（prefers-color-scheme）に追従
+        if (theme === 'light' || theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', theme);
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+
+        themeButtons.forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
+    }
+
+    themeButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const theme = btn.dataset.theme;
+            AppSettingsStorage.setTheme(theme);
+            applyTheme(theme);
+        });
+    });
+
+    // 保存されたテーマを早期適用（index.htmlのインラインスクリプトと同じ状態に同期）
+    applyTheme(AppSettingsStorage.getTheme('auto'));
+
+    // 保存された会話履歴を復元
+    loadConversationLog();
+
     // フォントサイズプレビューの更新関数
     function updateFontSizePreview(size) {
         if (!fontSizePreview) return;
@@ -1092,7 +1194,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (clearConversationLogBtn) {
-            clearConversationLogBtn.addEventListener('click', clearConversationLog);
+            clearConversationLogBtn.addEventListener('click', () => {
+                if (conversationEntries.length === 0) return;
+                if (confirm('会話履歴をすべて消去しますか？')) {
+                    clearConversationLog();
+                }
+            });
         }
 
         // 初期化完了フラグを設定
@@ -1111,7 +1218,8 @@ document.addEventListener('DOMContentLoaded', function() {
         lastTranslationResult = ''; // TTS用の翻訳結果もクリア
         originalText.textContent = '';
         translatedText.textContent = '';
-        clearConversationLog();
+        // 注意: 会話履歴は端末に保存されるため、リセットでは消去しない
+        // （履歴の消去は会話履歴パネルの「消去」ボタンから行う）
 
         // 翻訳品質警告の履歴もクリア
         translationQualityWarningHistory.clear();
