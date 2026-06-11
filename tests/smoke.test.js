@@ -24,6 +24,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#conversationLog')).toHaveCount(1);
     await expect(page.locator('#conversationLogList')).toHaveCount(1);
     await expect(page.locator('#clearConversationLogBtn')).toHaveCount(1);
+    await expect(page.locator('.conversation-log-replay')).toHaveCount(0);
     await expect(page.locator('#conversationLog')).toBeHidden();
 
     await expect(page.locator('#apiModal')).toBeVisible();
@@ -127,6 +128,39 @@ test('keeps core text contrast readable', async ({ page }) => {
     expect(colors.resultTitle).toBe('rgb(95, 99, 104)');
     expect(colors.resultContent).toBe('rgb(32, 33, 36)');
     expect(colors.processingStatus).toBe('rgb(138, 75, 0)');
+});
+
+test('renders replay controls for conversation history entries', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#apiModal').evaluate((modal) => {
+        modal.style.display = 'none';
+    });
+
+    await page.evaluate(() => {
+        const log = document.querySelector('#conversationLog');
+        const list = document.querySelector('#conversationLogList');
+        const item = document.createElement('div');
+        item.className = 'conversation-log-item';
+        item.innerHTML = `
+            <div class="conversation-log-item-header">
+                <button class="conversation-log-replay" type="button" aria-label="この翻訳を再生">再生</button>
+            </div>
+            <div class="conversation-log-row">
+                <div class="conversation-log-label">原文</div>
+                <div class="conversation-log-text">こんにちは</div>
+            </div>
+            <div class="conversation-log-row">
+                <div class="conversation-log-label">翻訳</div>
+                <div class="conversation-log-text">Hello</div>
+            </div>
+        `;
+        list.replaceChildren(item);
+        log.hidden = false;
+    });
+
+    await expect(page.locator('#conversationLog')).toBeVisible();
+    await expect(page.locator('.conversation-log-replay')).toHaveText('再生');
+    await expect(page.locator('.conversation-log-replay')).toHaveAttribute('aria-label', 'この翻訳を再生');
 });
 
 test('parses translator service stream lines and payloads', async ({ page }) => {

@@ -429,6 +429,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const item = document.createElement('div');
             item.className = 'conversation-log-item';
 
+            const itemHeader = document.createElement('div');
+            itemHeader.className = 'conversation-log-item-header';
+
+            const replayButton = document.createElement('button');
+            replayButton.className = 'conversation-log-replay';
+            replayButton.type = 'button';
+            replayButton.textContent = '再生';
+            replayButton.setAttribute('aria-label', 'この翻訳を再生');
+            replayButton.addEventListener('click', () => {
+                playConversationEntry(entry);
+            });
+
             const originalRow = document.createElement('div');
             originalRow.className = 'conversation-log-row';
 
@@ -451,30 +463,52 @@ document.addEventListener('DOMContentLoaded', function() {
             translationTextElement.className = 'conversation-log-text';
             translationTextElement.textContent = entry.translation;
 
+            itemHeader.appendChild(replayButton);
             originalRow.append(originalLabel, originalTextElement);
             translationRow.append(translationLabel, translationTextElement);
-            item.append(originalRow, translationRow);
+            item.append(itemHeader, originalRow, translationRow);
             conversationLogList.appendChild(item);
         });
     }
 
-    function addConversationLogEntry(original, translation) {
+    function addConversationLogEntry(original, translation, sourceLanguage) {
         const trimmedOriginal = original && original.trim();
         const trimmedTranslation = translation && translation.trim();
-        if (!trimmedOriginal || !trimmedTranslation) {
+        if (!trimmedOriginal || !trimmedTranslation || !isSupportedConversationLanguage(sourceLanguage)) {
             return;
         }
 
         conversationEntries = [
-            { original: trimmedOriginal, translation: trimmedTranslation },
+            { original: trimmedOriginal, translation: trimmedTranslation, sourceLanguage },
             ...conversationEntries
         ].slice(0, MAX_CONVERSATION_ENTRIES);
         renderConversationLog();
     }
 
+    function isSupportedConversationLanguage(language) {
+        return language === 'ja' || language === 'en';
+    }
+
     function clearConversationLog() {
         conversationEntries = [];
         renderConversationLog();
+    }
+
+    function playConversationEntry(entry) {
+        if (!entry || !entry.translation || !entry.translation.trim() || !isSupportedConversationLanguage(entry.sourceLanguage)) {
+            return;
+        }
+
+        if (!ttsInitialized && 'speechSynthesis' in window) {
+            initializeTTSForIOS();
+        }
+
+        if (isTTSPlaying) {
+            stopTTS();
+            safeRestartRecognition(200, '会話ログTTS手動停止');
+        }
+
+        speakTranslation(entry.translation, entry.sourceLanguage);
     }
 
     // 手動TTS再生関数（再生ボタン用）
@@ -1609,7 +1643,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 翻訳完了の視覚的フィードバック
                 updateTranslationCompleteState(true);
                 console.log('翻訳結果を保存しました。再生ボタンで読み上げ可能です。');
-                addConversationLogEntry(text, translationResult);
+                addConversationLogEntry(text, translationResult, selectedLanguage);
 
                 // 翻訳品質チェック
                 checkTranslationQuality(text, translationResult, selectedLanguage, translationBox);

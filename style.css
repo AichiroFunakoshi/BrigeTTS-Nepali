@@ -303,6 +303,27 @@ body.modal-open {
     border-top: 0;
 }
 
+.conversation-log-item-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+}
+
+.conversation-log-replay {
+    border: 1px solid #c8d7f2;
+    border-radius: 999px;
+    background: #f8fbff;
+    color: #1a73e8;
+    font-size: 11px;
+    font-weight: 700;
+    min-height: 28px;
+    padding: 4px 10px;
+}
+
+.conversation-log-replay:active {
+    background: #e8f0fe;
+}
+
 .conversation-log-row {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr);
