@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function addConversationLogEntry(original, translation, sourceLanguage) {
         const trimmedOriginal = original && original.trim();
         const trimmedTranslation = translation && translation.trim();
-        if (!trimmedOriginal || !trimmedTranslation) {
+        if (!trimmedOriginal || !trimmedTranslation || !isSupportedConversationLanguage(sourceLanguage)) {
             return;
         }
 
@@ -485,13 +485,17 @@ document.addEventListener('DOMContentLoaded', function() {
         renderConversationLog();
     }
 
+    function isSupportedConversationLanguage(language) {
+        return language === 'ja' || language === 'en';
+    }
+
     function clearConversationLog() {
         conversationEntries = [];
         renderConversationLog();
     }
 
     function playConversationEntry(entry) {
-        if (!entry || !entry.translation || !entry.translation.trim()) {
+        if (!entry || !entry.translation || !entry.translation.trim() || !isSupportedConversationLanguage(entry.sourceLanguage)) {
             return;
         }
 
@@ -502,10 +506,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isTTSPlaying) {
             stopTTS();
             safeRestartRecognition(200, '会話ログTTS手動停止');
-            return;
         }
 
-        speakTranslation(entry.translation, entry.sourceLanguage || selectedLanguage);
+        speakTranslation(entry.translation, entry.sourceLanguage);
     }
 
     // 手動TTS再生関数（再生ボタン用）
