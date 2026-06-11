@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BridgeTTS 図解ガイド</title>
+<style>
+/* ===== リセット・ベース ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-primary:    #2563eb;
+  --color-primary-lt: #dbeafe;
+  --color-accent:     #16a34a;
+  --color-accent-lt:  #dcfce7;
+  --color-warn:       #ea580c;
+  --color-warn-lt:    #ffedd5;
+  --color-danger:     #dc2626;
+  --color-surface:    #f8fafc;
+  --color-card:       #ffffff;
+  --color-border:     #e2e8f0;
+  --color-text:       #1e293b;
+  --color-muted:      #64748b;
+  --color-head-bg:    #1e40af;
+  --radius:           12px;
+  --shadow:           0 2px 12px rgba(0,0,0,.08);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Hiragino Sans, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--color-text);
+  background: var(--color-surface);
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* ===== ヘッダー ===== */
+header {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 60%, #2563eb 100%);
+  color: #fff;
+  text-align: center;
+  padding: 56px 24px 48px;
+}
+header h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; letter-spacing: -.02em; }
+header p  { margin-top: 10px; font-size: clamp(.95rem, 2.5vw, 1.15rem); opacity: .88; }
+.badge {
+  display: inline-block; margin-top: 18px;
+  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+  border-radius: 99px; padding: 5px 18px; font-size: .85rem; letter-spacing: .04em;
+}
+
+/* ===== 目次 ===== */
+nav.toc {
+  max-width: 860px; margin: 32px auto; padding: 0 16px;
+}
+.toc-box {
+  background: var(--color-card); border-radius: var(--radius); box-shadow: var(--shadow);
+  border: 1px solid var(--color-border); padding: 24px 28px;
+}
+.toc-box h2 { font-size: 1rem; color: var(--color-muted); font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.toc-box ol { padding-left: 1.3em; }
+.toc-box li { margin: 4px 0; }
+.toc-box a  { color: var(--color-primary); text-decoration: none; font-weight: 500; }
+.toc-box a:hover { text-decoration: underline; }
+
+/* ===== メインコンテンツ ===== */
+main { max-width: 860px; margin: 0 auto; padding: 0 16px 64px; }
+
+section { margin-bottom: 56px; }
+section > h2 {
+  font-size: clamp(1.2rem, 3vw, 1.55rem); font-weight: 800;
+  color: var(--color-head-bg); border-left: 5px solid var(--color-primary);
+  padding-left: 14px; margin-bottom: 18px; line-height: 1.3;
+}
+section > h3 {
+  font-size: 1.05rem; font-weight: 700; color: var(--color-text);
+  margin: 24px 0 10px; border-bottom: 1px solid var(--color-border); padding-bottom: 6px;
+}
+p { margin-bottom: 12px; }
+
+/* ===== カード ===== */
+.card {
+  background: var(--color-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--color-border);
+  padding: 24px; margin-bottom: 24px;
+}
+.card-accent { border-left: 4px solid var(--color-accent); }
+.card-warn   { border-left: 4px solid var(--color-warn); background: #fffbf5; }
+.card-info   { border-left: 4px solid var(--color-primary); background: #f0f6ff; }
+
+/* ===== SVG 図のラッパー ===== */
+.fig-wrap {
+  background: var(--color-card); border-radius: var(--radius); box-shadow: var(--shadow);
+  border: 1px solid var(--color-border); padding: 20px; margin: 20px 0 32px;
+}
+.fig-wrap figcaption {
+  text-align: center; font-size: .88rem; color: var(--color-muted);
+  margin-top: 10px; font-style: italic;
+}
+.fig-wrap svg { display: block; width: 100%; height: auto; }
+
+/* ===== テーブル ===== */
+.tbl-wrap { overflow-x: auto; margin: 16px 0 24px; border-radius: var(--radius); box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; min-width: 480px; background: var(--color-card); }
+th {
+  background: var(--color-primary); color: #fff; font-weight: 700;
+  padding: 11px 14px; text-align: left; font-size: .93rem;
+}
+td { padding: 10px 14px; font-size: .93rem; border-bottom: 1px solid var(--color-border); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--color-surface); }
+
+/* ===== リスト ===== */
+.step-list { list-style: none; padding: 0; counter-reset: steps; }
+.step-list li {
+  counter-increment: steps; display: flex; gap: 14px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px dashed var(--color-border);
+}
+.step-list li:last-child { border-bottom: none; }
+.step-list li::before {
+  content: counter(steps); flex-shrink: 0;
+  width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary);
+  color: #fff; font-weight: 800; font-size: .88rem; display: flex; align-items: center; justify-content: center;
+}
+
+/* ===== ノート ===== */
+.note {
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+  padding: 12px 16px; font-size: .9rem; color: #1e40af; margin: 12px 0;
+}
+.warn-note {
+  background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px;
+  padding: 12px 16px; font-size: .9rem; color: #9a3412; margin: 12px 0;
+}
+
+/* ===== フッター ===== */
+footer {
+  background: #1e293b; color: #94a3b8;
+  text-align: center; padding: 28px 16px; font-size: .85rem;
+}
+footer a { color: #60a5fa; text-decoration: none; }
+
+/* ===== 印刷 ===== */
+@media print {
+  body { background: #fff; font-size: 12pt; }
+  header { background: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .fig-wrap { break-inside: avoid; page-break-inside: avoid; }
+  section { break-before: auto; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>BridgeTTS 図解ガイド</h1>
+  <p>日本語 ⇔ 英語 リアルタイム音声翻訳アプリ — エンドユーザー向け完全ガイド</p>
+  <span class="badge">gpt-4.1-nano 搭載 ／ PWA + iOSネイティブアプリ対応</span>
+</header>
+
+<!-- 目次 -->
+<nav class="toc" aria-label="目次">
+  <div class="toc-box">
+    <h2>目次</h2>
+    <ol>
+      <li><a href="#intro">はじめに — このアプリでできること</a></li>
+      <li><a href="#how-it-works">しくみ（図1・図2）</a></li>
+      <li><a href="#install-ios">iOSアプリのインストール（図3・図4）</a></li>
+      <li><a href="#ui-guide">画面の見かたと基本操作（図5・図6）</a></li>
+      <li><a href="#settings">設定ガイド</a></li>
+      <li><a href="#history">会話履歴の使いかた</a></li>
+      <li><a href="#operation">日々の運用（図7）</a></li>
+      <li><a href="#specs">性能仕様</a></li>
+      <li><a href="#trouble">困ったときは</a></li>
+      <li><a href="#pwa-vs-app">PWA版とアプリ版 — どちらを使う？</a></li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+
+<!-- ===== 1. はじめに ===== -->
+<section id="intro">
+  <h2>1. はじめに — このアプリでできること</h2>
+  <p>
+    <strong>BridgeTTS</strong>は、日本語と英語のあいだをリアルタイムで音声翻訳するアプリです。
+    マイクに向かって話すだけで文字起こし・翻訳が行われ、翻訳結果をタップすると音声で読み上げてくれます。
+    通訳がいない場面での会話や、英語でのやりとりのブリッジとして活用できます。
+  </p>
+
+  <div class="card card-accent">
+    <strong>できること（要点）</strong>
+    <ul style="margin-top:8px; padding-left:1.3em;">
+      <li>日本語で話す → 英語に翻訳・表示・読み上げ</li>
+      <li>英語で話す → 日本語に翻訳・表示・読み上げ</li>
+      <li>翻訳はリアルタイムのストリーミング表示</li>
+      <li>翻訳ボックスをタップするだけで音声再生（TTS）</li>
+      <li>直近20件の会話履歴を自動保存</li>
+    </ul>
+  </div>
+
+  <div class="card card-warn">
+    <strong>できないこと・制限</strong>
+    <ul style="margin-top:8px; padding-left:1.3em;">
+      <li>日英ペアのみ対応（他の言語ペアは非対応）</li>
+      <li>翻訳にはインターネット接続が必須（オフライン翻訳不可）</li>
+      <li>翻訳にはOpenAI APIキーの登録が必要（有料API）</li>
+      <li>サイレントモード時はTTSが鳴らないことがある</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== 2. しくみ ===== -->
+<section id="how-it-works">
+  <h2>2. しくみ</h2>
+
+  <h3>図1 ： アプリ全体の流れ（翻訳パイプライン）</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" aria-label="翻訳パイプライン図">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" fill="#2563eb"/>
+        </marker>
+        <filter id="dropshadow" x="-10%" y="-10%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000020"/>
+        </filter>
+      </defs>
+
+      <!-- Step 1: マイク -->
+      <rect x="20" y="60" width="130" height="80" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#dropshadow)"/>
+      <!-- マイクアイコン -->
+      <rect x="75" y="73" width="20" height="26" rx="10" fill="#2563eb"/>
+      <path d="M65,95 Q65,110 85,110 Q105,110 105,95" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <line x1="85" y1="110" x2="85" y2="118" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="78" y1="118" x2="92" y2="118" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+      <text x="85" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af" font-family="sans-serif">マイクで話す</text>
+
+      <!-- Arrow 1 -->
+      <line x1="152" y1="100" x2="188" y2="100" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr)"/>
+      <text x="170" y="93" text-anchor="middle" font-size="10" fill="#2563eb" font-family="sans-serif">音声入力</text>
+
+      <!-- Step 2: 文字起こし -->
+      <rect x="190" y="60" width="130" height="80" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="2" filter="url(#dropshadow)"/>
+      <!-- 吹き出しアイコン -->
+      <rect x="212" y="73" width="86" height="46" rx="10" fill="#7c3aed"/>
+      <polygon points="233,119 248,110 248,119" fill="#7c3aed"/>
+      <rect x="220" y="81" width="18" height="4" rx="2" fill="white"/>
+      <rect x="220" y="90" width="30" height="4" rx="2" fill="white"/>
+      <rect x="220" y="99" width="22" height="4" rx="2" fill="white"/>
+      <text x="255" y="84" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">ABC</text>
+      <text x="255" y="97" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">あいう</text>
+      <text x="255" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6" font-family="sans-serif">文字起こし</text>
+
+      <!-- Arrow 2 -->
+      <line x1="322" y1="100" x2="358" y2="100" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr)"/>
+      <text x="340" y="93" text-anchor="middle" font-size="10" fill="#2563eb" font-family="sans-serif">テキスト</text>
+
+      <!-- Step 3: 翻訳 -->
+      <rect x="360" y="60" width="130" height="80" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2" filter="url(#dropshadow)"/>
+      <!-- 地球アイコン -->
+      <circle cx="425" cy="95" r="27" fill="#16a34a"/>
+      <ellipse cx="425" cy="95" rx="11" ry="27" fill="none" stroke="#bbf7d0" stroke-width="1.5"/>
+      <line x1="398" y1="95" x2="452" y2="95" stroke="#bbf7d0" stroke-width="1.5"/>
+      <line x1="400" y1="83" x2="450" y2="83" stroke="#bbf7d0" stroke-width="1"/>
+      <line x1="400" y1="107" x2="450" y2="107" stroke="#bbf7d0" stroke-width="1"/>
+      <text x="425" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d" font-family="sans-serif">AI翻訳</text>
+      <text x="425" y="170" text-anchor="middle" font-size="10" fill="#15803d" font-family="sans-serif">(gpt-4.1-nano)</text>
+
+      <!-- Arrow 3 -->
+      <line x1="492" y1="100" x2="528" y2="100" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr)"/>
+      <text x="510" y="93" text-anchor="middle" font-size="10" fill="#2563eb" font-family="sans-serif">翻訳文</text>
+
+      <!-- Step 4: 読み上げ -->
+      <rect x="530" y="60" width="130" height="80" rx="14" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" filter="url(#dropshadow)"/>
+      <!-- スピーカーアイコン -->
+      <rect x="560" y="83" width="18" height="26" rx="3" fill="#ca8a04"/>
+      <polygon points="578,83 598,73 598,117 578,107" fill="#ca8a04"/>
+      <path d="M604,80 Q618,96 604,110" stroke="#ca8a04" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M610,74 Q630,96 610,116" stroke="#ca8a04" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".55"/>
+      <text x="595" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e" font-family="sans-serif">音声読み上げ</text>
+      <text x="595" y="170" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">(TTS／タップで再生)</text>
+    </svg>
+    <figcaption>図1 ： 話す → 文字起こし → AI翻訳(gpt-4.1-nano) → 音声読み上げの4ステップパイプライン</figcaption>
+  </figure>
+
+  <h3>図2 ： PWA版と iOSアプリ版の構成比較</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" aria-label="PWA版とiOSアプリ版の構成比較">
+      <defs>
+        <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" fill="#4b5563"/>
+        </marker>
+      </defs>
+
+      <!-- タイトル帯 -->
+      <rect x="10" y="8" width="355" height="36" rx="8" fill="#2563eb"/>
+      <text x="187" y="31" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="sans-serif">PWA版（Safari）</text>
+      <rect x="395" y="8" width="355" height="36" rx="8" fill="#7c3aed"/>
+      <text x="572" y="31" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="sans-serif">iOSアプリ版（AltStore）</text>
+
+      <!-- ===== PWA左カラム ===== -->
+      <!-- Safari/Browser層 -->
+      <rect x="30" y="60" width="315" height="58" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="187" y="83" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af" font-family="sans-serif">Safari（ブラウザ）</text>
+      <text x="187" y="102" text-anchor="middle" font-size="11" fill="#3b82f6" font-family="sans-serif">Web Speech API（音声認識） ／ speechSynthesis（TTS）</text>
+
+      <!-- WebApp層 -->
+      <rect x="30" y="134" width="315" height="50" rx="10" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="1.5"/>
+      <text x="187" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af" font-family="sans-serif">BridgeTTS Webアプリ</text>
+      <text x="187" y="172" text-anchor="middle" font-size="11" fill="#1d4ed8" font-family="sans-serif">翻訳UI ／ OpenAI API呼び出し ／ 会話履歴</text>
+
+      <!-- OpenAI -->
+      <rect x="80" y="202" width="215" height="38" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="187" y="226" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d" font-family="sans-serif">OpenAI API（gpt-4.1-nano）</text>
+
+      <!-- Arrow PWA -->
+      <line x1="187" y1="184" x2="187" y2="200" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+      <!-- インストール方法 -->
+      <rect x="30" y="256" width="315" height="50" rx="10" fill="#f0f4ff" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <text x="187" y="276" text-anchor="middle" font-size="12" font-weight="600" fill="#4338ca" font-family="sans-serif">インストール方法</text>
+      <text x="187" y="296" text-anchor="middle" font-size="11" fill="#4338ca" font-family="sans-serif">Safari → 共有ボタン → ホーム画面に追加</text>
+
+      <!-- ===== iOSアプリ右カラム ===== -->
+      <!-- BridgeTTS.app 外枠 -->
+      <rect x="415" y="55" width="315" height="195" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+      <text x="572" y="77" text-anchor="middle" font-size="13" font-weight="700" fill="#6d28d9" font-family="sans-serif">BridgeTTS.app（iOSネイティブ）</text>
+
+      <!-- WKWebView層 -->
+      <rect x="432" y="86" width="281" height="72" rx="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="572" y="108" text-anchor="middle" font-size="12" font-weight="700" fill="#4c1d95" font-family="sans-serif">WKWebView</text>
+      <text x="572" y="124" text-anchor="middle" font-size="11" fill="#5b21b6" font-family="sans-serif">BridgeTTS Webアプリ（bundled www/）</text>
+      <text x="572" y="140" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="sans-serif">翻訳UI ／ OpenAI API ／ speechSynthesis</text>
+
+      <!-- JSブリッジ -->
+      <rect x="432" y="168" width="281" height="36" rx="8" fill="#a78bfa" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="572" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="sans-serif">native-speech.js シム</text>
+      <text x="572" y="198" text-anchor="middle" font-size="10" fill="#ede9fe" font-family="sans-serif">webkitSpeechRecognition互換API提供</text>
+
+      <!-- Swift層 -->
+      <rect x="432" y="214" width="281" height="30" rx="8" fill="#7c3aed"/>
+      <text x="572" y="234" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="sans-serif">SpeechRecognitionBridge（Swift）</text>
+
+      <!-- 矢印 JSブリッジ⇔Swift -->
+      <line x1="572" y1="204" x2="572" y2="212" stroke="#fff" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+      <!-- SFSpeechRecognizer -->
+      <rect x="415" y="258" width="315" height="38" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="572" y="277" text-anchor="middle" font-size="12" font-weight="600" fill="#6d28d9" font-family="sans-serif">iOS SFSpeechRecognizer + AVAudioEngine</text>
+      <text x="572" y="291" text-anchor="middle" font-size="10" fill="#7c3aed" font-family="sans-serif">端末内ネイティブ音声認識エンジン</text>
+
+      <!-- Arrow Swift→SFSpeech -->
+      <line x1="572" y1="245" x2="572" y2="256" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+      <!-- 区切り線 -->
+      <line x1="385" y1="50" x2="385" y2="310" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6,4"/>
+    </svg>
+    <figcaption>図2 ： 左＝PWA版（Safariがすべてを担う）、右＝iOSアプリ版（WKWebView＋Swiftブリッジで音声認識を補完）</figcaption>
+  </figure>
+
+  <p>
+    PWA版はSafariのWeb Speech APIで音声認識を行いますが、iOSのWKWebView（アプリ版で使うWebブラウザコンポーネント）にはその機能がありません。
+    そこで、<code>SpeechRecognitionBridge</code>という Swift製モジュールが音声を聞き取り、
+    <code>native-speech.js</code>というスクリプトを通じてWebアプリに渡します。
+    翻訳・TTS部分はPWA版と同じWebコードをそのまま利用しています。
+  </p>
+</section>
+
+<!-- ===== 3. インストール ===== -->
+<section id="install-ios">
+  <h2>3. iOSアプリのインストール</h2>
+
+  <div class="card card-info">
+    <strong>必要なもの（事前確認リスト）</strong>
+    <div class="tbl-wrap" style="margin-top:12px;">
+      <table>
+        <thead><tr><th>必要なもの</th><th>詳細</th></tr></thead>
+        <tbody>
+          <tr><td>iPhone / iPad</td><td>iOS 16以降を搭載していること</td></tr>
+          <tr><td>PC または Mac</td><td>AltServerのインストール先（Windows/Mac両対応）</td></tr>
+          <tr><td>Apple ID</td><td>無料アカウントでOK（開発者登録不要）</td></tr>
+          <tr><td>BridgeTTS-unsigned.ipa</td><td>GitHub Actionsのアーティファクトからダウンロード</td></tr>
+          <tr><td>AltStore（iPhoneにインストール済み）</td><td><a href="https://altstore.io" style="color:var(--color-primary)">altstore.io</a> からAltServerを入れてiPhoneに転送</td></tr>
+          <tr><td>OpenAI APIキー</td><td>アプリ起動後、設定から入力</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>図3 ： IPA入手の流れ</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" aria-label="IPA入手の流れ">
+      <defs>
+        <marker id="arr3" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M1,1 L8,4.5 L1,8 Z" fill="#6366f1"/>
+        </marker>
+        <filter id="sh2" x="-5%" y="-5%" width="110%" height="130%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00000018"/>
+        </filter>
+      </defs>
+
+      <!-- Step 1: GitHub Actionsタブ -->
+      <rect x="16" y="50" width="160" height="100" rx="14" fill="#f0f4ff" stroke="#6366f1" stroke-width="2" filter="url(#sh2)"/>
+      <!-- GitHub icon simplified -->
+      <circle cx="96" cy="84" r="22" fill="#6366f1"/>
+      <circle cx="96" cy="84" r="15" fill="none" stroke="white" stroke-width="2.5"/>
+      <text x="96" y="89" text-anchor="middle" font-size="11" font-weight="800" fill="white" font-family="sans-serif">GH</text>
+      <text x="96" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#4338ca" font-family="sans-serif">① Actions タブ</text>
+      <text x="96" y="136" text-anchor="middle" font-size="10" fill="#6366f1" font-family="sans-serif">「Build iOS App」</text>
+      <text x="96" y="148" text-anchor="middle" font-size="10" fill="#6366f1" font-family="sans-serif">を開く</text>
+
+      <line x1="178" y1="100" x2="208" y2="100" stroke="#6366f1" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- Step 2: Artifacts -->
+      <rect x="210" y="50" width="160" height="100" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="2" filter="url(#sh2)"/>
+      <rect x="248" y="68" width="64" height="40" rx="6" fill="#d97706"/>
+      <rect x="256" y="76" width="48" height="6" rx="3" fill="white"/>
+      <rect x="256" y="87" width="35" height="6" rx="3" fill="white" opacity=".7"/>
+      <rect x="256" y="98" width="42" height="6" rx="3" fill="white" opacity=".5"/>
+      <text x="280" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e" font-family="sans-serif">② Artifacts から</text>
+      <text x="280" y="144" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">BridgeTTS-unsigned</text>
+      <text x="280" y="158" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">.ipa をダウンロード</text>
+
+      <line x1="372" y1="100" x2="402" y2="100" stroke="#6366f1" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- Step 3: PC/MacへDL -->
+      <rect x="404" y="50" width="160" height="100" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2" filter="url(#sh2)"/>
+      <!-- PC icon -->
+      <rect x="444" y="65" width="60" height="38" rx="5" fill="#16a34a"/>
+      <rect x="450" y="71" width="48" height="26" rx="2" fill="#bbf7d0"/>
+      <rect x="466" y="103" width="16" height="5" rx="2" fill="#16a34a"/>
+      <rect x="439" y="108" width="70" height="4" rx="2" fill="#16a34a"/>
+      <!-- download arrow -->
+      <line x1="474" y1="76" x2="474" y2="92" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="468" y1="87" x2="474" y2="93" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="480" y1="87" x2="474" y2="93" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/>
+      <text x="484" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d" font-family="sans-serif">③ PC/Macに</text>
+      <text x="484" y="144" text-anchor="middle" font-size="10" fill="#166534" font-family="sans-serif">zip展開し</text>
+      <text x="484" y="158" text-anchor="middle" font-size="10" fill="#166534" font-family="sans-serif">.ipa を取り出す</text>
+
+      <line x1="566" y1="100" x2="596" y2="100" stroke="#6366f1" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- Step 4: iPhoneへ転送 -->
+      <rect x="598" y="50" width="145" height="100" rx="14" fill="#fce7f3" stroke="#be185d" stroke-width="2" filter="url(#sh2)"/>
+      <!-- iPhone icon -->
+      <rect x="635" y="62" width="40" height="66" rx="8" fill="#be185d"/>
+      <rect x="640" y="68" width="30" height="50" rx="4" fill="#fce7f3"/>
+      <circle cx="655" cy="122" r="4" fill="#f9a8d4"/>
+      <!-- airdrop arrow -->
+      <text x="648" y="90" text-anchor="middle" font-size="9" fill="#be185d" font-family="sans-serif">AirDrop</text>
+      <text x="648" y="103" text-anchor="middle" font-size="9" fill="#be185d" font-family="sans-serif">/ ファイル</text>
+      <text x="670" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#9d174d" font-family="sans-serif">④ iPhone</text>
+      <text x="670" y="144" text-anchor="middle" font-size="10" fill="#be185d" font-family="sans-serif">へ転送</text>
+    </svg>
+    <figcaption>図3 ： GitHub Actionsタブ → Artifacts → PC/Macにダウンロード → iPhoneへ転送の手順</figcaption>
+  </figure>
+
+  <h3>図4 ： AltStoreインストール手順</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 310" xmlns="http://www.w3.org/2000/svg" aria-label="AltStoreインストール手順">
+      <defs>
+        <marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" fill="#374151"/>
+        </marker>
+      </defs>
+
+      <!-- PC figure -->
+      <rect x="20" y="20" width="90" height="58" rx="7" fill="#374151"/>
+      <rect x="27" y="26" width="76" height="44" rx="3" fill="#9ca3af"/>
+      <rect x="52" y="78" width="26" height="8" rx="2" fill="#374151"/>
+      <rect x="30" y="86" width="110" height="5" rx="2.5" fill="#374151"/>
+      <text x="65" y="105" text-anchor="middle" font-size="11" font-weight="700" fill="#374151" font-family="sans-serif">PC / Mac</text>
+
+      <!-- iPhone figure -->
+      <rect x="148" y="20" width="48" height="80" rx="10" fill="#374151"/>
+      <rect x="154" y="27" width="36" height="62" rx="5" fill="#dbeafe"/>
+      <circle cx="172" cy="94" r="4" fill="#6b7280"/>
+      <text x="172" y="115" text-anchor="middle" font-size="11" font-weight="700" fill="#374151" font-family="sans-serif">iPhone</text>
+
+      <!-- Wi-Fi symbol between -->
+      <path d="M118,45 Q132,35 148,45" stroke="#2563eb" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M122,52 Q132,44 144,52" stroke="#2563eb" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="133" cy="58" r="3.5" fill="#2563eb"/>
+      <text x="133" y="75" text-anchor="middle" font-size="9.5" fill="#2563eb" font-family="sans-serif">同一Wi-Fi</text>
+
+      <!-- Steps list area -->
+      <!-- Step 1 -->
+      <rect x="220" y="12" width="520" height="54" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+      <circle cx="248" cy="39" r="16" fill="#2563eb"/>
+      <text x="248" y="44" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="sans-serif">1</text>
+      <text x="276" y="31" font-size="12" font-weight="700" fill="#1e40af" font-family="sans-serif">PCにAltServerをインストール → iPhoneにAltStoreを転送・インストール</text>
+      <text x="276" y="50" font-size="10.5" fill="#3b82f6" font-family="sans-serif">altstore.io からAltServerを入手し、同一Wi-Fi経由でiPhoneへ転送</text>
+
+      <!-- Step 2 -->
+      <rect x="220" y="78" width="520" height="54" rx="12" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
+      <circle cx="248" cy="105" r="16" fill="#7c3aed"/>
+      <text x="248" y="110" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="sans-serif">2</text>
+      <text x="276" y="97" font-size="12" font-weight="700" fill="#5b21b6" font-family="sans-serif">BridgeTTS-unsigned.ipa をiPhoneへ転送</text>
+      <text x="276" y="116" font-size="10.5" fill="#7c3aed" font-family="sans-serif">AirDrop・iCloud Drive・ファイルアプリなどでiPhoneのストレージに保存</text>
+
+      <!-- Step 3 -->
+      <rect x="220" y="144" width="520" height="54" rx="12" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+      <circle cx="248" cy="171" r="16" fill="#16a34a"/>
+      <text x="248" y="176" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="sans-serif">3</text>
+      <text x="276" y="163" font-size="12" font-weight="700" fill="#15803d" font-family="sans-serif">AltStoreを開く → My Apps → 左上の「＋」→ IPAを選択</text>
+      <text x="276" y="182" font-size="10.5" fill="#16a34a" font-family="sans-serif">ファイル一覧からBridgeTTS-unsigned.ipaをタップして選択</text>
+
+      <!-- Step 4 -->
+      <rect x="220" y="210" width="520" height="54" rx="12" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+      <circle cx="248" cy="237" r="16" fill="#ea580c"/>
+      <text x="248" y="242" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="sans-serif">4</text>
+      <text x="276" y="229" font-size="12" font-weight="700" fill="#9a3412" font-family="sans-serif">Apple IDで自動署名・インストール完了</text>
+      <text x="276" y="248" font-size="10.5" fill="#ea580c" font-family="sans-serif">AltStoreがApple IDを使って署名し、自動でインストール。完了まで約1分</text>
+
+      <!-- Step 5 -->
+      <rect x="220" y="276" width="520" height="27" rx="10" fill="#fafafa" stroke="#e2e8f0" stroke-width="1.5"/>
+      <circle cx="248" cy="289" r="12" fill="#64748b"/>
+      <text x="248" y="294" text-anchor="middle" font-size="12" font-weight="800" fill="white" font-family="sans-serif">5</text>
+      <text x="276" y="293" font-size="11" font-weight="600" fill="#475569" font-family="sans-serif">初回起動 → マイク・音声認識の権限を「許可」してアプリ設定画面でAPIキーを入力</text>
+    </svg>
+    <figcaption>図4 ： AltStoreでのサイドロードインストール 5ステップ</figcaption>
+  </figure>
+
+  <div class="warn-note">
+    <strong>注意：</strong>インストール後は初回起動時に「マイクへのアクセス」と「音声認識の使用」の2つの権限ダイアログが表示されます。両方「許可」しないと音声認識が動作しません。
+  </div>
+</section>
+
+<!-- ===== 4. UI・操作 ===== -->
+<section id="ui-guide">
+  <h2>4. 画面の見かたと基本操作</h2>
+
+  <h3>図5 ： メイン画面のUIガイド</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg" aria-label="メイン画面UIモック">
+      <!-- iPhone frame -->
+      <rect x="240" y="10" width="200" height="390" rx="32" fill="#1e293b" stroke="#374151" stroke-width="3"/>
+      <!-- screen area -->
+      <rect x="248" y="28" width="184" height="354" rx="22" fill="#f8fafc"/>
+      <!-- notch -->
+      <rect x="296" y="28" width="88" height="20" rx="10" fill="#1e293b"/>
+      <!-- Dynamic Island style-->
+      <rect x="309" y="30" width="62" height="14" rx="7" fill="#111827"/>
+
+      <!-- App Header -->
+      <rect x="248" y="48" width="184" height="36" rx="0" fill="#1e40af"/>
+      <text x="318" y="71" text-anchor="middle" font-size="12" font-weight="800" fill="white" font-family="sans-serif">BridgeTTS</text>
+      <!-- 歯車アイコン -->
+      <circle cx="407" cy="66" r="8" fill="none" stroke="white" stroke-width="2"/>
+      <circle cx="407" cy="66" r="3.5" fill="white"/>
+      <!-- 歯車の歯 -->
+      <line x1="407" y1="55" x2="407" y2="58" stroke="white" stroke-width="2"/>
+      <line x1="407" y1="74" x2="407" y2="77" stroke="white" stroke-width="2"/>
+      <line x1="396" y1="66" x2="399" y2="66" stroke="white" stroke-width="2"/>
+      <line x1="415" y1="66" x2="418" y2="66" stroke="white" stroke-width="2"/>
+
+      <!-- Buttons row -->
+      <rect x="256" y="92" width="72" height="32" rx="8" fill="#dc2626"/>
+      <text x="292" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="sans-serif">日本語</text>
+      <rect x="334" y="92" width="72" height="32" rx="8" fill="#16a34a"/>
+      <text x="370" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="sans-serif">English</text>
+
+      <!-- Reset button (orange circle arrow) -->
+      <circle cx="418" cy="108" r="11" fill="#ea580c"/>
+      <text x="418" y="113" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="sans-serif">↻</text>
+
+      <!-- 原文ボックス -->
+      <rect x="256" y="133" width="168" height="68" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+      <text x="262" y="149" font-size="9" font-weight="600" fill="#2563eb" font-family="sans-serif">原文（音声認識テキスト）</text>
+      <text x="262" y="164" font-size="9" fill="#475569" font-family="sans-serif">こんにちは、元気ですか</text>
+      <text x="262" y="176" font-size="9" fill="#94a3b8" font-family="sans-serif">（録音中: 青く点滅）</text>
+
+      <!-- 翻訳ボックス -->
+      <rect x="256" y="210" width="168" height="68" rx="10" fill="#f0fdf4" stroke="#4ade80" stroke-width="2"/>
+      <text x="262" y="226" font-size="9" font-weight="600" fill="#16a34a" font-family="sans-serif">翻訳（AI翻訳結果）</text>
+      <text x="262" y="241" font-size="9" fill="#475569" font-family="sans-serif">Hello, how are you?</text>
+      <text x="262" y="253" font-size="9" fill="#94a3b8" font-family="sans-serif">（完了: 緑・タップで読み上げ）</text>
+      <!-- tap hint -->
+      <text x="396" y="248" font-size="9" fill="#16a34a" font-family="sans-serif">👆</text>
+
+      <!-- 会話履歴 -->
+      <rect x="256" y="287" width="168" height="88" rx="10" fill="#fafafa" stroke="#e2e8f0" stroke-width="1.5"/>
+      <text x="262" y="303" font-size="9" font-weight="600" fill="#374151" font-family="sans-serif">会話履歴</text>
+      <!-- history entries -->
+      <rect x="260" y="308" width="160" height="20" rx="4" fill="#f1f5f9"/>
+      <text x="265" y="321" font-size="8" fill="#64748b" font-family="sans-serif">日→英 12:34 こんにちは... ▶ ⎘</text>
+      <rect x="260" y="332" width="160" height="20" rx="4" fill="#f1f5f9"/>
+      <text x="265" y="345" font-size="8" fill="#64748b" font-family="sans-serif">英→日 12:31 Good morn... ▶ ⎘</text>
+      <text x="380" y="368" text-anchor="end" font-size="8" fill="#ef4444" font-family="sans-serif">消去</text>
+
+      <!-- Bottom status bar hint -->
+      <rect x="248" y="375" width="184" height="7" rx="0" fill="#f1f5f9"/>
+      <rect x="315" y="376" width="50" height="4" rx="2" fill="#94a3b8"/>
+
+      <!-- ===== 引き出し線と注記 ===== -->
+      <!-- ヘッダー-->
+      <line x1="432" y1="66" x2="510" y2="40" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="510" y="28" width="230" height="28" rx="6" fill="#1e40af"/>
+      <text x="625" y="47" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="sans-serif">ヘッダー ／ 右端の歯車で設定を開く</text>
+
+      <!-- 日本語ボタン -->
+      <line x1="296" y1="108" x2="220" y2="130" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="14" y="118" width="206" height="28" rx="6" fill="#fef2f2" stroke="#fca5a5"/>
+      <text x="117" y="137" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600" font-family="sans-serif">「日本語」ボタン（赤）→ 日本語録音開始</text>
+
+      <!-- Englishボタン -->
+      <line x1="384" y1="108" x2="510" y2="130" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="510" y="118" width="230" height="28" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="625" y="137" text-anchor="middle" font-size="11" fill="#15803d" font-weight="600" font-family="sans-serif">「English」ボタン（緑）→ 英語録音開始</text>
+
+      <!-- 原文ボックス -->
+      <line x1="248" y1="167" x2="220" y2="200" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="14" y="188" width="206" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="117" y="203" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="600" font-family="sans-serif">原文ボックス</text>
+      <text x="117" y="219" text-anchor="middle" font-size="10" fill="#3b82f6" font-family="sans-serif">音声認識テキスト（録音中は青点滅）</text>
+
+      <!-- 翻訳ボックス -->
+      <line x1="248" y1="244" x2="220" y2="275" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="14" y="263" width="206" height="38" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="117" y="278" text-anchor="middle" font-size="11" fill="#15803d" font-weight="600" font-family="sans-serif">翻訳ボックス</text>
+      <text x="117" y="294" text-anchor="middle" font-size="10" fill="#16a34a" font-family="sans-serif">AI翻訳結果（完了後はタップで読み上げ）</text>
+
+      <!-- 会話履歴 -->
+      <line x1="248" y1="331" x2="220" y2="365" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="14" y="353" width="206" height="38" rx="6" fill="#fafafa" stroke="#e2e8f0"/>
+      <text x="117" y="368" text-anchor="middle" font-size="11" fill="#374151" font-weight="600" font-family="sans-serif">会話履歴</text>
+      <text x="117" y="384" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">直近20件保存。再生・コピー・消去</text>
+
+      <!-- 右注記: reset button -->
+      <line x1="429" y1="108" x2="510" y2="185" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
+      <rect x="510" y="173" width="230" height="28" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+      <text x="625" y="192" text-anchor="middle" font-size="11" fill="#ea580c" font-weight="600" font-family="sans-serif">リセットボタン（オレンジ）→ 入力欄クリア</text>
+    </svg>
+    <figcaption>図5 ： BridgeTTSメイン画面UIモック（引き出し線で各部の名称・機能を注記）</figcaption>
+  </figure>
+
+  <h3>基本操作の手順</h3>
+  <ol class="step-list">
+    <li>アプリを起動し、設定（歯車）からOpenAI APIキーを入力する（初回のみ）</li>
+    <li>「日本語」（赤）または「English」（緑）ボタンをタップして録音を開始する</li>
+    <li>マイクに向かってはっきり話す（原文ボックスに文字が表示される）</li>
+    <li>話し終わると自動で翻訳が始まり、翻訳ボックスにリアルタイムで結果が表示される</li>
+    <li>翻訳完了後、翻訳ボックスが緑色になったらタップして音声読み上げ（再生中タップで停止）</li>
+    <li>「停止」ボタンをタップして録音を終了する</li>
+    <li>オレンジのリセットボタンで入力欄をクリアできる（履歴は消えない）</li>
+  </ol>
+
+  <h3>図6 ： 状態色の遷移図</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" aria-label="状態色遷移図">
+      <defs>
+        <marker id="arr5" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M1,1 L8,4.5 L1,8 Z" fill="#4b5563"/>
+        </marker>
+      </defs>
+
+      <!-- 待機状態 -->
+      <rect x="16" y="60" width="130" height="80" rx="16" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+      <text x="81" y="94" text-anchor="middle" font-size="28" font-family="sans-serif">⏸</text>
+      <text x="81" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="#475569" font-family="sans-serif">待機中</text>
+      <text x="81" y="137" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">ボタンタップ待ち</text>
+
+      <line x1="148" y1="100" x2="176" y2="100" stroke="#4b5563" stroke-width="2" marker-end="url(#arr5)"/>
+      <text x="162" y="92" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">録音開始</text>
+
+      <!-- 録音中（青） -->
+      <rect x="178" y="60" width="140" height="80" rx="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+      <text x="248" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af" font-family="sans-serif">録音中</text>
+      <text x="248" y="107" text-anchor="middle" font-size="28" font-family="sans-serif">🎙</text>
+      <text x="248" y="133" text-anchor="middle" font-size="10" fill="#1d4ed8" font-family="sans-serif">原文ボックス 青点滅</text>
+
+      <line x1="320" y1="100" x2="348" y2="100" stroke="#4b5563" stroke-width="2" marker-end="url(#arr5)"/>
+      <text x="334" y="92" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">話し終わり</text>
+      <text x="334" y="112" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">+346/154ms</text>
+
+      <!-- 翻訳中（オレンジ） -->
+      <rect x="350" y="60" width="150" height="80" rx="16" fill="#ffedd5" stroke="#ea580c" stroke-width="2.5"/>
+      <text x="425" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#9a3412" font-family="sans-serif">翻訳中</text>
+      <text x="425" y="107" text-anchor="middle" font-size="26" font-family="sans-serif">🌐</text>
+      <text x="425" y="133" text-anchor="middle" font-size="10" fill="#ea580c" font-family="sans-serif">翻訳ボックス オレンジ点滅</text>
+
+      <line x1="502" y1="100" x2="530" y2="100" stroke="#4b5563" stroke-width="2" marker-end="url(#arr5)"/>
+      <text x="516" y="92" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">翻訳完了</text>
+
+      <!-- 翻訳完了（緑） -->
+      <rect x="532" y="60" width="148" height="80" rx="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+      <text x="606" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#15803d" font-family="sans-serif">翻訳完了</text>
+      <text x="606" y="107" text-anchor="middle" font-size="26" font-family="sans-serif">🔊</text>
+      <text x="606" y="130" text-anchor="middle" font-size="10" fill="#15803d" font-family="sans-serif">翻訳ボックス 緑色</text>
+      <text x="606" y="143" text-anchor="middle" font-size="10" fill="#16a34a" font-family="sans-serif">タップで読み上げ</text>
+
+      <!-- 下部ラベル: デバウンス説明 -->
+      <rect x="310" y="155" width="165" height="26" rx="8" fill="#fff3e0" stroke="#fb923c"/>
+      <text x="392" y="173" text-anchor="middle" font-size="10" fill="#c2410c" font-family="sans-serif">待ち時間: 日本語346ms ／ 英語154ms</text>
+    </svg>
+    <figcaption>図6 ： 状態遷移。待機 → 録音中（青点滅）→ 翻訳中（オレンジ点滅）→ 完了（緑・タップで読み上げ）</figcaption>
+  </figure>
+</section>
+
+<!-- ===== 5. 設定 ===== -->
+<section id="settings">
+  <h2>5. 設定ガイド</h2>
+  <p>右上の歯車アイコンをタップすると設定モーダルが開きます。</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>設定項目</th>
+          <th>選択肢 / 入力値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OpenAI APIキー</strong></td>
+          <td>sk-...の形式で入力</td>
+          <td>翻訳に必須。端末のlocalStorageに保存され、OpenAIに直接送信される。共有端末では使用後リセット推奨</td>
+        </tr>
+        <tr>
+          <td><strong>テーマ</strong></td>
+          <td>自動 ／ ライト ／ ダーク</td>
+          <td>「自動」は端末の設定に追従。好みや視認性に合わせて選択</td>
+        </tr>
+        <tr>
+          <td><strong>TTS（音声読み上げ）</strong></td>
+          <td>ON ／ OFF</td>
+          <td>OFFにすると翻訳ボックスをタップしても読み上げされない</td>
+        </tr>
+        <tr>
+          <td><strong>読み上げ速度</strong></td>
+          <td>×0.8 ／ ×0.9 ／ ×1.0 ／ ×1.1 ／ ×1.2</td>
+          <td>ゆっくり読んでほしい場合は×0.8、素早く聞きたい場合は×1.2を選択</td>
+        </tr>
+        <tr>
+          <td><strong>文字サイズ</strong></td>
+          <td>小 ／ 中 ／ 大 ／ 特大</td>
+          <td>翻訳結果などの表示文字サイズを調整。視力に合わせて設定</td>
+        </tr>
+        <tr>
+          <td><strong>デバウンス最適化</strong></td>
+          <td>使用パターン学習（任意）</td>
+          <td>合計50件・各言語15件の使用データで最適化可能。初期値は日本語346ms/英語154ms</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <strong>APIキーについて：</strong>入力したAPIキーはサーバーには送られず、あなたの端末のブラウザ内（localStorage）にのみ保存されます。翻訳時にあなたの端末から直接OpenAIへ送信されます。
+  </div>
+</section>
+
+<!-- ===== 6. 会話履歴 ===== -->
+<section id="history">
+  <h2>6. 会話履歴の使いかた</h2>
+  <p>アプリは自動的に直近20件の会話（原文と翻訳のペア）を端末内に保存します。アプリを閉じても履歴は保持されます。</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>操作</th><th>方法</th><th>備考</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>履歴の確認</strong></td>
+          <td>画面下部の会話履歴エリアを見る</td>
+          <td>各エントリに方向（日→英 / 英→日）と時刻が表示される</td>
+        </tr>
+        <tr>
+          <td><strong>再生</strong></td>
+          <td>各エントリの再生（▶）ボタンをタップ</td>
+          <td>翻訳テキストをTTSで読み上げ</td>
+        </tr>
+        <tr>
+          <td><strong>コピー</strong></td>
+          <td>各エントリの「コピー」ボタンをタップ</td>
+          <td>翻訳テキストをクリップボードにコピー</td>
+        </tr>
+        <tr>
+          <td><strong>全削除</strong></td>
+          <td>「消去」ボタンをタップ</td>
+          <td>全エントリが削除される（元に戻せない）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warn-note">
+    <strong>注意：</strong>リセットボタン（オレンジの円形矢印）をタップしても会話履歴は消えません。「消去」ボタンのみが履歴を削除します。
+  </div>
+</section>
+
+<!-- ===== 7. 日々の運用 ===== -->
+<section id="operation">
+  <h2>7. 日々の運用</h2>
+
+  <h3>図7 ： 7日署名サイクルの運用タイムライン</h3>
+  <figure class="fig-wrap">
+    <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" aria-label="7日署名サイクルのタイムライン">
+      <defs>
+        <marker id="arr6" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" fill="#2563eb"/>
+        </marker>
+        <marker id="arr6r" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" fill="#dc2626"/>
+        </marker>
+        <marker id="arr6g" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" fill="#16a34a"/>
+        </marker>
+      </defs>
+
+      <!-- タイムラインベース -->
+      <line x1="50" y1="110" x2="710" y2="110" stroke="#e2e8f0" stroke-width="3"/>
+
+      <!-- 日付ラベル -->
+      <text x="50"  y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 1</text>
+      <text x="144" y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 2</text>
+      <text x="238" y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 3</text>
+      <text x="332" y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 4</text>
+      <text x="426" y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 5</text>
+      <text x="520" y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 6</text>
+      <text x="614" y="135" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">Day 7</text>
+      <text x="710" y="135" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700" font-family="sans-serif">Day 8</text>
+
+      <!-- 目盛り -->
+      <line x1="50"  y1="104" x2="50"  y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="144" y1="104" x2="144" y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="238" y1="104" x2="238" y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="332" y1="104" x2="332" y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="426" y1="104" x2="426" y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="520" y1="104" x2="520" y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="614" y1="104" x2="614" y2="116" stroke="#cbd5e1" stroke-width="2"/>
+      <line x1="710" y1="104" x2="710" y2="116" stroke="#dc2626" stroke-width="2.5"/>
+
+      <!-- 有効期間バー -->
+      <rect x="50" y="95" width="660" height="30" rx="6" fill="#bbf7d0" opacity=".6"/>
+      <rect x="50" y="95" width="660" height="30" rx="6" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="376" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#166534" font-family="sans-serif">署名有効期間（7日間）</text>
+
+      <!-- Day 1: インストール -->
+      <circle cx="50" cy="110" r="14" fill="#2563eb"/>
+      <text x="50" y="75" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb" font-family="sans-serif">インストール</text>
+      <text x="50" y="88" text-anchor="middle" font-size="10" fill="#2563eb" font-family="sans-serif">（署名完了）</text>
+      <line x1="50" y1="92" x2="50" y2="96" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="50" y="115" text-anchor="middle" font-size="11" fill="white" font-weight="700" font-family="sans-serif">↓</text>
+
+      <!-- Day 7: Refresh推奨 -->
+      <circle cx="614" cy="110" r="14" fill="#ea580c"/>
+      <text x="614" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#ea580c" font-family="sans-serif">Refresh</text>
+      <text x="614" y="83" text-anchor="middle" font-size="10" fill="#ea580c" font-family="sans-serif">（7日以内に実施）</text>
+      <line x1="614" y1="90" x2="614" y2="96" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="614" y="115" text-anchor="middle" font-size="16" fill="white" font-family="sans-serif">↻</text>
+
+      <!-- Day 8: 失効 -->
+      <circle cx="710" cy="110" r="14" fill="#dc2626"/>
+      <text x="710" y="156" text-anchor="middle" font-size="10" font-weight="700" fill="#dc2626" font-family="sans-serif">署名失効</text>
+      <text x="710" y="169" text-anchor="middle" font-size="10" fill="#dc2626" font-family="sans-serif">（起動不可）</text>
+      <text x="710" y="115" text-anchor="middle" font-size="14" fill="white" font-weight="700" font-family="sans-serif">✕</text>
+
+      <!-- Refresh後の更新バー -->
+      <rect x="614" y="160" width="136" height="22" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+      <line x1="614" y1="124" x2="614" y2="158" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="682" y="175" text-anchor="middle" font-size="10" fill="#166534" font-weight="600" font-family="sans-serif">Refreshでさらに7日有効</text>
+
+      <!-- 凡例 -->
+      <rect x="16" y="200" width="166" height="30" rx="6" fill="#f0fdf4" stroke="#16a34a"/>
+      <text x="99" y="220" text-anchor="middle" font-size="10.5" fill="#15803d" font-family="sans-serif">緑バー = アプリが使える期間</text>
+
+      <rect x="196" y="200" width="200" height="30" rx="6" fill="#fff7ed" stroke="#ea580c"/>
+      <text x="296" y="215" text-anchor="middle" font-size="10.5" fill="#c2410c" font-family="sans-serif">7日以内にAltStoreで</text>
+      <text x="296" y="227" text-anchor="middle" font-size="10.5" fill="#c2410c" font-family="sans-serif">「Refresh」を実行</text>
+
+      <rect x="414" y="200" width="330" height="30" rx="6" fill="#fef2f2" stroke="#fca5a5"/>
+      <text x="579" y="215" text-anchor="middle" font-size="10.5" fill="#dc2626" font-family="sans-serif">Refreshしないとインストール後8日目から</text>
+      <text x="579" y="227" text-anchor="middle" font-size="10.5" fill="#dc2626" font-family="sans-serif">アプリが起動できなくなる</text>
+    </svg>
+    <figcaption>図7 ： 署名は7日間有効。失効前にAltStoreの「Refresh」で更新するとさらに7日延長できる</figcaption>
+  </figure>
+
+  <h3>7日Refreshの手順</h3>
+  <ol class="step-list">
+    <li>PCのAltServerを起動し、iPhoneと同じWi-Fiに接続する</li>
+    <li>iPhoneでAltStoreを開く</li>
+    <li>「My Apps」タブでBridgeTTSの「Refresh」をタップ</li>
+    <li>署名が更新され、さらに7日間使用可能になる</li>
+  </ol>
+
+  <div class="note">
+    <strong>バックグラウンド自動更新：</strong>AltServerが起動しているPCと同一Wi-Fiに接続していると、AltStoreがバックグラウンドで自動的にRefreshしてくれることがあります。ただし必ず自動更新されるとは限らないため、定期的に手動確認を推奨します。
+  </div>
+
+  <h3>3アプリ制限について</h3>
+  <div class="card card-warn">
+    無料のApple IDでサイドロードできるアプリは同時に<strong>3つまで</strong>です。すでに3つのアプリをサイドロードしている場合は、1つ削除してからBridgeTTSをインストールしてください。有料のApple Developer Program（年額制）に加入すると、この制限と7日の署名期限が大幅に緩和されます。
+  </div>
+
+  <h3>APIキー管理</h3>
+  <p>
+    APIキーは端末のlocalStorageのみに保存されます。<strong>共有端末で使う場合は、使用後に設定からAPIキーをリセット</strong>してください。
+    アプリをアンインストールするとlocalStorageも削除されます。
+  </p>
+
+  <h3>利用料金の目安</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>モデル</th><th>入力</th><th>出力</th><th>1回の翻訳あたりの目安</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>gpt-4.1-nano</td>
+          <td>$0.10 / 100万トークン</td>
+          <td>$0.40 / 100万トークン</td>
+          <td>通常数百トークン以下 = <strong>0.01円未満が目安</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    これはあくまで目安です。実際の費用はトークン数や使用頻度により異なります。OpenAI Platformの使用履歴で正確な請求額を確認してください。
+  </p>
+</section>
+
+<!-- ===== 8. 性能仕様 ===== -->
+<section id="specs">
+  <h2>8. 性能仕様</h2>
+
+  <h3>デバウンス値（翻訳開始までの待ち時間）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>言語</th><th>デフォルト値</th><th>特徴</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>日本語</td>
+          <td><strong>346 ms</strong></td>
+          <td>文節区切りに対応した自然な応答（500msから31%改善）</td>
+        </tr>
+        <tr>
+          <td>英語</td>
+          <td><strong>154 ms</strong></td>
+          <td>連続流暢な話し方パターンに追従（500msから69%改善）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>必要環境・対応状況</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>項目</th><th>PWA版</th><th>iOSアプリ版</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>対応言語ペア</td>
+          <td colspan="2">日本語 ⇔ 英語のみ</td>
+        </tr>
+        <tr>
+          <td>翻訳方式</td>
+          <td colspan="2">ストリーミング（結果がリアルタイムで流れる）</td>
+        </tr>
+        <tr>
+          <td>翻訳AIモデル</td>
+          <td colspan="2">OpenAI gpt-4.1-nano（低価格・高速）</td>
+        </tr>
+        <tr>
+          <td>音声認識</td>
+          <td>Web Speech API（ブラウザ）</td>
+          <td>SFSpeechRecognizer（iOS端末内）</td>
+        </tr>
+        <tr>
+          <td>TTS</td>
+          <td colspan="2">Web Speech API / speechSynthesis</td>
+        </tr>
+        <tr>
+          <td>インターネット接続</td>
+          <td colspan="2">翻訳時に必須</td>
+        </tr>
+        <tr>
+          <td>オフライン動作</td>
+          <td>アプリシェルは開ける（翻訳不可）</td>
+          <td>アプリ本体は常にローカル（翻訳は不可）</td>
+        </tr>
+        <tr>
+          <td>推奨OS</td>
+          <td>iOS Safari / Android Chrome</td>
+          <td>iOS 16以降</td>
+        </tr>
+        <tr>
+          <td>会話履歴保存</td>
+          <td colspan="2">端末内localStorage（直近20件）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== 9. トラブルシューティング ===== -->
+<section id="trouble">
+  <h2>9. 困ったときは</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>症状</th><th>主な原因</th><th>対処法</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>翻訳が始まらない</td>
+          <td>APIキーが未設定 / インターネット未接続</td>
+          <td>設定（歯車）でAPIキーを確認。Wi-Fi / モバイル通信の接続を確認</td>
+        </tr>
+        <tr>
+          <td>音声が認識されない</td>
+          <td>マイク権限が未許可 / 周囲の騒音</td>
+          <td>設定アプリ → BridgeTTS → マイクをON。静かな場所ではっきり話す</td>
+        </tr>
+        <tr>
+          <td>TTSが鳴らない</td>
+          <td>サイレントモード / TTSがOFF / まだ翻訳中</td>
+          <td>着信音スイッチをON。設定でTTSをON確認。翻訳ボックスが緑になってからタップ</td>
+        </tr>
+        <tr>
+          <td>iOSアプリが起動しない</td>
+          <td>7日間の署名が失効</td>
+          <td>AltStoreで「Refresh」を実行（AltServerと同一Wi-Fiが必要）</td>
+        </tr>
+        <tr>
+          <td>AltStoreインストールでエラー</td>
+          <td>3アプリ制限に達している</td>
+          <td>AltStoreのMy Appsから不要なアプリを削除してから再試行</td>
+        </tr>
+        <tr>
+          <td>翻訳結果が不自然</td>
+          <td>発話が不明瞭 / 方言・専門用語</td>
+          <td>ゆっくりはっきり話す。文が長い場合は分けて話す</td>
+        </tr>
+        <tr>
+          <td>PWAがホーム画面に追加できない</td>
+          <td>HTTP接続 / Safariで開いていない</td>
+          <td>必ずSafariでHTTPS URLを開いてから共有 → ホーム画面に追加</td>
+        </tr>
+        <tr>
+          <td>APIエラーが頻発する</td>
+          <td>APIキーが無効 / 残高不足</td>
+          <td>platform.openai.com でキーの有効性と残高を確認。必要に応じてチャージ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <strong>エラーレポート機能：</strong>解決できない問題が発生した場合は、画面右下の「エラーを報告」ボタンをタップすると、ログ情報を含むGitHub Issue作成画面へ移動します。
+  </div>
+</section>
+
+<!-- ===== 10. PWA vs アプリ ===== -->
+<section id="pwa-vs-app">
+  <h2>10. PWA版とアプリ版 — どちらを使う？</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>比較項目</th><th>PWA版（Safari）</th><th>iOSアプリ版（AltStore）</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>インストールの手軽さ</strong></td>
+          <td>◎ Safariで開くだけ</td>
+          <td>△ PCとAltServerが必要</td>
+        </tr>
+        <tr>
+          <td><strong>音声認識</strong></td>
+          <td>○ Web Speech API</td>
+          <td>◎ iOSネイティブSFSpeechRecognizer</td>
+        </tr>
+        <tr>
+          <td><strong>マイク権限</strong></td>
+          <td>△ サイトごとに確認されることがある</td>
+          <td>◎ アプリ権限として一度許可すればOK</td>
+        </tr>
+        <tr>
+          <td><strong>アプリシェルの起動</strong></td>
+          <td>○ Service Worker（要事前訪問）</td>
+          <td>◎ 常にローカルバンドル</td>
+        </tr>
+        <tr>
+          <td><strong>定期的なメンテナンス</strong></td>
+          <td>◎ 不要（Webが更新されれば自動）</td>
+          <td>△ 7日ごとにRefreshが必要</td>
+        </tr>
+        <tr>
+          <td><strong>アプリ数制限</strong></td>
+          <td>◎ 制限なし</td>
+          <td>△ 無料Apple IDで3アプリまで</td>
+        </tr>
+        <tr>
+          <td><strong>Android対応</strong></td>
+          <td>◎ Chrome対応</td>
+          <td>✕ iOS専用</td>
+        </tr>
+        <tr>
+          <td><strong>おすすめシーン</strong></td>
+          <td>手軽に試したい、Android利用者</td>
+          <td>音声認識を安定させたい、iPhone常用者</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card card-accent">
+    <strong>まずはPWA版を試してみることをお勧めします。</strong>
+    SafariでGitHub Pagesのアプリを開き、共有ボタンから「ホーム画面に追加」するだけですぐに使えます。
+    音声認識の動作に不満がある場合や、iPhone専用でしっかり使いたい場合にiOSアプリ版を検討してください。
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>BridgeTTS 図解ガイド ／ 対象アプリ: Bridge-TTS Codex（gpt-4.1-nano搭載）</p>
+  <p style="margin-top:6px;">
+    <a href="https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-">GitHubリポジトリ</a>
+    ／
+    <a href="https://platform.openai.com/api-keys">OpenAI APIキー取得</a>
+    ／
+    <a href="https://altstore.io">AltStore公式</a>
+  </p>
+  <p style="margin-top:8px; font-size:.8rem; opacity:.7;">本ドキュメントの情報は作成時点のものです。最新情報はリポジトリのREADME・IOS_APP.mdを参照してください。</p>
+</footer>
+
+</body>
+</html>
