@@ -277,6 +277,39 @@
                     <h3>文字サイズ</h3>
                     <p>原文・翻訳テキストの文字サイズを小/中/大/特大から選べます。</p>
                 </div>
+
+                <div class="feature-box">
+                    <h3>テーマ</h3>
+                    <p>「自動（端末設定に追従）/ ライト / ダーク」から外観を選べます。</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 data-icon="🕘">会話履歴</h2>
+                <p>翻訳が完了すると、原文と翻訳が会話履歴として端末に保存されます（最大20件）。</p>
+                <ol class="step-list">
+                    <li>履歴の各エントリには翻訳方向（日→英 / 英→日）と時刻が表示されます</li>
+                    <li>「再生」ボタンで翻訳を音声で読み上げられます</li>
+                    <li>「コピー」ボタンで翻訳テキストをコピーできます</li>
+                    <li>「消去」ボタンで履歴をすべて削除できます</li>
+                </ol>
+                <div class="tip-box">
+                    <p><strong>ヒント:</strong> 履歴は端末内（localStorage）にのみ保存され、外部には送信されません。リセットボタン（オレンジ）を押しても履歴は保持されます。</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 data-icon="📲">iOSアプリ版（AltStore）</h2>
+                <p>このアプリはPWAとしてホーム画面に追加できるほか、iOSネイティブアプリとしてもインストールできます。</p>
+                <ol class="step-list">
+                    <li>GitHubリポジトリのActionsから未署名IPA（BridgeTTS-unsigned.ipa）をダウンロード</li>
+                    <li>IPAをiPhoneに転送（AirDrop / ファイルAppなど）</li>
+                    <li>AltStoreの「My Apps」→「＋」からIPAを選択してインストール</li>
+                    <li>初回起動時にマイクと音声認識の権限を許可</li>
+                </ol>
+                <div class="warning-box">
+                    <p><strong>注意:</strong> 無料のApple IDで署名したアプリは7日で期限切れになります。AltStoreで定期的にRefreshしてください。詳細はリポジトリ内の docs/IOS_APP.md を参照してください。</p>
+                </div>
             </section>
 
             <section class="section">

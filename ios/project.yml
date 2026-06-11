@@ -1,0 +1,44 @@
+# XcodeGen設定 - BridgeTTS iOSアプリ
+# 使い方:
+#   1. bash ios/scripts/prepare-www.sh   # Webアセットとアプリアイコンを準備
+#   2. xcodegen generate --spec ios/project.yml --project ios
+#   3. ios/BridgeTTS.xcodeproj をXcodeで開く（またはxcodebuildでビルド）
+name: BridgeTTS
+options:
+  bundleIdPrefix: com.a16
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+targets:
+  BridgeTTS:
+    type: application
+    platform: iOS
+    sources:
+      - path: App/Sources
+      - path: App/Assets.xcassets
+      - path: App/www
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.a16.bridgetts
+        PRODUCT_NAME: BridgeTTS
+        INFOPLIST_FILE: App/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        MARKETING_VERSION: "2.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  BridgeTTS:
+    build:
+      targets:
+        BridgeTTS: all
+    run:
+      config: Debug
+    archive:
+      config: Release

@@ -1,9 +1,10 @@
-const CACHE_VERSION = 'bridge-tts-codex-v7';
+const CACHE_VERSION = 'bridge-tts-codex-v8';
 const APP_SHELL = [
     './',
     './index.html',
     './howto.html',
     './style.css',
+    './native-speech.js',
     './error-reporter.js',
     './pwa-support.js',
     './settings-storage.js',
