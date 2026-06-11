@@ -18,7 +18,9 @@ permissions:
 
 jobs:
   build-ipa:
-    runs-on: macos-14
+    # XcodeGen 2.45+はXcode 16形式（objectVersion 77）のプロジェクトを生成するため、
+    # Xcode 16系がデフォルトのmacos-15ランナーを使用する
+    runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
