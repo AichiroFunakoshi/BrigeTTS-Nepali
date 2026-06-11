@@ -109,6 +109,26 @@ test('keeps primary controls thumb-friendly in portrait', async ({ page }) => {
     expect(layout.resetWidth).toBeLessThan(layout.japaneseWidth);
 });
 
+test('keeps core text contrast readable', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#apiModal').evaluate((modal) => {
+        modal.style.display = 'none';
+    });
+    await page.locator('#status').evaluate((status) => {
+        status.className = 'status processing';
+    });
+
+    const colors = await page.evaluate(() => ({
+        resultTitle: getComputedStyle(document.querySelector('.result-title')).color,
+        resultContent: getComputedStyle(document.querySelector('#originalText')).color,
+        processingStatus: getComputedStyle(document.querySelector('#status')).color
+    }));
+
+    expect(colors.resultTitle).toBe('rgb(95, 99, 104)');
+    expect(colors.resultContent).toBe('rgb(32, 33, 36)');
+    expect(colors.processingStatus).toBe('rgb(138, 75, 0)');
+});
+
 test('parses translator service stream lines and payloads', async ({ page }) => {
     const consoleErrors = [];
     page.on('console', (message) => {
