@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('Bridge(Ver.4.1-nano)');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.1.2');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -27,7 +27,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('.conversation-log-replay')).toHaveCount(0);
     await expect(page.locator('#conversationLog')).toBeHidden();
     await expect(page.locator('#historyButton')).toBeVisible();
-    await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳 v2.1.1');
+    await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 
     await expect(page.locator('#apiModal')).toBeVisible();
     await expect(page.locator('#openaiKey')).toBeVisible();

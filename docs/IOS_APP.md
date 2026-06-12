@@ -62,7 +62,7 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 ソースを登録しておくと、IPAを手動転送せずにAltStoreだけでインストール・更新が完結します。
 
-1. iPhoneのSafariで https://aichirofunakoshi.github.io/Bridge-TTS-Codex- を開き「AltStoreにソースを追加」をタップ
+1. iPhoneのSafariで https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/altstore.html を開き「AltStoreにソースを追加」をタップ
    （またはAltStoreの **Sources** → **＋** に `https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json` を貼り付け）
 2. AltStoreの **Browse** にBridgeTTSが表示されるので **FREE** をタップしてインストール
 3. 新バージョンが公開されると **My Apps** に「アップデート」が表示され、ワンタップで更新できます

@@ -2,7 +2,7 @@
   "name": "bridge-tts-codex",
   "version": "1.0.0",
   "private": true,
-  "description": "![Bridge(Ver.4.1-nano)](images/icons/icon-192x192.png)",
+  "description": "日英リアルタイム音声翻訳（PWA + iOSネイティブアプリ）",
   "main": "app.js",
   "directories": {
     "doc": "docs"

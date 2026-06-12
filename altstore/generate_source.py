@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """GitHub ReleasesからAltStoreソース(apps.json)を生成して_siteに出力する"""
+import glob
 import json
 import os
 import shutil
@@ -76,8 +77,15 @@ def main():
         json.dump(source, f, ensure_ascii=False, indent=2)
     shutil.copy("images/icons/ios-appicon-1024.png", "_site/icon.png")
 
+    # PWA本体もPagesルートで配信する（apps.json / altstore.html と同居）
+    web_files = ["index.html", "howto.html", "manifest.json", "sw.js", "style.css"]
+    web_files += [p for p in sorted(glob.glob("*.js")) if p != "playwright.config.js"]
+    for path in web_files:
+        shutil.copy(path, os.path.join("_site", os.path.basename(path)))
+    shutil.copytree("images", os.path.join("_site", "images"), dirs_exist_ok=True)
+
     source_url = f"{PAGES_BASE}/apps.json"
-    with open("_site/index.html", "w", encoding="utf-8") as f:
+    with open("_site/altstore.html", "w", encoding="utf-8") as f:
         f.write(f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
