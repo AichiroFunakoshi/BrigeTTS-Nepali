@@ -43,14 +43,23 @@
         <header class="app-header">
             <div class="app-header-text">
                 <div class="app-title">Bridge(Ver.4.1-nano)</div>
-                <div class="app-subtitle">日英リアルタイム音声翻訳</div>
+                <div class="app-subtitle">日英リアルタイム音声翻訳 v2.1.0</div>
             </div>
+            <div class="header-buttons">
+            <button class="settings-button" id="historyButton" type="button" aria-label="会話履歴を開く">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 3v5h5"></path>
+                    <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path>
+                    <polyline points="12 7 12 12 15 15"></polyline>
+                </svg>
+            </button>
             <button class="settings-button" id="settingsButton" aria-label="設定を開く">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
+            </div>
         </header>
 
         <div class="control-container">
@@ -127,16 +136,25 @@
             </div>
         </div>
 
-        <div class="conversation-log" id="conversationLog" hidden>
-            <div class="conversation-log-header">
-                <div class="conversation-log-title">会話履歴</div>
-                <button class="conversation-log-clear" id="clearConversationLogBtn" type="button">消去</button>
-            </div>
-            <div class="conversation-log-list" id="conversationLogList"></div>
-        </div>
-
         <div class="app-footer">
-            Bridge(Ver.4.1-nano) © 2025 ┃ Crafted by A_1_6
+            Bridge(Ver.4.1-nano) v2.1.0 © 2025 ┃ Crafted by A_1_6
+        </div>
+    </div>
+
+    <!-- 会話履歴モーダル -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="conversation-log" id="conversationLog">
+                <div class="conversation-log-header">
+                    <div class="conversation-log-title">会話履歴</div>
+                    <button class="conversation-log-clear" id="clearConversationLogBtn" type="button">消去</button>
+                </div>
+                <div class="conversation-log-empty" id="conversationLogEmpty">会話履歴はまだありません</div>
+                <div class="conversation-log-list" id="conversationLogList"></div>
+            </div>
+            <div class="button-row">
+                <button id="closeHistoryBtn" class="language-button" type="button">閉じる</button>
+            </div>
         </div>
     </div>
 

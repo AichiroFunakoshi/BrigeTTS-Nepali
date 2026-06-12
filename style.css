@@ -1717,3 +1717,36 @@ body.recording .language-button.stop {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ------------------------------------------------------------
+   会話履歴モーダル（履歴をメイン画面から分離）
+   ------------------------------------------------------------ */
+.header-buttons {
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+#historyModal .conversation-log {
+    max-height: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+#historyModal .conversation-log-list {
+    max-height: 62dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.conversation-log-empty {
+    color: var(--color-text-muted, var(--color-text-secondary, #888));
+    text-align: center;
+    padding: 20px 0;
+    font-size: 14px;
+}
+
+.conversation-log-empty[hidden] {
+    display: none;
+}

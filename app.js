@@ -43,6 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyTranslationBtn = document.getElementById('copyTranslationBtn');
     const conversationLog = document.getElementById('conversationLog');
     const conversationLogList = document.getElementById('conversationLogList');
+    const conversationLogEmpty = document.getElementById('conversationLogEmpty');
+    const historyModal = document.getElementById('historyModal');
+    const historyButton = document.getElementById('historyButton');
+    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const clearConversationLogBtn = document.getElementById('clearConversationLogBtn');
     const fontSizePreview = document.getElementById('fontSizePreview');
 
@@ -433,7 +437,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        conversationLog.hidden = conversationEntries.length === 0;
+        if (conversationLogEmpty) {
+            conversationLogEmpty.hidden = conversationEntries.length !== 0;
+        }
         conversationLogList.replaceChildren();
 
         conversationEntries.forEach((entry) => {
@@ -921,6 +927,27 @@ document.addEventListener('DOMContentLoaded', function() {
             unlockBodyScroll();
         }
     });
+
+    // 会話履歴モーダル（履歴をメイン画面から分離し、入力・翻訳枠の縮小を防ぐ）
+    if (historyButton && historyModal) {
+        historyButton.addEventListener('click', () => {
+            renderConversationLog();
+            historyModal.style.display = 'flex';
+            lockBodyScroll();
+        });
+        historyModal.addEventListener('click', (e) => {
+            if (e.target === historyModal) {
+                historyModal.style.display = 'none';
+                unlockBodyScroll();
+            }
+        });
+    }
+    if (closeHistoryBtn && historyModal) {
+        closeHistoryBtn.addEventListener('click', () => {
+            historyModal.style.display = 'none';
+            unlockBodyScroll();
+        });
+    }
     
     // TTS設定の変更を監視
     if (ttsToggle) {

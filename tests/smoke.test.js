@@ -26,6 +26,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#clearConversationLogBtn')).toHaveCount(1);
     await expect(page.locator('.conversation-log-replay')).toHaveCount(0);
     await expect(page.locator('#conversationLog')).toBeHidden();
+    await expect(page.locator('#historyButton')).toBeVisible();
+    await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳 v2.1.0');
 
     await expect(page.locator('#apiModal')).toBeVisible();
     await expect(page.locator('#openaiKey')).toBeVisible();
@@ -155,7 +157,8 @@ test('renders replay controls for conversation history entries', async ({ page }
             </div>
         `;
         list.replaceChildren(item);
-        log.hidden = false;
+        // 履歴はモーダル内に移動したため、モーダルを直接表示して検証する
+        document.querySelector('#historyModal').style.display = 'flex';
     });
 
     await expect(page.locator('#conversationLog')).toBeVisible();

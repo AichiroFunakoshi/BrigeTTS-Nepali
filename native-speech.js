@@ -103,6 +103,11 @@
         }
     };
 
+    // TTS再生直前にネイティブ側のオーディオセッションを再生用へ切り替える
+    window.__bridgeNativePrepareTTS = function () {
+        nativeHandler.postMessage({ action: 'prepareTTS' });
+    };
+
     window.SpeechRecognition = NativeSpeechRecognition;
     window.webkitSpeechRecognition = NativeSpeechRecognition;
     window.__BRIDGE_TTS_NATIVE_APP__ = true;

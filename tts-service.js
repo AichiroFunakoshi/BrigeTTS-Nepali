@@ -157,6 +157,13 @@ const TtsService = {
             onBeforeSpeak();
         }
 
+        // ネイティブアプリ: 録音用オーディオセッションのままTTSを始めると
+        // 冒頭がフェードイン/欠落するため、再生用セッションへ切り替える
+        const isNativeApp = Boolean(window.__BRIDGE_TTS_NATIVE_APP__);
+        if (isNativeApp && typeof window.__bridgeNativePrepareTTS === 'function') {
+            window.__bridgeNativePrepareTTS();
+        }
+
         const utterance = new SpeechSynthesisUtterance(text);
         const targetLang = sourceLanguage === 'ja' ? 'en-US' : 'ja-JP';
         utterance.lang = targetLang;
@@ -208,6 +215,15 @@ const TtsService = {
         };
 
         this.currentUtterance = utterance;
+        if (isNativeApp) {
+            // ウォームアップ用の無音発話で出力パイプラインを起動し、
+            // 本編の最初の音が欠けるのを防ぐ
+            const warmup = new SpeechSynthesisUtterance(' ');
+            warmup.volume = 0;
+            warmup.rate = 2;
+            window.speechSynthesis.speak(warmup);
+        }
+
         console.log('window.speechSynthesis.speak() を呼び出し');
         window.speechSynthesis.speak(utterance);
 

@@ -31,7 +31,7 @@ final class SpeechRecognitionBridge: NSObject, WKScriptMessageHandler {
     private var taskGeneration = 0
 
     /// 発話が途切れてからセグメントを確定するまでの時間（秒）
-    private let pauseFinalizeInterval: TimeInterval = 1.0
+    private let pauseFinalizeInterval: TimeInterval = 1.3
 
     // MARK: - WKScriptMessageHandler
 
@@ -53,6 +53,8 @@ final class SpeechRecognitionBridge: NSObject, WKScriptMessageHandler {
             stop(aborted: false)
         case "abort":
             stop(aborted: true)
+        case "prepareTTS":
+            prepareForTTS()
         default:
             break
         }
@@ -107,9 +109,11 @@ final class SpeechRecognitionBridge: NSObject, WKScriptMessageHandler {
 
         do {
             let session = AVAudioSession.sharedInstance()
+            // .measurementはAGC/ノイズ抑制などiOSの音声前処理を無効化して
+            // 認識精度を低下させるため、.defaultを使用する
             try session.setCategory(
                 .playAndRecord,
-                mode: .measurement,
+                mode: .default,
                 options: [.defaultToSpeaker, .duckOthers, .allowBluetooth]
             )
             try session.setActive(true, options: .notifyOthersOnDeactivation)
@@ -141,6 +145,9 @@ final class SpeechRecognitionBridge: NSObject, WKScriptMessageHandler {
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
+        request.taskHint = .dictation
+        // サーバー認識を許可（オンデバイス強制は精度が下がる）
+        request.requiresOnDeviceRecognition = false
         if #available(iOS 16, *) {
             request.addsPunctuation = true
         }
@@ -264,6 +271,16 @@ final class SpeechRecognitionBridge: NSObject, WKScriptMessageHandler {
         isStopping = false
 
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// TTS再生直前にオーディオセッションを再生向けへ切り替える。
+    /// 録音用設定のまま再生するとセッション再構成により出力冒頭がフェードインし
+    /// 最初の音が欠落するため、JS側（tts-service.js）が再生前に呼び出す。
+    private func prepareForTTS() {
+        guard !isRunning else { return }
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? session.setActive(true)
     }
 
     // MARK: - JSへのイベント送出
