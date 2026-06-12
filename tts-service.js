@@ -157,12 +157,7 @@ const TtsService = {
             onBeforeSpeak();
         }
 
-        // ネイティブアプリ: 録音用オーディオセッションのままTTSを始めると
-        // 冒頭がフェードイン/欠落するため、再生用セッションへ切り替える
         const isNativeApp = Boolean(window.__BRIDGE_TTS_NATIVE_APP__);
-        if (isNativeApp && typeof window.__bridgeNativePrepareTTS === 'function') {
-            window.__bridgeNativePrepareTTS();
-        }
 
         const utterance = new SpeechSynthesisUtterance(text);
         const targetLang = sourceLanguage === 'ja' ? 'en-US' : 'ja-JP';
@@ -215,17 +210,33 @@ const TtsService = {
         };
 
         this.currentUtterance = utterance;
-        if (isNativeApp) {
-            // ウォームアップ用の無音発話で出力パイプラインを起動し、
-            // 本編の最初の音が欠けるのを防ぐ
-            const warmup = new SpeechSynthesisUtterance(' ');
-            warmup.volume = 0;
-            warmup.rate = 2;
-            window.speechSynthesis.speak(warmup);
-        }
 
-        console.log('window.speechSynthesis.speak() を呼び出し');
-        window.speechSynthesis.speak(utterance);
+        const startSpeaking = () => {
+            // 開始前に停止/別の再生に置き換えられていたら何もしない
+            if (this.currentUtterance !== utterance) {
+                return;
+            }
+            console.log('window.speechSynthesis.speak() を呼び出し');
+            window.speechSynthesis.speak(utterance);
+        };
+
+        if (isNativeApp && typeof window.__bridgeNativePrepareTTS === 'function') {
+            // ネイティブアプリ: 録音用オーディオセッションのままTTSを始めると
+            // 冒頭がフェードイン/欠落するため、再生用セッションへの切替完了を
+            // 待ってから発話を開始する（通知が来ない場合は300msで開始）。
+            // 以前の「無音ウォームアップ発話」方式は約1秒の遅延があったため廃止。
+            let started = false;
+            const startOnce = () => {
+                if (started) return;
+                started = true;
+                clearTimeout(fallbackTimer);
+                startSpeaking();
+            };
+            const fallbackTimer = setTimeout(startOnce, 300);
+            window.__bridgeNativePrepareTTS(startOnce);
+        } else {
+            startSpeaking();
+        }
 
         setTimeout(() => {
             console.log('TTS状態確認:', {

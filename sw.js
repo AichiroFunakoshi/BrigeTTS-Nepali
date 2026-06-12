@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'bridge-tts-codex-v10';
+const CACHE_VERSION = 'bridge-tts-codex-v11';
 const APP_SHELL = [
     './',
     './index.html',

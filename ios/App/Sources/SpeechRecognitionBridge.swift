@@ -276,11 +276,24 @@ final class SpeechRecognitionBridge: NSObject, WKScriptMessageHandler {
     /// TTS再生直前にオーディオセッションを再生向けへ切り替える。
     /// 録音用設定のまま再生するとセッション再構成により出力冒頭がフェードインし
     /// 最初の音が欠落するため、JS側（tts-service.js）が再生前に呼び出す。
+    ///
+    /// TTS実行＝1ターンの終了として扱うため、認識が動いていれば確実に停止してから
+    /// 切り替える（以前は認識停止メッセージとの競合で切替がスキップされる
+    /// レースがあり、その対症療法としてJS側に約1秒のウォームアップ発話が必要だった）。
+    /// 切替完了は `window.__bridgeNativeTTSReady()` でJS側へ通知し、
+    /// JS側はこれを待ってから発話を開始する。
     private func prepareForTTS() {
-        guard !isRunning else { return }
+        if isRunning {
+            stop(aborted: true)
+        }
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
         try? session.setActive(true)
+
+        let js = "window.__bridgeNativeTTSReady && window.__bridgeNativeTTSReady();"
+        DispatchQueue.main.async { [weak self] in
+            self?.webView?.evaluateJavaScript(js, completionHandler: nil)
+        }
     }
 
     // MARK: - JSへのイベント送出
