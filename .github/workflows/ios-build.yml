@@ -31,6 +31,21 @@ jobs:
       - name: Prepare web assets and app icon
         run: bash ios/scripts/prepare-www.sh
 
+      - name: Inject error report token
+        env:
+          ERROR_REPORT_TOKEN: ${{ secrets.ERROR_REPORT_TOKEN }}
+        run: |
+          if [ -n "$ERROR_REPORT_TOKEN" ]; then
+            B64=$(printf '%s' "$ERROR_REPORT_TOKEN" | base64)
+            {
+              echo "// CIビルドで自動生成（Issues作成権限のみの専用トークン）"
+              echo "window.__ERROR_REPORT_CONFIG__ = { t: '$B64' };"
+            } > ios/App/www/error-report-config.js
+            echo "エラーレポートトークンを埋め込みました"
+          else
+            echo "ERROR_REPORT_TOKEN未設定: GitHub Issue下書きフォールバックを使用します"
+          fi
+
       - name: Generate Xcode project
         run: xcodegen generate --spec ios/project.yml --project ios
 

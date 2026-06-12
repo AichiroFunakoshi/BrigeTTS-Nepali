@@ -1,0 +1,49 @@
+# AltStoreソース(apps.json)をGitHub Pagesに公開するワークフロー
+#
+# - IPAビルドワークフローの完了後（Release添付後）に自動実行
+# - 手動実行（workflow_dispatch）も可能
+# - GitHub Releasesの一覧からapps.jsonを生成してデプロイする
+name: Publish AltStore Source
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build iOS App (unsigned IPA)"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate apps.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 altstore/generate_source.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

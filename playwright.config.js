@@ -5,8 +5,13 @@ module.exports = defineConfig({
     timeout: 30000,
     use: {
         baseURL: 'http://127.0.0.1:4173',
-        trace: 'retain-on-failure'
+        trace: 'retain-on-failure',
+        // CIランナーのChromiumがGPUプロセスでSEGVクラッシュすることがあるため無効化
+        launchOptions: {
+            args: ['--disable-gpu']
+        }
     },
+    retries: process.env.CI ? 1 : 0,
     webServer: {
         command: 'python3 -m http.server 4173',
         url: 'http://127.0.0.1:4173',

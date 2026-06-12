@@ -147,7 +147,7 @@ const ErrorReporter = {
 
         const sendButton = document.createElement('button');
         sendButton.type = 'button';
-        sendButton.textContent = 'GitHubで報告';
+        sendButton.textContent = this.getReportToken() ? '報告を送信' : 'GitHubで報告';
 
         const closeButton = document.createElement('button');
         closeButton.type = 'button';
@@ -164,8 +164,24 @@ const ErrorReporter = {
             alert('レポートをクリップボードにコピーしました');
         });
 
-        sendButton.addEventListener('click', () => {
-            this.openGitHubIssue(report);
+        sendButton.addEventListener('click', async () => {
+            const token = this.getReportToken();
+            if (!token) {
+                this.openGitHubIssue(report);
+                return;
+            }
+            sendButton.disabled = true;
+            sendButton.textContent = '送信中...';
+            try {
+                const issueUrl = await this.sendToGitHub(report, token);
+                alert('エラーレポートを送信しました。ご協力ありがとうございます。\n' + issueUrl);
+                modal.remove();
+            } catch (error) {
+                sendButton.disabled = false;
+                sendButton.textContent = '報告を送信';
+                alert('送信に失敗しました。「コピー」でレポートを控えてから、再度お試しください。\n' +
+                    (error && error.message ? error.message : error));
+            }
         });
 
         closeButton.addEventListener('click', () => {
@@ -243,7 +259,7 @@ const ErrorReporter = {
         return titles[category] || titles.other;
     },
 
-    openGitHubIssue: function(report) {
+    buildIssueContent: function(report) {
         const safeReport = this.sanitizeReport(report);
         const errorAnalysis = this.analyzeErrorType(safeReport.logs);
         const title = this.generateErrorTitle(errorAnalysis.category);
@@ -251,12 +267,13 @@ const ErrorReporter = {
             ? `**エラー分類**: ${errorAnalysis.category}\n**検出キーワード**: ${errorAnalysis.keywords.join(', ')}\n\n`
             : '';
 
-        const encodedTitle = encodeURIComponent(title);
-        const body = encodeURIComponent(
+        const isNativeApp = Boolean(window.__BRIDGE_TTS_NATIVE_APP__);
+        const body =
             `## エラーレポート\n\n` +
             `**発生日時**: ${safeReport.timestamp}\n\n` +
             analysisSection +
             `**環境情報**:\n` +
+            `- 実行環境: ${isNativeApp ? 'iOSネイティブアプリ' : 'ブラウザ/PWA'}\n` +
             `- ブラウザ: ${safeReport.userAgent}\n` +
             `- プラットフォーム: ${safeReport.platform}\n` +
             `- 言語: ${safeReport.language}\n` +
@@ -267,10 +284,49 @@ const ErrorReporter = {
             `2. \n` +
             `3. \n\n` +
             `**期待される動作**:\n\n` +
-            `**実際の動作**:\n`
-        );
+            `**実際の動作**:\n`;
 
-        const issueUrl = `https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues/new?title=${encodedTitle}&body=${body}`;
+        return { title: title, body: body };
+    },
+
+    getReportToken: function() {
+        try {
+            const config = window.__ERROR_REPORT_CONFIG__;
+            if (config && typeof config.t === 'string' && config.t) {
+                return atob(config.t);
+            }
+        } catch (error) {
+            // 設定が壊れている場合はフォールバック動作にする
+        }
+        return '';
+    },
+
+    sendToGitHub: async function(report, token) {
+        const content = this.buildIssueContent(report);
+        const response = await fetch('https://api.github.com/repos/AichiroFunakoshi/Bridge-TTS-Codex-/issues', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.github+json',
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: content.title,
+                body: content.body,
+                labels: ['error-report']
+            })
+        });
+        if (!response.ok) {
+            throw new Error('GitHub APIエラー: HTTP ' + response.status);
+        }
+        const issue = await response.json();
+        return issue.html_url;
+    },
+
+    openGitHubIssue: function(report) {
+        const content = this.buildIssueContent(report);
+        const issueUrl = 'https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues/new' +
+            `?title=${encodeURIComponent(content.title)}&body=${encodeURIComponent(content.body)}`;
         window.open(issueUrl, '_blank');
     }
 };

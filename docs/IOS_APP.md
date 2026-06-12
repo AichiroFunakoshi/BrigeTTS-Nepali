@@ -58,6 +58,37 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 (cd ios/build && zip -qry BridgeTTS-unsigned.ipa Payload)
 ```
 
+## AltStoreソースからのインストール・更新（推奨）
+
+ソースを登録しておくと、IPAを手動転送せずにAltStoreだけでインストール・更新が完結します。
+
+1. iPhoneのSafariで https://aichirofunakoshi.github.io/Bridge-TTS-Codex- を開き「AltStoreにソースを追加」をタップ
+   （またはAltStoreの **Sources** → **＋** に `https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json` を貼り付け）
+2. AltStoreの **Browse** にBridgeTTSが表示されるので **FREE** をタップしてインストール
+3. 新バージョンが公開されると **My Apps** に「アップデート」が表示され、ワンタップで更新できます
+   （アプリのデータ・APIキー・設定は引き継がれます）
+
+他の人に使ってもらう場合も、このソースURLを伝えるだけです（各自のMac/PCでのAltServerセットアップと、無料Apple IDの場合は7日ごとの更新・3アプリ制限は同様に必要です）。
+
+新しいリリースの公開は `v` で始まるタグ（例 `v2.1.0`）をpushするだけで、IPAビルド→Release添付→ソース(apps.json)更新まで自動で行われます。
+
+## アプリ内エラー報告
+
+アプリ（およびWeb版）でエラーが発生すると「⚠️ エラーを報告」ボタンが表示されます。
+タップするとログ（APIキー等は自動マスク）を確認のうえ送信できます。
+
+- **ネイティブアプリ**: GitHubの[Issues](https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues)に `error-report` ラベル付きで直接作成されます（アカウント不要・アプリ内完結）
+- **Web/PWA版**: GitHubのIssue作成画面が下書き付きで開きます（GitHubアカウントが必要）
+
+ネイティブアプリの直接送信を有効にするには、リポジトリ管理者が以下を一度だけ設定します:
+
+1. [Fine-grained PAT](https://github.com/settings/personal-access-tokens/new) を作成
+   （Repository access: このリポジトリのみ / Permissions: **Issues = Read and write** のみ / 有効期限は任意）
+2. `gh secret set ERROR_REPORT_TOKEN` でActionsシークレットに登録
+3. 次回のIPAビルドから自動で有効化（未設定の場合はIssue下書き方式に自動フォールバック）
+
+※ 配布物にトークンが含まれるため、漏えい時の影響をIssue作成のみに限定した専用トークンを使うこと。
+
 ## AltStoreでのインストール手順
 
 > **⚠️ 重要（よくあるつまずき）**: `BridgeTTS-unsigned.ipa` は**Mac上でダブルクリックしてもインストールできません**。未署名のため「整合性を確認できなかったためインストールできませんでした」というエラーになります。これはiOSの仕様で、必ずiPhoneに転送し、**iPhone上のAltStoreから**開いて署名・インストールしてください。
