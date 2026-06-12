@@ -38,7 +38,10 @@ cat > "$ICONSET/Contents.json" <<'JSON'
 }
 JSON
 
-if command -v sips >/dev/null 2>&1; then
+if [ -f "$ROOT/images/icons/ios-appicon-1024.png" ]; then
+    # iOS専用ネイティブ1024pxアイコン（文字なし版）を最優先で使用
+    cp "$ROOT/images/icons/ios-appicon-1024.png" "$ICONSET/AppIcon-1024.png"
+elif command -v sips >/dev/null 2>&1; then
     # macOS: sipsで512px→1024pxにリサイズ
     sips -z 1024 1024 "$ROOT/images/icons/icon-512x512.png" \
         --out "$ICONSET/AppIcon-1024.png" >/dev/null
