@@ -103,9 +103,23 @@
         }
     };
 
-    // TTS再生直前にネイティブ側のオーディオセッションを再生用へ切り替える
-    window.__bridgeNativePrepareTTS = function () {
+    // TTS再生直前にネイティブ側のオーディオセッションを再生用へ切り替える。
+    // 切替完了時にネイティブ側から __bridgeNativeTTSReady が呼ばれ、
+    // 登録されたコールバック（=発話開始）を実行する。
+    let pendingTTSReadyCallback = null;
+
+    window.__bridgeNativePrepareTTS = function (onReady) {
+        pendingTTSReadyCallback = typeof onReady === 'function' ? onReady : null;
         nativeHandler.postMessage({ action: 'prepareTTS' });
+    };
+
+    // ネイティブ側（Swift）からセッション切替完了時に呼び出される
+    window.__bridgeNativeTTSReady = function () {
+        const callback = pendingTTSReadyCallback;
+        pendingTTSReadyCallback = null;
+        if (callback) {
+            callback();
+        }
     };
 
     window.SpeechRecognition = NativeSpeechRecognition;

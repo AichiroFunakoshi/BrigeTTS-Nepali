@@ -128,13 +128,17 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // パーソナライズドデバウンス最適化用データ
-    const DEBOUNCE_SAMPLE_SIZE = 50; // 最適化に必要な合計サンプル数（95%信頼区間に基づく）
+    // 「音声認識結果の更新間隔（発話中に認識結果が更新される周期）」を学習し、
+    // その90パーセンタイル＋バッファをデバウンス値とする。
+    // 更新間隔より十分長く、かつ必要以上に待たない値になるため、
+    // 「更新が止まった＝発話の区切り」を端末・話者に合わせて判定できる。
+    const DEBOUNCE_SAMPLE_SIZE = 50; // 最適化に必要な合計サンプル数
     const DEBOUNCE_MIN_SAMPLES_PER_LANG = 15; // 言語別最小サンプル数（分散考慮）
-    const DEBOUNCE_MIN_MS = 100; // デバウンス最小値（ms）
+    const DEBOUNCE_MIN_MS = 150; // デバウンス最小値（ms）短すぎると翻訳リクエストが乱発される
     const DEBOUNCE_MAX_MS = 800; // デバウンス最大値（ms）
-    const DEBOUNCE_BUFFER_FACTOR = 1.1; // 75パーセンタイルへのバッファ係数
-    const PAUSE_INTERVAL_MIN_MS = 50; // 有効なポーズ間隔の最小値（ms）
-    const PAUSE_INTERVAL_MAX_MS = 2000; // 有効なポーズ間隔の最大値（ms）
+    const DEBOUNCE_BUFFER_FACTOR = 1.2; // 90パーセンタイルへのバッファ係数
+    const RESULT_INTERVAL_MIN_MS = 50; // 有効な更新間隔の最小値（ms）
+    const RESULT_INTERVAL_MAX_MS = 1000; // 有効な更新間隔の最大値（ms）これを超える間隔は発話の区切り（ポーズ）とみなし学習から除外
     const TTS_SPEED_MIN = 0.8; // TTS速度最小値
     const TTS_SPEED_MAX = 1.2; // TTS速度最大値
     const TTS_SPEED_DEFAULT = 1.0; // TTS速度デフォルト値
@@ -142,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'ja': [], // 日本語のポーズ間隔データ
         'en': []  // 英語のポーズ間隔データ
     };
-    let lastSpeechEndTime = 0; // 最後の音声終了時刻
+    let lastResultEventTime = 0; // 最後に認識結果が更新された時刻（デバウンス学習用）
     let isDebounceOptimized = false; // 最適化済みフラグ
     let debounceOptimizedAt = null; // 最適化実行日時
     let debounceDataSaveTimer = null; // データ保存用デバウンスタイマー
@@ -217,10 +221,14 @@ document.addEventListener('DOMContentLoaded', function() {
             enabled: isTTSEnabled,
             speed: ttsSpeed,
             onBeforeSpeak: () => {
-                // 音声認識を一時停止（TTSの音声を拾わないようにするため）
-                if (isRecording && recognition && isRecognitionRunning) {
+                // TTS実行＝1ターンの終了として音声入力を完全に停止する。
+                // （TTS終了後の自動再開は行わない。次の入力は開始ボタンから。
+                //   これによりTTS後の認識再開レースによる冒頭欠け・精度低下を防ぐ）
+                if (isRecording) {
+                    console.log('TTS再生のため音声入力を終了（ターン終了）');
+                    finishRecordingSession({ stopTts: false });
+                } else if (recognition && isRecognitionRunning) {
                     try {
-                        console.log('TTS再生のため音声認識を一時停止');
                         recognition.stop();
                     } catch (e) {
                         console.error('音声認識の停止に失敗:', e?.message || e);
@@ -237,13 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (speakingIndicator) {
                     speakingIndicator.classList.remove('visible');
                 }
-                safeRestartRecognition(200, 'TTS終了');
+                // ターン終了方式: 音声入力は自動再開しない（開始ボタンで次のターンへ）
             },
             onError: () => {
                 if (speakingIndicator) {
                     speakingIndicator.classList.remove('visible');
                 }
-                safeRestartRecognition(200, 'TTSエラー後');
             },
             onPlayingChange: (isPlaying) => {
                 isTTSPlaying = isPlaying;
@@ -283,26 +290,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const now = Date.now();
             const timeSinceLastResult = now - lastRecognitionResultTime;
 
-            // 録音中だが長時間結果がない場合
+            // 録音中だが長時間音声を検出していない場合は自動停止する
+            // （マイク常時ONによるメモリ消費・発熱を防ぐ。再開は開始ボタンから）
             if (isRecording && timeSinceLastResult > RECOGNITION_TIMEOUT_MS && lastRecognitionResultTime > 0) {
-                console.warn(`音声認識が${RECOGNITION_TIMEOUT_MS / 1000}秒間応答なし。状態を確認します。`);
-
-                // 音声認識が実際には停止している可能性
-                if (!isRecognitionRunning) {
-                    console.log('音声認識が停止していることを検知。再起動を試みます。');
-                    safeRestartRecognition(100, 'ヘルスチェック');
-                } else {
-                    console.log('音声認識は実行中ですが、結果がありません。ユーザーに通知します。');
-                    // 長時間無音の可能性をユーザーに通知（エラーではない）
-                    if (status) {
-                        const prevText = status.textContent;
-                        status.textContent = '録音中（音声を検出していません）';
-                        setTimeout(() => {
-                            if (isRecording) {
-                                status.textContent = prevText;
-                            }
-                        }, 3000);
-                    }
+                console.warn(`${RECOGNITION_TIMEOUT_MS / 1000}秒間音声を検出しなかったため、音声入力を自動停止します。`);
+                stopRecording();
+                if (errorMessage) {
+                    errorMessage.textContent = `${RECOGNITION_TIMEOUT_MS / 1000}秒間音声を検出しなかったため、音声入力を自動停止しました。続ける場合は開始ボタンを押してください。`;
                 }
             }
         }, HEALTH_CHECK_INTERVAL);
@@ -581,7 +575,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (isTTSPlaying) {
             stopTTS();
-            safeRestartRecognition(200, '会話ログTTS手動停止');
         }
 
         speakTranslation(entry.translation, entry.sourceLanguage);
@@ -599,10 +592,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // TTS再生中なら停止し、録音中であれば音声認識を再開
+        // TTS再生中なら停止する（音声入力の自動再開は行わない＝ターン終了方式）
         if (isTTSPlaying) {
             stopTTS();
-            safeRestartRecognition(200, 'TTS手動停止');
             return;
         }
 
@@ -694,8 +686,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             debounceData[lang] = parsed[lang].filter(
                                 val => typeof val === 'number' &&
                                        !isNaN(val) &&
-                                       val >= PAUSE_INTERVAL_MIN_MS &&
-                                       val <= PAUSE_INTERVAL_MAX_MS
+                                       val >= RESULT_INTERVAL_MIN_MS &&
+                                       val <= RESULT_INTERVAL_MAX_MS
                             );
                         }
                     });
@@ -833,31 +825,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // デバウンス最適化計算
+    // 認識結果の更新間隔の90パーセンタイル × バッファを最適値とする。
+    // 通常の更新間隔の9割をカバーする待ち時間より長く待っても更新が来なければ
+    // 「発話が区切れた」と判断できる、という考え方。
     function calculateOptimalDebounce(language) {
         const data = debounceData[language];
         if (data.length < DEBOUNCE_MIN_SAMPLES_PER_LANG) {
             return DEFAULT_DEBOUNCE[language]; // データ不足時はデフォルト
         }
 
-        // ソートして75パーセンタイルを計算（外れ値に強い）
+        // ソートして90パーセンタイルを計算（外れ値に強い）
         const sorted = [...data].sort((a, b) => a - b);
-        const percentileIndex = Math.floor(sorted.length * 0.75);
-        const percentile75 = sorted[percentileIndex];
+        const percentileIndex = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.9));
+        const percentile90 = sorted[percentileIndex];
 
-        // 75パーセンタイルにバッファを追加し、安全範囲内に収める
-        const optimal = Math.round(percentile75 * DEBOUNCE_BUFFER_FACTOR);
+        // 90パーセンタイルにバッファを追加し、安全範囲内に収める
+        const optimal = Math.round(percentile90 * DEBOUNCE_BUFFER_FACTOR);
 
         return Math.max(DEBOUNCE_MIN_MS, Math.min(DEBOUNCE_MAX_MS, optimal));
     }
 
-    // ポーズ間隔データを記録
-    function recordPauseInterval(language) {
+    // 認識結果の更新間隔を記録（テキストが変化した結果イベントごとに呼ばれる）
+    function recordResultInterval(language) {
         const now = Date.now();
-        if (lastSpeechEndTime > 0) {
-            const pauseInterval = now - lastSpeechEndTime;
-            // 有効な範囲のデータのみ記録（極端に短いまたは長い間隔を除外）
-            if (pauseInterval >= PAUSE_INTERVAL_MIN_MS && pauseInterval <= PAUSE_INTERVAL_MAX_MS) {
-                debounceData[language].push(pauseInterval);
+        if (lastResultEventTime > 0 && (language === 'ja' || language === 'en')) {
+            const interval = now - lastResultEventTime;
+            // 有効な範囲のデータのみ記録
+            // （極端に短い間隔と、発話の区切り＝ポーズによる長い間隔を除外）
+            if (interval >= RESULT_INTERVAL_MIN_MS && interval <= RESULT_INTERVAL_MAX_MS) {
+                debounceData[language].push(interval);
                 // ローリングウィンドウ: 最新サンプルのみ保持
                 if (debounceData[language].length > DEBOUNCE_SAMPLE_SIZE) {
                     debounceData[language].shift();
@@ -873,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, DEBOUNCE_DATA_SAVE_DELAY);
             }
         }
-        lastSpeechEndTime = now;
+        lastResultEventTime = now;
     }
     
     // APIキー保存
@@ -1048,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // データをリセット
                 debounceData = { 'ja': [], 'en': [] };
-                lastSpeechEndTime = 0;
+                lastResultEventTime = 0;
 
                 // ストレージをクリア
                 AppSettingsStorage.clearOptimizedDebounce();
@@ -1297,6 +1293,11 @@ document.addEventListener('DOMContentLoaded', function() {
             isRecognitionRunning = true;
             listeningIndicator.classList.add('visible');
 
+            // マイク準備完了。ここから話し始めてよいことをユーザーに伝える
+            if (isRecording) {
+                status.textContent = '録音中';
+            }
+
             // 音声認識が正常に開始したので、再起動カウンターをリセット
             recognitionRestartAttempts = 0;
             // エラーメッセージもクリア
@@ -1357,9 +1358,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             processedResultIds = new Set(idsToKeep);
                         }
 
-                        // デバウンス最適化用: ポーズ間隔を記録
-                        recordPauseInterval(selectedLanguage);
-
                         // 日本語入力の場合、文章を整形
                         if (selectedLanguage === 'ja') {
                             finalText += japaneseFormatter.format(transcript) + ' ';
@@ -1379,7 +1377,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 表示テキスト (確定結果 + 暫定結果)
             const displayText = (finalText + interimText).trim();
-            
+
+            // デバウンス最適化用: 認識結果が実際に変化した間隔を記録
+            if (displayText && displayText !== originalText.textContent) {
+                recordResultInterval(selectedLanguage);
+            }
+
             // UIを更新
             originalText.textContent = displayText;
             
@@ -1495,10 +1498,11 @@ document.addEventListener('DOMContentLoaded', function() {
             stopBtnText.textContent = 'Stop';
         }
         
-        // UIを更新
+        // UIを更新（マイク準備完了＝recognition.onstart で「録音中」に切り替わる。
+        // 準備完了前に話し始めて冒頭が欠けるのを防ぐための表示）
         isRecording = true;
         document.body.classList.add('recording');
-        status.textContent = '録音中';
+        status.textContent = 'マイク準備中…';
         status.classList.remove('idle', 'error');
         status.classList.add('recording');
 
@@ -1515,6 +1519,8 @@ document.addEventListener('DOMContentLoaded', function() {
             recognitionRestartAttempts = 0;
             // 最後の結果受信時刻を初期化
             lastRecognitionResultTime = Date.now();
+            // デバウンス学習用の更新間隔計測をリセット
+            lastResultEventTime = 0;
 
             // 認識言語を設定
             recognition.lang = language === 'ja' ? 'ja-JP' : 'en-US';
@@ -1529,8 +1535,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 録音停止
+    // 録音停止（停止ボタン・自動停止用）
     function stopRecording() {
+        finishRecordingSession({ stopTts: true });
+    }
+
+    // 音声入力セッションを終了する共通処理
+    // stopTts=false はTTS再生（ターン終了）から呼ばれる場合で、
+    // これから再生するTTSを止めないためにTTS停止をスキップする
+    function finishRecordingSession({ stopTts = true } = {}) {
         isRecording = false;
         document.body.classList.remove('recording');
         status.textContent = '処理中';
@@ -1546,8 +1559,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // 再起動カウンターをリセット
         recognitionRestartAttempts = 0;
 
-        // TTS停止
-        stopTTS();
+        // TTS停止（ターン終了によるTTS再生時はスキップ）
+        if (stopTts) {
+            stopTTS();
+        }
 
         // ボタン表示を更新 - 開始ボタンを表示、停止ボタンを非表示
         updateButtonVisibility(false);
