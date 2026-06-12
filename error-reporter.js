@@ -94,16 +94,69 @@ const ErrorReporter = {
         }
     },
 
-    showReportButton: function() {
-        const existingButton = document.getElementById('errorReportButton');
-        if (existingButton) return;
+    // ボタンの自動消去タイマー（ms）。出しっぱなしを防ぐ
+    reportButtonTimeoutMs: 30000,
+    reportButtonTimer: null,
 
-        const button = document.createElement('button');
-        button.id = 'errorReportButton';
-        button.className = 'error-report-button';
-        button.textContent = '⚠️ エラーを報告';
-        button.onclick = () => this.generateReport();
-        document.body.appendChild(button);
+    showReportButton: function() {
+        const existingContainer = document.getElementById('errorReportButton');
+        if (existingContainer) {
+            // 既に表示中なら自動消去タイマーだけ延長（新しいエラーが続いている）
+            this.scheduleReportButtonHide();
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.id = 'errorReportButton';
+        container.className = 'error-report-button';
+        container.setAttribute('role', 'alert');
+
+        const reportButton = document.createElement('button');
+        reportButton.type = 'button';
+        reportButton.className = 'error-report-button-main';
+        reportButton.textContent = '⚠️ エラーを報告';
+        reportButton.onclick = () => {
+            this.hideReportButton();
+            this.generateReport();
+        };
+
+        const dismissButton = document.createElement('button');
+        dismissButton.type = 'button';
+        dismissButton.className = 'error-report-button-dismiss';
+        dismissButton.textContent = '×';
+        dismissButton.setAttribute('aria-label', 'エラー報告ボタンを閉じる');
+        dismissButton.onclick = (e) => {
+            e.stopPropagation();
+            this.hideReportButton();
+        };
+
+        container.append(reportButton, dismissButton);
+        document.body.appendChild(container);
+
+        // 一定時間操作がなければ自動で消す（新しいエラーが出れば再表示される）
+        this.scheduleReportButtonHide();
+    },
+
+    scheduleReportButtonHide: function() {
+        if (this.reportButtonTimer) {
+            clearTimeout(this.reportButtonTimer);
+        }
+        this.reportButtonTimer = setTimeout(() => {
+            this.hideReportButton();
+        }, this.reportButtonTimeoutMs);
+    },
+
+    hideReportButton: function() {
+        if (this.reportButtonTimer) {
+            clearTimeout(this.reportButtonTimer);
+            this.reportButtonTimer = null;
+        }
+        const container = document.getElementById('errorReportButton');
+        if (container) {
+            container.remove();
+        }
+        // 次のエラーで再表示できるように状態をリセット
+        this.hasError = false;
     },
 
     generateReport: function() {

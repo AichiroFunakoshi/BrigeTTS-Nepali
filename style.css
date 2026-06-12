@@ -1331,14 +1331,14 @@ body.recording .language-button.stop {
     position: fixed;
     bottom: max(20px, env(safe-area-inset-bottom));
     right: 20px;
-    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 14px;
     background-color: #ff6b6b;
     color: white;
     border: none;
     border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
     z-index: 10000;
     transition: background-color 0.3s ease, transform 0.3s ease;
@@ -1348,6 +1348,33 @@ body.recording .language-button.stop {
 .error-report-button:hover {
     background-color: #ff5252;
     transform: translateY(-2px);
+}
+
+.error-report-button-main {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 2px;
+}
+
+.error-report-button-dismiss {
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.error-report-button-dismiss:hover {
+    background: rgba(255, 255, 255, 0.45);
 }
 
 @keyframes pulse {
@@ -1527,9 +1554,9 @@ body.recording .language-button.stop {
     .error-report-button {
         bottom: max(15px, env(safe-area-inset-bottom));
         right: 15px;
-        padding: 10px 16px;
-        font-size: 13px;
+        padding: 5px 6px 5px 12px;
     }
+    .error-report-button-main { font-size: 13px; }
 }
 
 @media (max-width: 480px) {

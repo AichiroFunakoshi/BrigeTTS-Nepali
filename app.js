@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isTTSPlaying = false; // TTS再生中フラグ
     let ttsInitialized = false; // iOS Safari用: TTS初期化済みフラグ
     let ttsSpeed = 1.0; // TTS再生速度（デフォルト: 1.0）
+
+    // 会話モード: 録音停止後に最後の翻訳結果を自動読み上げ（Google翻訳の会話モード相当）
+    let isAutoTTSEnabled = false;
+    let autoSpeakArmed = false; // 録音停止後の自動読み上げ待機フラグ
+    let autoSpeakFallbackTimer = null;
+    const AUTO_SPEAK_FALLBACK_MS = 2000; // 停止後、最終翻訳が来ない場合に発火するまでの待ち時間
     
     // DOM要素
     const startJapaneseBtn = document.getElementById('startJapaneseBtn');
@@ -33,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const translatingIndicator = document.getElementById('translatingIndicator');
     const speakingIndicator = document.getElementById('speakingIndicator');
     const ttsToggle = document.getElementById('ttsToggle');
+    const autoTtsToggle = document.getElementById('autoTtsToggle');
     const fontSizeSmallBtn = document.getElementById('fontSizeSmall');
     const fontSizeMediumBtn = document.getElementById('fontSizeMedium');
     const fontSizeLargeBtn = document.getElementById('fontSizeLarge');
@@ -132,8 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // その90パーセンタイル＋バッファをデバウンス値とする。
     // 更新間隔より十分長く、かつ必要以上に待たない値になるため、
     // 「更新が止まった＝発話の区切り」を端末・話者に合わせて判定できる。
-    const DEBOUNCE_SAMPLE_SIZE = 50; // 最適化に必要な合計サンプル数
-    const DEBOUNCE_MIN_SAMPLES_PER_LANG = 15; // 言語別最小サンプル数（分散考慮）
+    const DEBOUNCE_SAMPLE_SIZE = 50; // 言語ごとに保持する最大サンプル数（ローリングウィンドウ）
+    const DEBOUNCE_SAMPLES_REQUIRED = 30; // 最適化に必要な言語ごとのサンプル数（日英は独立して最適化可能）
     const DEBOUNCE_MIN_MS = 150; // デバウンス最小値（ms）短すぎると翻訳リクエストが乱発される
     const DEBOUNCE_MAX_MS = 800; // デバウンス最大値（ms）
     const DEBOUNCE_BUFFER_FACTOR = 1.2; // 90パーセンタイルへのバッファ係数
@@ -147,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'en': []  // 英語のポーズ間隔データ
     };
     let lastResultEventTime = 0; // 最後に認識結果が更新された時刻（デバウンス学習用）
-    let isDebounceOptimized = false; // 最適化済みフラグ
+    let debounceOptimized = { 'ja': false, 'en': false }; // 言語別の最適化済みフラグ
     let debounceOptimizedAt = null; // 最適化実行日時
     let debounceDataSaveTimer = null; // データ保存用デバウンスタイマー
     const DEBOUNCE_DATA_SAVE_DELAY = 2000; // データ保存のデバウンス遅延（ms）
@@ -213,8 +220,56 @@ document.addEventListener('DOMContentLoaded', function() {
         ttsInitialized = window.TtsService.isInitialized();
     }
 
+    // 会話モード（自動読み上げ）の待機を解除
+    function disarmAutoSpeak() {
+        autoSpeakArmed = false;
+        if (autoSpeakFallbackTimer) {
+            clearTimeout(autoSpeakFallbackTimer);
+            autoSpeakFallbackTimer = null;
+        }
+    }
+
+    // 録音停止後の自動読み上げを待機状態にする
+    // 停止直後に最終セグメントの翻訳が走ることがあるため、翻訳完了時または
+    // 一定時間後のどちらか早い方で発火する
+    function armAutoSpeak() {
+        if (!isAutoTTSEnabled || !isTTSEnabled) {
+            return;
+        }
+        autoSpeakArmed = true;
+        if (autoSpeakFallbackTimer) {
+            clearTimeout(autoSpeakFallbackTimer);
+        }
+        autoSpeakFallbackTimer = setTimeout(() => {
+            autoSpeakFallbackTimer = null;
+            if (translationInProgress) {
+                return; // 進行中の翻訳完了時に発火する
+            }
+            triggerAutoSpeak();
+        }, AUTO_SPEAK_FALLBACK_MS);
+    }
+
+    // 自動読み上げを実行（待機中のみ）
+    function triggerAutoSpeak() {
+        if (!autoSpeakArmed) {
+            return;
+        }
+        const text = lastTranslationResult && lastTranslationResult.trim();
+        disarmAutoSpeak();
+        if (!text) {
+            return;
+        }
+        console.log('会話モード: 録音停止後の自動読み上げを開始');
+        if (!ttsInitialized && 'speechSynthesis' in window) {
+            initializeTTSForIOS();
+        }
+        speakTranslation(text, selectedLanguage);
+    }
+
     // TTS機能: 翻訳結果を音声で読み上げ
     function speakTranslation(text, language) {
+        // 手動/自動いずれの再生でも、自動読み上げの待機は解除する
+        disarmAutoSpeak();
         window.TtsService.speak({
             text: text,
             sourceLanguage: language,
@@ -649,6 +704,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // TTS設定を読み込み
         isTTSEnabled = AppSettingsStorage.getTtsEnabled(true);
 
+        // 会話モード（停止後の自動読み上げ）設定を読み込み
+        isAutoTTSEnabled = AppSettingsStorage.getAutoTtsEnabled(false);
+
         // TTS速度を読み込み（検証付き）
         ttsSpeed = AppSettingsStorage.getTtsSpeed(TTS_SPEED_DEFAULT, TTS_SPEED_MIN, TTS_SPEED_MAX);
         updateSpeedButtonsUI(ttsSpeed);
@@ -694,21 +752,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 最適化されたデバウンス値
+            // 最適化されたデバウンス値（言語ごとに独立して保存・適用）
             const optimized = AppSettingsStorage.getOptimizedDebounce();
-            if (optimized) {
-                // 型と範囲の検証
-                if (optimized && typeof optimized === 'object') {
-                    ['ja', 'en'].forEach(lang => {
-                        const val = optimized[lang];
-                        if (typeof val === 'number' && !isNaN(val) && val >= DEBOUNCE_MIN_MS && val <= DEBOUNCE_MAX_MS) {
-                            currentDebounce[lang] = val;
-                        } else {
-                            currentDebounce[lang] = DEFAULT_DEBOUNCE[lang];
-                        }
-                    });
-                    isDebounceOptimized = true;
-                }
+            if (optimized && typeof optimized === 'object') {
+                ['ja', 'en'].forEach(lang => {
+                    const val = optimized[lang];
+                    if (typeof val === 'number' && !isNaN(val) && val >= DEBOUNCE_MIN_MS && val <= DEBOUNCE_MAX_MS) {
+                        currentDebounce[lang] = val;
+                        debounceOptimized[lang] = true;
+                    } else {
+                        currentDebounce[lang] = DEFAULT_DEBOUNCE[lang];
+                        debounceOptimized[lang] = false;
+                    }
+                });
             }
 
             // 最適化日時を読み込み
@@ -725,7 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
             debounceData = { 'ja': [], 'en': [] };
             currentDebounce['ja'] = DEFAULT_DEBOUNCE['ja'];
             currentDebounce['en'] = DEFAULT_DEBOUNCE['en'];
-            isDebounceOptimized = false;
+            debounceOptimized = { 'ja': false, 'en': false };
         }
     }
 
@@ -754,12 +810,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (enValueEl) enValueEl.textContent = `${currentDebounce['en']}ms`;
 
         if (jaTypeEl) {
-            jaTypeEl.textContent = isDebounceOptimized ? '(最適化済み)' : '(デフォルト)';
-            jaTypeEl.className = isDebounceOptimized ? 'debounce-type optimized' : 'debounce-type';
+            jaTypeEl.textContent = debounceOptimized['ja'] ? '(最適化済み)' : '(デフォルト)';
+            jaTypeEl.className = debounceOptimized['ja'] ? 'debounce-type optimized' : 'debounce-type';
         }
         if (enTypeEl) {
-            enTypeEl.textContent = isDebounceOptimized ? '(最適化済み)' : '(デフォルト)';
-            enTypeEl.className = isDebounceOptimized ? 'debounce-type optimized' : 'debounce-type';
+            enTypeEl.textContent = debounceOptimized['en'] ? '(最適化済み)' : '(デフォルト)';
+            enTypeEl.className = debounceOptimized['en'] ? 'debounce-type optimized' : 'debounce-type';
         }
 
         // 最適化日時の表示
@@ -772,42 +828,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // プログレスバー更新
+        // プログレスバー更新（言語別・日英は独立して最適化可能）
         const jaSamples = debounceData['ja'].length;
         const enSamples = debounceData['en'].length;
-        const totalSamples = jaSamples + enSamples;
-        const progress = Math.min((totalSamples / DEBOUNCE_SAMPLE_SIZE) * 100, 100);
+        const jaReady = jaSamples >= DEBOUNCE_SAMPLES_REQUIRED;
+        const enReady = enSamples >= DEBOUNCE_SAMPLES_REQUIRED;
+        const progress = Math.min((Math.max(jaSamples, enSamples) / DEBOUNCE_SAMPLES_REQUIRED) * 100, 100);
         if (progressFill) progressFill.style.width = `${progress}%`;
-        if (progressText) progressText.textContent = `データ収集: ${totalSamples}/${DEBOUNCE_SAMPLE_SIZE}件 (日:${jaSamples} 英:${enSamples})`;
+        if (progressText) {
+            progressText.textContent = `データ収集: 日本語 ${Math.min(jaSamples, DEBOUNCE_SAMPLES_REQUIRED)}/${DEBOUNCE_SAMPLES_REQUIRED}件 ・ 英語 ${Math.min(enSamples, DEBOUNCE_SAMPLES_REQUIRED)}/${DEBOUNCE_SAMPLES_REQUIRED}件`;
+        }
 
-        // 残りサンプル数の詳細表示
-        const jaRemaining = Math.max(0, DEBOUNCE_MIN_SAMPLES_PER_LANG - jaSamples);
-        const enRemaining = Math.max(0, DEBOUNCE_MIN_SAMPLES_PER_LANG - enSamples);
-        const totalRemaining = Math.max(0, DEBOUNCE_SAMPLE_SIZE - totalSamples);
-
+        // 最適化可能状況の表示（片方の言語だけでも最適化できる）
         if (remainingInfoEl) {
-            if (totalRemaining > 0 || jaRemaining > 0 || enRemaining > 0) {
-                let remainingText = '必要残り: ';
-                const parts = [];
-                if (jaRemaining > 0) parts.push(`日本語${jaRemaining}件`);
-                if (enRemaining > 0) parts.push(`英語${enRemaining}件`);
-                if (totalRemaining > 0 && jaRemaining === 0 && enRemaining === 0) {
-                    parts.push(`合計${totalRemaining}件`);
-                }
-                remainingInfoEl.textContent = remainingText + parts.join('、');
-                remainingInfoEl.style.display = 'block';
-            } else {
-                remainingInfoEl.textContent = '✓ 最適化可能です';
+            const readyLangs = [];
+            if (jaReady) readyLangs.push('日本語');
+            if (enReady) readyLangs.push('英語');
+
+            if (readyLangs.length > 0) {
+                remainingInfoEl.textContent = `✓ ${readyLangs.join('・')}を最適化できます（言語ごとに独立して適用されます）`;
                 remainingInfoEl.style.display = 'block';
                 remainingInfoEl.className = 'remaining-info ready';
+            } else {
+                const jaRemaining = DEBOUNCE_SAMPLES_REQUIRED - jaSamples;
+                const enRemaining = DEBOUNCE_SAMPLES_REQUIRED - enSamples;
+                remainingInfoEl.textContent = `必要残り: 日本語${jaRemaining}件 / 英語${enRemaining}件（どちらか一方だけでも最適化できます）`;
+                remainingInfoEl.style.display = 'block';
+                remainingInfoEl.className = 'remaining-info';
             }
         }
 
-        // 最適化ボタンの有効/無効（合計50件かつ各言語最低15件必要）
+        // 最適化ボタンの有効/無効（いずれかの言語が規定数に達していれば有効）
         if (optimizeBtn) {
-            const hasEnoughTotal = totalSamples >= DEBOUNCE_SAMPLE_SIZE;
-            const hasEnoughPerLang = jaSamples >= DEBOUNCE_MIN_SAMPLES_PER_LANG && enSamples >= DEBOUNCE_MIN_SAMPLES_PER_LANG;
-            const canOptimize = hasEnoughTotal && hasEnoughPerLang;
+            const canOptimize = jaReady || enReady;
             optimizeBtn.disabled = !canOptimize;
             optimizeBtn.className = canOptimize ? 'debounce-btn optimize ready' : 'debounce-btn optimize disabled';
         }
@@ -830,7 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 「発話が区切れた」と判断できる、という考え方。
     function calculateOptimalDebounce(language) {
         const data = debounceData[language];
-        if (data.length < DEBOUNCE_MIN_SAMPLES_PER_LANG) {
+        if (data.length < DEBOUNCE_SAMPLES_REQUIRED) {
             return DEFAULT_DEBOUNCE[language]; // データ不足時はデフォルト
         }
 
@@ -891,6 +944,10 @@ document.addEventListener('DOMContentLoaded', function() {
             isTTSEnabled = ttsToggle.checked;
             AppSettingsStorage.setTtsEnabled(isTTSEnabled);
         }
+        if (autoTtsToggle) {
+            isAutoTTSEnabled = autoTtsToggle.checked;
+            AppSettingsStorage.setAutoTtsEnabled(isAutoTTSEnabled);
+        }
         
         apiModal.style.display = 'none';
         unlockBodyScroll();
@@ -902,6 +959,9 @@ document.addEventListener('DOMContentLoaded', function() {
         openaiKeyInput.value = OPENAI_API_KEY;
         if (ttsToggle) {
             ttsToggle.checked = isTTSEnabled;
+        }
+        if (autoTtsToggle) {
+            autoTtsToggle.checked = isAutoTTSEnabled;
         }
         apiModal.style.display = 'flex';
         lockBodyScroll();
@@ -956,6 +1016,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 会話モード（停止後の自動読み上げ）設定の変更を監視
+    if (autoTtsToggle) {
+        autoTtsToggle.addEventListener('change', () => {
+            isAutoTTSEnabled = autoTtsToggle.checked;
+            AppSettingsStorage.setAutoTtsEnabled(isAutoTTSEnabled);
+            console.log('自動読み上げ設定変更:', isAutoTTSEnabled ? '有効' : '無効');
+        });
+    }
+
     // TTS速度ボタンの設定
     const speedBtns = document.querySelectorAll('.speed-btn');
     speedBtns.forEach(btn => {
@@ -977,13 +1046,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const optimizeDebounceBtn = document.getElementById('optimizeDebounceBtn');
     if (optimizeDebounceBtn) {
         optimizeDebounceBtn.addEventListener('click', () => {
-            // 最適化計算を実行
-            const optimizedJa = calculateOptimalDebounce('ja');
-            const optimizedEn = calculateOptimalDebounce('en');
+            // 規定サンプル数に達した言語のみ最適化（日英は独立。片方だけでも可）
+            const results = [];
+            ['ja', 'en'].forEach((lang) => {
+                if (debounceData[lang].length >= DEBOUNCE_SAMPLES_REQUIRED) {
+                    currentDebounce[lang] = calculateOptimalDebounce(lang);
+                    debounceOptimized[lang] = true;
+                    results.push(`${lang === 'ja' ? '日本語' : '英語'}: ${currentDebounce[lang]}ms`);
+                }
+            });
 
-            currentDebounce['ja'] = optimizedJa;
-            currentDebounce['en'] = optimizedEn;
-            isDebounceOptimized = true;
+            if (results.length === 0) {
+                return;
+            }
 
             // 最適化日時を記録
             const now = new Date();
@@ -995,20 +1070,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 minute: '2-digit'
             });
 
-            // 保存
-            AppSettingsStorage.setOptimizedDebounce(currentDebounce);
+            // 保存（最適化済みの言語の値のみ保存し、未最適化の言語はデフォルトを維持）
+            const storedValues = {};
+            ['ja', 'en'].forEach((lang) => {
+                if (debounceOptimized[lang]) {
+                    storedValues[lang] = currentDebounce[lang];
+                }
+            });
+            AppSettingsStorage.setOptimizedDebounce(storedValues);
             AppSettingsStorage.setDebounceOptimizedAt(debounceOptimizedAt);
 
             // UI更新
             updateDebounceUI();
 
             console.log('デバウンス最適化完了:', {
-                ja: optimizedJa,
-                en: optimizedEn,
+                optimized: storedValues,
                 optimizedAt: debounceOptimizedAt
             });
 
-            alert(`デバウンス最適化が完了しました！\n\n日本語: ${optimizedJa}ms\n英語: ${optimizedEn}ms\n\n最適化日時: ${debounceOptimizedAt}`);
+            alert(`デバウンス最適化が完了しました！\n\n${results.join('\n')}\n\n最適化日時: ${debounceOptimizedAt}`);
         });
     }
 
@@ -1019,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (confirm('デバウンス設定をデフォルトに戻しますか？\n収集したデータは保持されます。')) {
                 currentDebounce['ja'] = DEFAULT_DEBOUNCE['ja'];
                 currentDebounce['en'] = DEFAULT_DEBOUNCE['en'];
-                isDebounceOptimized = false;
+                debounceOptimized = { 'ja': false, 'en': false };
                 debounceOptimizedAt = null;
 
                 AppSettingsStorage.clearOptimizedDebounce();
@@ -1039,7 +1119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 設定をリセット
                 currentDebounce['ja'] = DEFAULT_DEBOUNCE['ja'];
                 currentDebounce['en'] = DEFAULT_DEBOUNCE['en'];
-                isDebounceOptimized = false;
+                debounceOptimized = { 'ja': false, 'en': false };
                 debounceOptimizedAt = null;
 
                 // データをリセット
@@ -1232,8 +1312,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // コンテンツリセット機能
     function resetContent() {
-        // TTS停止
+        // TTS停止・自動読み上げ待機解除
         stopTTS();
+        disarmAutoSpeak();
 
         // リセット処理
         processedResultIds.clear();
@@ -1469,6 +1550,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // エラーメッセージをクリア
         errorMessage.textContent = '';
 
+        // 前のターンの自動読み上げ待機を解除
+        disarmAutoSpeak();
+
         // 選択言語を設定
         selectedLanguage = language;
 
@@ -1538,6 +1622,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 録音停止（停止ボタン・自動停止用）
     function stopRecording() {
         finishRecordingSession({ stopTts: true });
+        // 会話モード: 停止後に最後の翻訳結果を自動読み上げ（設定有効時のみ）
+        armAutoSpeak();
     }
 
     // 音声入力セッションを終了する共通処理
@@ -1797,6 +1883,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // 翻訳品質チェック
                 checkTranslationQuality(text, translationResult, selectedLanguage, translationBox);
+
+                // 会話モード: 録音停止後に完了した翻訳を自動読み上げ
+                if (autoSpeakArmed && !isRecording) {
+                    triggerAutoSpeak();
+                }
             } else {
                 lastTranslationResult = '';
                 updateTranslationBoxState(false);

@@ -3,6 +3,7 @@ const AppSettingsStorage = {
     keys: {
         openaiKey: 'translatorOpenaiKey',
         ttsEnabled: 'translatorTTSEnabled',
+        autoTtsEnabled: 'translatorAutoTTSEnabled',
         ttsSpeed: 'translatorTTSSpeed',
         fontSize: 'translatorFontSize',
         debounceData: 'translatorDebounceData',
@@ -56,6 +57,15 @@ const AppSettingsStorage = {
 
     setTtsEnabled: function(value) {
         this.setString(this.keys.ttsEnabled, Boolean(value));
+    },
+
+    getAutoTtsEnabled: function(defaultValue = false) {
+        const value = localStorage.getItem(this.keys.autoTtsEnabled);
+        return value === null ? defaultValue : value === 'true';
+    },
+
+    setAutoTtsEnabled: function(value) {
+        this.setString(this.keys.autoTtsEnabled, Boolean(value));
     },
 
     getTtsSpeed: function(defaultValue, minValue, maxValue) {
