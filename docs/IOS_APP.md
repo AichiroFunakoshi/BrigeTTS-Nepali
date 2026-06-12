@@ -60,6 +60,16 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 ## AltStoreでのインストール手順
 
+> **⚠️ 重要（よくあるつまずき）**: `BridgeTTS-unsigned.ipa` は**Mac上でダブルクリックしてもインストールできません**。未署名のため「整合性を確認できなかったためインストールできませんでした」というエラーになります。これはiOSの仕様で、必ずiPhoneに転送し、**iPhone上のAltStoreから**開いて署名・インストールしてください。
+
+### 事前準備（初回のみ）
+
+1. **Mac**: [altstore.io](https://altstore.io/) から **AltServer** をダウンロードしてインストールし、起動する（メニューバーに常駐）
+2. **Mac**: iPhoneをUSB接続（またはWi-Fi同期を有効化）し、メニューバーのAltServerアイコン → **Install AltStore** → 自分のiPhoneを選択 → Apple IDでサインイン
+3. **iPhone**: 設定 → 一般 → VPNとデバイス管理 → 自分のApple IDのプロファイルを「信頼」
+4. **iPhone（iOS 16以降）**: 設定 → プライバシーとセキュリティ → **デベロッパモード** をオンにして再起動
+
+
 1. [AltStore](https://altstore.io/) をPC/Mac経由でiPhoneにインストールしておく（AltServerが必要）
 2. `BridgeTTS-unsigned.ipa` をiPhoneに転送（AirDrop、ファイルApp、iCloud Driveなど）
 3. iPhoneでAltStoreを開く → **My Apps** → 左上の **＋** → ダウンロードしたIPAを選択
