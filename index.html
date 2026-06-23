@@ -123,6 +123,12 @@
                     <span>翻訳</span>
                     <span class="language-indicator" id="targetLanguage"></span>
                     <span class="tap-hint" id="tapHint">タップで再生</span>
+                    <button class="present-translation-btn" id="presentTranslationBtn" type="button" disabled aria-label="翻訳を大きく表示して相手に見せる">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" width="14" height="14" aria-hidden="true">
+                            <path d="M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32S0 334.3 0 352v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z"/>
+                        </svg>
+                        <span>拡大</span>
+                    </button>
                     <button class="copy-translation-btn" id="copyTranslationBtn" type="button" disabled aria-label="翻訳結果をコピー">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" width="14" height="14" aria-hidden="true">
                             <path d="M384 336h-192c-17.67 0-32-14.33-32-32V64c0-17.67 14.33-32 32-32h140.1c8.5 0 16.63 3.375 22.63 9.375l73.38 73.38c6 6 9.375 14.13 9.375 22.63V304c0 17.67-14.33 32-32 32H384zM192 384h160v64c0 17.67-14.33 32-32 32H64c-17.67 0-32-14.33-32-32V128c0-17.67 14.33-32 32-32h64v272c0 17.67 14.33 32 32 32z"/>
@@ -154,6 +160,27 @@
             </div>
             <div class="button-row">
                 <button id="closeHistoryBtn" class="language-button" type="button">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 大型表示（相手に見せる）モーダル -->
+    <div class="modal present-modal" id="presentModal">
+        <div class="present-content">
+            <div class="present-stage">
+                <div class="present-original" id="presentOriginal"></div>
+                <div class="present-text" id="presentText"></div>
+            </div>
+            <div class="present-actions">
+                <button class="present-action-btn replay" id="presentReplayBtn" type="button" aria-label="この翻訳を再生">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor" width="18" height="18" aria-hidden="true">
+                        <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/>
+                    </svg>
+                    <span>再生</span>
+                </button>
+                <button class="present-action-btn close" id="presentCloseBtn" type="button" aria-label="大型表示を閉じる">
+                    <span>閉じる</span>
+                </button>
             </div>
         </div>
     </div>

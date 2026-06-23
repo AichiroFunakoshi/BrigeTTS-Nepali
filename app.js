@@ -48,6 +48,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const originalBox = document.getElementById('originalBox');
     const tapHint = document.getElementById('tapHint');
     const copyTranslationBtn = document.getElementById('copyTranslationBtn');
+    const presentTranslationBtn = document.getElementById('presentTranslationBtn');
+    const presentModal = document.getElementById('presentModal');
+    const presentText = document.getElementById('presentText');
+    const presentOriginal = document.getElementById('presentOriginal');
+    const presentReplayBtn = document.getElementById('presentReplayBtn');
+    const presentCloseBtn = document.getElementById('presentCloseBtn');
     const conversationLog = document.getElementById('conversationLog');
     const conversationLogList = document.getElementById('conversationLogList');
     const conversationLogEmpty = document.getElementById('conversationLogEmpty');
@@ -422,6 +428,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (copyTranslationBtn) {
             copyTranslationBtn.disabled = !hasContent;
         }
+
+        if (presentTranslationBtn) {
+            presentTranslationBtn.disabled = !hasContent;
+        }
     }
 
     // TTS再生中の視覚的フィードバックを更新
@@ -694,6 +704,34 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('翻訳結果のコピーに失敗:', error);
             errorMessage.textContent = 'クリップボードへのコピーに失敗しました';
             setTimeout(() => { errorMessage.textContent = ''; }, 3000);
+        }
+    }
+
+    // 大型表示（相手に見せる）モードを開く
+    function openPresentMode(event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        const translation = (lastTranslationResult || '').trim();
+        if (!translation || !presentModal) {
+            return;
+        }
+
+        if (presentText) {
+            presentText.textContent = translation;
+        }
+        if (presentOriginal) {
+            presentOriginal.textContent = (originalText.textContent || '').trim();
+        }
+
+        presentModal.style.display = 'flex';
+    }
+
+    // 大型表示モードを閉じる
+    function closePresentMode() {
+        if (presentModal) {
+            presentModal.style.display = 'none';
         }
     }
 
@@ -1295,6 +1333,42 @@ document.addEventListener('DOMContentLoaded', function() {
         if (copyTranslationBtn) {
             copyTranslationBtn.addEventListener('click', copyTranslation);
         }
+
+        if (presentTranslationBtn) {
+            presentTranslationBtn.addEventListener('click', openPresentMode);
+        }
+
+        if (presentModal) {
+            // 背景タップで閉じる（ステージ外側）
+            presentModal.addEventListener('click', (e) => {
+                if (e.target === presentModal) {
+                    closePresentMode();
+                }
+            });
+        }
+
+        if (presentCloseBtn) {
+            presentCloseBtn.addEventListener('click', closePresentMode);
+        }
+
+        if (presentReplayBtn) {
+            presentReplayBtn.addEventListener('click', (e) => {
+                if (e) {
+                    e.stopPropagation();
+                }
+                const translation = (lastTranslationResult || '').trim();
+                if (translation) {
+                    speakTranslation(translation, selectedLanguage);
+                }
+            });
+        }
+
+        // Escキーで大型表示を閉じる
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && presentModal && presentModal.style.display === 'flex') {
+                closePresentMode();
+            }
+        });
 
         if (clearConversationLogBtn) {
             clearConversationLogBtn.addEventListener('click', () => {

@@ -21,6 +21,10 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
     await expect(page.locator('#copyTranslationBtn')).toBeDisabled();
+    await expect(page.locator('#presentTranslationBtn')).toBeVisible();
+    await expect(page.locator('#presentTranslationBtn')).toBeDisabled();
+    await expect(page.locator('#presentModal')).toHaveCount(1);
+    await expect(page.locator('#presentModal')).toBeHidden();
     await expect(page.locator('#conversationLog')).toHaveCount(1);
     await expect(page.locator('#conversationLogList')).toHaveCount(1);
     await expect(page.locator('#clearConversationLogBtn')).toHaveCount(1);
@@ -164,6 +168,35 @@ test('renders replay controls for conversation history entries', async ({ page }
     await expect(page.locator('#conversationLog')).toBeVisible();
     await expect(page.locator('.conversation-log-replay')).toHaveText('再生');
     await expect(page.locator('.conversation-log-replay')).toHaveAttribute('aria-label', 'この翻訳を再生');
+});
+
+test('shows the large present mode with translation text', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#apiModal').evaluate((modal) => {
+        modal.style.display = 'none';
+    });
+
+    // 大型表示モーダルへ翻訳と原文を流し込んで直接表示する
+    await page.evaluate(() => {
+        document.querySelector('#presentOriginal').textContent = 'こんにちは';
+        document.querySelector('#presentText').textContent = 'Hello';
+        document.querySelector('#presentModal').style.display = 'flex';
+    });
+
+    await expect(page.locator('#presentModal')).toBeVisible();
+    await expect(page.locator('#presentText')).toBeVisible();
+    await expect(page.locator('#presentText')).toHaveText('Hello');
+    await expect(page.locator('#presentOriginal')).toHaveText('こんにちは');
+    await expect(page.locator('#presentReplayBtn')).toBeVisible();
+    await expect(page.locator('#presentCloseBtn')).toBeVisible();
+
+    // 翻訳テキストは原文より十分大きく表示される
+    const sizes = await page.evaluate(() => ({
+        translation: parseFloat(getComputedStyle(document.querySelector('#presentText')).fontSize),
+        original: parseFloat(getComputedStyle(document.querySelector('#presentOriginal')).fontSize)
+    }));
+    expect(sizes.translation).toBeGreaterThan(sizes.original);
+    expect(sizes.translation).toBeGreaterThanOrEqual(34);
 });
 
 test('parses translator service stream lines and payloads', async ({ page }) => {

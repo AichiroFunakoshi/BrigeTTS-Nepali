@@ -1777,3 +1777,134 @@ body.recording .language-button.stop {
 .conversation-log-empty[hidden] {
     display: none;
 }
+
+/* ------------------------------------------------------------
+   大型表示（相手に見せる）モード
+   ------------------------------------------------------------ */
+.present-translation-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 28px;
+    padding: 3px 10px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.present-translation-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.present-translation-btn:not(:disabled):active {
+    transform: scale(0.96);
+}
+
+/* フルスクリーンの提示ステージ */
+.present-modal {
+    align-items: stretch;
+    padding: 0;
+    background-color: var(--color-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    z-index: 1100;
+}
+
+.present-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    animation: modal-in 0.2s ease-out;
+}
+
+.present-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(12px, 3vh, 28px);
+    text-align: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.present-original {
+    color: var(--color-text-secondary);
+    font-size: clamp(16px, 4.5vw, 30px);
+    line-height: 1.4;
+    font-weight: 600;
+    max-width: 22ch;
+    word-break: break-word;
+}
+
+.present-original:empty {
+    display: none;
+}
+
+.present-text {
+    color: var(--color-text);
+    font-size: clamp(34px, 9vw, 88px);
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    max-width: 18ch;
+    word-break: break-word;
+}
+
+.present-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 18px;
+}
+
+.present-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 52px;
+    min-width: 120px;
+    padding: 0 22px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.present-action-btn:active {
+    transform: scale(0.97);
+}
+
+.present-action-btn.replay {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-primary-contrast);
+}
+
+/* 横画面では原文と翻訳を上下に詰め、ボタンを下端へ */
+@media (orientation: landscape) and (max-height: 520px) {
+    .present-text {
+        font-size: clamp(30px, 7.5vh, 64px);
+    }
+    .present-original {
+        font-size: clamp(14px, 3.2vh, 22px);
+    }
+    .present-actions {
+        padding-top: 10px;
+    }
+}
