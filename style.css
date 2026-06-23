@@ -1844,7 +1844,7 @@ body.recording .language-button.stop {
     line-height: 1.4;
     font-weight: 600;
     max-width: 22ch;
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .present-original:empty {
@@ -1858,7 +1858,7 @@ body.recording .language-button.stop {
     font-weight: 800;
     letter-spacing: 0.01em;
     max-width: 18ch;
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .present-actions {

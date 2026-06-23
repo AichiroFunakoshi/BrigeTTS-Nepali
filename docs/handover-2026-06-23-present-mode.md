@@ -4,7 +4,7 @@
 - 作業内容: BridgeTTS Phase 4「相手に見せる大型表示モード」の実装、および `package.json` の版数整合（1.0.0 → 2.3.0）。
 - コンテキスト:
   - これまで開発に使っていた作業モデル **fable5 が利用不可**になったため、本作業は **Claude Opus 4.8** で継続。コードベース自体は fable に依存していない（参照0件）。
-  - 元の作業フォルダ（iCloud Drive 内の `Bridge-TTS(Codex)`）は **クラウド専用（dataless）状態**で読み書き・git が不安定だった。これを回避するため、**iCloud外のローカル実体** `/Users/inaminetetsuo/Bridge-TTS(Codex)` を作業コピーとして使用（GitHub `main` の最新 `723eb06` と一致）。
+  - 元の作業フォルダ（iCloud Drive 内の `Bridge-TTS(Codex)`）は **クラウド専用（dataless）状態**で読み書き・git が不安定だった。これを回避するため、**iCloud外のローカル実体**（例 `~/Bridge-TTS(Codex)`）を作業コピーとして使用（GitHub `main` の最新 `723eb06` と一致）。
 - 作業ブランチ: `feature/present-mode`（`main` から分岐、`main` は無変更）。
 - 関連ファイル: `index.html` / `style.css` / `app.js` / `sw.js` / `package.json` / `tests/smoke.test.js`
 
@@ -43,8 +43,7 @@
 - 翻訳: OpenAI `gpt-4.1-nano`（端末から直接呼び出し）。音声: Web Speech API（iOSは SFSpeechRecognizer ブリッジ）。
 
 ## 📁 申し送りファイル情報
-- ファイル: `docs/handover-2026-06-23-present-mode.md`
-- パス: `/Users/inaminetetsuo/Bridge-TTS(Codex)/docs/handover-2026-06-23-present-mode.md`
+- ファイル: `docs/handover-2026-06-23-present-mode.md`（リポジトリルートからの相対パス）
 - 復帰方法: 別PC/別セッションでは `docs/HANDOFF.md`（継続ガイド）を起点に参照する。
 
 ## ⚠️ 注意点
