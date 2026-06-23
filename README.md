@@ -7,6 +7,7 @@
 - 更新履歴: [CHANGELOG.md](CHANGELOG.md)
 - iOSアプリのビルド・インストール手順: [docs/IOS_APP.md](docs/IOS_APP.md)
 - 図解仕様書: [docs/VISUAL_GUIDE.html](docs/VISUAL_GUIDE.html)
+- 開発の引き継ぎ・別PCでの作業継続: [docs/HANDOFF.md](docs/HANDOFF.md)
 
 ## インストール
 
