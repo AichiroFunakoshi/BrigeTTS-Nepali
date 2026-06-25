@@ -7,6 +7,16 @@
 
 ## [Unreleased]
 
+### Added
+- 大型表示モード（相手に見せる）: 翻訳ボックスの「拡大」ボタンから、直近の翻訳を全画面・特大で表示するモーダルを追加。原文も小さく併記し、再生（TTS）/閉じる/背景タップ/Escで操作できる。医療・接客などの対面会話で相手に画面を見せる用途（翻訳がある時のみ有効）
+
+### Changed
+- `package.json` の version を実アプリ版数に合わせて 1.0.0 → 2.3.0 に整合
+- Service Worker のキャッシュ名を `bridge-tts-codex-v12` → `v13` に更新
+
+### Docs
+- 作業継続ガイド `docs/HANDOFF.md` と申し送り `docs/handover-2026-06-23-present-mode.md` を追加
+
 ## [2.3.0] - 2026-06-12
 
 ### Added
