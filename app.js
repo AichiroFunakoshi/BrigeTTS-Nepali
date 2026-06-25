@@ -1450,7 +1450,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // マイク準備完了。ここから話し始めてよいことをユーザーに伝える
             if (isRecording) {
-                status.textContent = '録音中';
+                status.textContent = '聞き取り中';
             }
 
             // 音声認識が正常に開始したので、再起動カウンターをリセット
