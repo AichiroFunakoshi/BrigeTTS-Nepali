@@ -8,10 +8,11 @@
 ## ▶️ 現在の最新状態（このセクションを毎回更新する）
 
 - **最終更新**: 2026-06-23
-- **作業ブランチ**: `main`（大型表示モードは PR #33 でマージ済み。`feature/present-mode` は削除）
-- **最新コミット**: `2ff46c3`（Merge PR #33: 大型表示モード + package.json版数整合。CIスモークpass・CodeRabbitレビュー完了）
+- **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除）
+- **最新コミット**: `35fb61d`（Merge PR #37: 文字サイズ即時切替ボタン）
+- **未リリースの改良（CHANGELOG `[Unreleased]`）**: 大型表示モード(#33)／状態表示の文言統一=聞き取り中(#35)／CLAUDE.md追加(#36)／文字サイズ即時切替(#37)。各PRはCIスモークpass・CodeRabbitレビュー済み
 - **最新の申し送り**: [docs/handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md)
-- **次にやること**: 次の改善の着手、またはリリース判断（次版 v2.4.0 として CHANGELOG・各version更新→タグ push）
+- **次にやること**: 次の改善の着手、またはリリース判断（次版 v2.4.0 として CHANGELOG確定・各version整合→`v2.4.0` タグ push）
 
 ---
 
