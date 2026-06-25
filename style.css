@@ -1908,3 +1908,19 @@ body.recording .language-button.stop {
         padding-top: 10px;
     }
 }
+
+/* ------------------------------------------------------------
+   文字サイズの即時切替ボタン（ヘッダー）
+   ------------------------------------------------------------ */
+.font-size-toggle-label {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    font-weight: 700;
+    line-height: 1;
+    font-size: 17px;
+}
+
+.font-size-toggle-label > span {
+    font-size: 11px;
+}
