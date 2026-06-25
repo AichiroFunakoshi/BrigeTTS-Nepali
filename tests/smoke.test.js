@@ -31,6 +31,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('.conversation-log-replay')).toHaveCount(0);
     await expect(page.locator('#conversationLog')).toBeHidden();
     await expect(page.locator('#historyButton')).toBeVisible();
+    await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
     await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 
     await expect(page.locator('#apiModal')).toBeVisible();
@@ -245,4 +246,21 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
     expect(consoleErrors).toEqual(expect.arrayContaining([
         expect.stringContaining('ストリーミングレスポンス解析エラー')
     ]));
+});
+
+test('cycles font size from the header toggle', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#apiModal').evaluate((modal) => {
+        modal.style.display = 'none';
+    });
+
+    await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
+    // 初期はmedium（早期適用）。原文・翻訳の両方に反映される
+    await expect(page.locator('#translatedText')).toHaveClass(/size-medium/);
+    await expect(page.locator('#originalText')).toHaveClass(/size-medium/);
+
+    // タップでmedium → large へ循環
+    await page.locator('#fontSizeToggleBtn').click();
+    await expect(page.locator('#translatedText')).toHaveClass(/size-large/);
+    await expect(page.locator('#originalText')).toHaveClass(/size-large/);
 });

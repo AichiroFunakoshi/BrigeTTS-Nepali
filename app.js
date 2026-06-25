@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fontSizeMediumBtn = document.getElementById('fontSizeMedium');
     const fontSizeLargeBtn = document.getElementById('fontSizeLarge');
     const fontSizeXLargeBtn = document.getElementById('fontSizeXLarge');
+    const fontSizeToggleBtn = document.getElementById('fontSizeToggleBtn');
     const translationBox = document.getElementById('translationBox');
     const originalBox = document.getElementById('originalBox');
     const tapHint = document.getElementById('tapHint');
@@ -1181,6 +1182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fontSizeMediumBtn) fontSizeMediumBtn.addEventListener('click', () => changeFontSize('medium'));
     if (fontSizeLargeBtn) fontSizeLargeBtn.addEventListener('click', () => changeFontSize('large'));
     if (fontSizeXLargeBtn) fontSizeXLargeBtn.addEventListener('click', () => changeFontSize('xlarge'));
+    if (fontSizeToggleBtn) fontSizeToggleBtn.addEventListener('click', cycleFontSize);
 
     // 保存されたフォントサイズ設定を早期適用（APIキー入力前から反映）
     const initialFontSize = AppSettingsStorage.getFontSize('medium');
@@ -1267,6 +1269,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // プレビューも更新
         updateFontSizePreview(size);
+
+        // ヘッダーの即時切替ボタンのラベルを現在のサイズに同期（アクセシビリティ）
+        if (fontSizeToggleBtn) {
+            const sizeLabels = { small: '小', medium: '中', large: '大', xlarge: '特大' };
+            fontSizeToggleBtn.setAttribute('aria-label', `文字サイズ: ${sizeLabels[size] || size}（タップで変更）`);
+        }
+    }
+
+    // 文字サイズを次の段階へ循環させる（設定モーダルを開かずに画面上で即時変更）
+    function cycleFontSize() {
+        const order = AppSettingsStorage.fontSizeValues; // ['small','medium','large','xlarge']
+        const current = AppSettingsStorage.getFontSize('medium');
+        const currentIndex = order.indexOf(current);
+        const next = order[(currentIndex + 1) % order.length];
+        changeFontSize(next);
     }
     
     // アプリの初期化
