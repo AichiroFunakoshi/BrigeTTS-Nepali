@@ -76,18 +76,28 @@ test('uses side-by-side result boxes in landscape', async ({ page }) => {
         const containerStyle = getComputedStyle(document.querySelector('.result-container'));
         const originalRect = document.querySelector('#originalBox').getBoundingClientRect();
         const translationRect = document.querySelector('#translationBox').getBoundingClientRect();
+        const jaRect = document.querySelector('#startJapaneseBtn').getBoundingClientRect();
+        const enRect = document.querySelector('#startEnglishBtn').getBoundingClientRect();
+        const resetRect = document.querySelector('#resetBtn').getBoundingClientRect();
 
         return {
             direction: containerStyle.flexDirection,
             sameRow: Math.abs(originalRect.top - translationRect.top) < 4,
             originalLeft: originalRect.left,
-            translationLeft: translationRect.left
+            translationLeft: translationRect.left,
+            // 言語ボタンが1段（折り返さない）で横幅いっぱいに広がること
+            controlsSameRow: Math.abs(jaRect.top - enRect.top) < 4,
+            englishRightOfJapanese: enRect.left > jaRect.left,
+            primaryWiderThanReset: jaRect.width > resetRect.width
         };
     });
 
     expect(layout.direction).toBe('row');
     expect(layout.sameRow).toBe(true);
     expect(layout.translationLeft).toBeGreaterThan(layout.originalLeft);
+    expect(layout.controlsSameRow).toBe(true);
+    expect(layout.englishRightOfJapanese).toBe(true);
+    expect(layout.primaryWiderThanReset).toBe(true);
 });
 
 test('keeps primary controls thumb-friendly in portrait', async ({ page }) => {

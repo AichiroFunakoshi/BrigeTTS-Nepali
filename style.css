@@ -1613,17 +1613,18 @@ body.recording .language-button.stop {
         height: 32px;
     }
 
+    /* フル幅のボタン行 + その下に中央寄せのステータス（左右バランスを保つ） */
     .control-container {
-        flex-direction: row;
-        justify-content: center;
-        gap: 8px;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
         margin-bottom: 3px;
     }
 
     .button-group {
-        flex-direction: row;
+        flex-flow: row nowrap;    /* 横画面では折り返さず1段に */
         gap: 6px;
-        width: auto;
+        width: 100%;              /* 横幅いっぱいに広げる */
         max-width: none;
         min-height: 40px;
     }
@@ -1635,6 +1636,19 @@ body.recording .language-button.stop {
         font-size: 13px;
     }
 
+    /* 主要言語ボタンは横並びで均等に伸ばす（基本ルールの flex:1 1 140px を上書き） */
+    .language-button.japanese,
+    .language-button.english,
+    .language-button.stop {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    /* リセット(♻️)を赤(日本語)と緑(English)の中央に置いて左右対称に */
+    .language-button.japanese { order: 1; }
+    .language-button.reset { order: 2; }
+    .language-button.english { order: 3; }
+
     .language-button .language-icon {
         width: 14px;
         height: 14px;
@@ -1643,6 +1657,7 @@ body.recording .language-button.stop {
     .status {
         font-size: 12px;
         padding: 3px 10px;
+        white-space: nowrap;      /* 中央に1行で表示 */
     }
 
     /* 翻訳エリアを左右分割 */
