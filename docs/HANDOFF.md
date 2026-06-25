@@ -8,10 +8,10 @@
 ## ▶️ 現在の最新状態（このセクションを毎回更新する）
 
 - **最終更新**: 2026-06-23
-- **作業ブランチ**: `feature/present-mode`（`main` は無変更）
-- **最新コミット**: `1f9b6ed`（大型表示モード + 版数整合 / 未push）
+- **作業ブランチ**: `main`（大型表示モードは PR #33 でマージ済み。`feature/present-mode` は削除）
+- **最新コミット**: `2ff46c3`（Merge PR #33: 大型表示モード + package.json版数整合。CIスモークpass・CodeRabbitレビュー完了）
 - **最新の申し送り**: [docs/handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md)
-- **次にやること**: ローカルで `npm run test:smoke` → `git push origin feature/present-mode` → PR → マージ
+- **次にやること**: 次の改善の着手、またはリリース判断（次版 v2.4.0 として CHANGELOG・各version更新→タグ push）
 
 ---
 
@@ -27,7 +27,7 @@ git fetch origin
 
 # 3. 作業ブランチを確認・チェックアウト（上の「現在の最新状態」を参照）
 git branch -a
-git checkout feature/present-mode        # 進行中ブランチが無ければ main から
+git checkout main                        # 進行中の作業ブランチがあればそれをcheckout
 
 # 4. このガイドと最新の申し送りを読む
 #    docs/HANDOFF.md → 最新の docs/handover-YYYY-MM-DD-*.md
@@ -49,7 +49,7 @@ npm run test:smoke -- --reporter=line
 
 | 日付 | ファイル | 概要 |
 |---|---|---|
-| 2026-06-23 | [handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md) | 大型表示モード実装 / package.json 版数整合（branch: feature/present-mode） |
+| 2026-06-23 | [handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md) | 大型表示モード実装 / package.json 版数整合（PR #33 マージ済み・main 2ff46c3） |
 | 2025-10-10 | [handover-2025-10-10-ios-safari-fix.md](handover-2025-10-10-ios-safari-fix.md) | iOS Safari 関連の修正 |
 | 2025-10-10 | [handover-2025-10-10.md](handover-2025-10-10.md) | 申し送り |
 | 2025-01-08 | [handover-2025-01-08.md](handover-2025-01-08.md) | 申し送り |
