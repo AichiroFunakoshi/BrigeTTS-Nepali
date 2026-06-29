@@ -14,7 +14,7 @@
   - 翻訳ボックスのタイトルに「拡大」ボタン `#presentTranslationBtn` を追加（翻訳がある時のみ有効＝コピーボタンと連動）。
   - 全画面モーダル `#presentModal` を新設。直近翻訳 `#presentText`（特大）＋原文 `#presentOriginal`（小）を表示。`#presentReplayBtn`（TTS再生）/ `#presentCloseBtn`（閉じる）、背景タップ・Esc でも閉じる。
   - `style.css` に present 系スタイルを追加（`clamp()` でレスポンシブ、ライト/ダーク変数対応、横画面調整）。
-  - `sw.js` の `CACHE_VERSION` を `v12` → `v13`（キャッシュ更新）。
+  - `sw.js` の `CACHE_VERSION` を `v12` → `v13`（キャッシュ更新。※この申し送り作成時点の値。以降のPRでさらに更新されている）。
 - **テスト追加**: `tests/smoke.test.js` に初期状態（ボタン可視/disabled・モーダル非表示）と描画（翻訳テキスト・原文・フォントサイズ関係）の検証を追加。既存テストは未改変。
 - **検証（jsdom = 実DOMエンジン）**: 全JSが `node --check` 通過。APIキーありで `initializeApp()` 完走を確認し、閉じる/Esc/背景クリックの配線がすべて機能・モーダル初期非表示・拡大ボタン初期disabled・重大エラーなしを確認。
 - **コミット**: `1f9b6ed`（6ファイル, +267/-2）。
@@ -33,7 +33,7 @@
 - present mode のイベントリスナーは **`initializeApp()` 内**で登録され、`initializeApp()` は **APIキー保存後に実行**される（キー未保存のスモークテスト環境ではリスナー未登録＝既存テストもリスナーに依存しない設計）。
 - 翻訳結果のソースは変数 `lastTranslationResult`、言語は `selectedLanguage`。TTS は `speakTranslation(text, language)`。
 - ボタンの有効/無効は `updateTranslationBoxState(hasContent)` で copy/present 同時更新。
-- `sw.js` のキャッシュ名 = `bridge-tts-codex-v13`。
+- `sw.js` の `CACHE_VERSION` はキャッシュ資産（html/css/js/アイコン等）変更時に必ず上げる。最新値は `sw.js` を直接参照（本申し送り作成時点は `bridge-tts-codex-v13`）。
 - **gitロック残骸**: この環境（マウント）は `unlink` が制限され、コミット時に `.git` に空ロックが残ることがある。Mac Terminalで以下を実行して掃除:
   `rm -f .git/HEAD.lock .git/index.lock .git/objects/*/tmp_obj_* 2>/dev/null`
 
