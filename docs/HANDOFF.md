@@ -7,12 +7,13 @@
 
 ## ▶️ 現在の最新状態（このセクションを毎回更新する）
 
-- **最終更新**: 2026-06-23
+- **最終更新**: 2026-07-02
 - **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除）
-- **最新コミット**: `6ee81c7`（Merge PR #39: 横画面コントロールの左右対称化）
-- **未リリースの改良（CHANGELOG `[Unreleased]`）**: 大型表示モード(#33)／状態表示の文言統一=聞き取り中(#35)／CLAUDE.md追加(#36)／文字サイズ即時切替(#37)／横画面コントロールの左右対称化=日本語｜♻️｜English(#39)。各PRはCIスモークpass・CodeRabbitレビュー済み
-- **最新の申し送り**: [docs/handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md)
-- **次にやること**: 次の改善の着手、またはリリース判断（次版 v2.4.0 として CHANGELOG確定・各version整合→`v2.4.0` タグ push）
+- **最新コミット**: PR #44（CLAUDE.md: マルチMac運用とFable5行動規範）＋本申し送りPR
+- **未リリースの改良**: なし（v2.4.0の内容はCHANGELOG確定済み・**タグ未push**）
+- **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
+- **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
+- **次にやること**: `v2.4.0` タグのpush（→自動でRelease・AltStore配信）、その後は次の改善へ
 
 ---
 
@@ -74,6 +75,7 @@ npm run test:smoke -- --reporter=line
 
 | 日付 | ファイル | 概要 |
 |---|---|---|
+| 2026-07-02 | [handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md) | ローカル移行確定 / CLAUDE.mdにFable5規範 / 進捗ダッシュボード追加 |
 | 2026-06-23 | [handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md) | 大型表示モード実装 / package.json 版数整合（PR #33 マージ済み・main 2ff46c3） |
 | 2025-10-10 | [handover-2025-10-10-ios-safari-fix.md](handover-2025-10-10-ios-safari-fix.md) | iOS Safari 関連の修正 |
 | 2025-10-10 | [handover-2025-10-10.md](handover-2025-10-10.md) | 申し送り |

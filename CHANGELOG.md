@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+### Added
+- プロジェクト進捗ダッシュボード `dashboard.html` を追加（GitHub Pages配信。リリース/配信状況・未リリース変更・直近コミット・Issue/PR・CIを一望。アプリ本体には含まれない）
+
+### Docs
+- `PromptingClaudeFable5.md`（Fable5プロンプティングガイド）をプレーンMarkdown化してリポジトリに追加
+- CLAUDE.md にマルチMac運用手順（GitHub=唯一の正・iCloudコピー廃止）と Fable5 行動規範を追記
+- 申し送り `docs/handover-2026-07-02-local-migration.md` を追加、HANDOFF.md を更新
+
 ## [2.4.0] - 2026-07-01
 
 ### Added

@@ -78,7 +78,7 @@ def main():
     shutil.copy("images/icons/ios-appicon-1024.png", "_site/icon.png")
 
     # PWA本体もPagesルートで配信する（apps.json / altstore.html と同居）
-    web_files = ["index.html", "howto.html", "manifest.json", "sw.js", "style.css"]
+    web_files = ["index.html", "howto.html", "manifest.json", "sw.js", "style.css", "dashboard.html"]
     web_files += [p for p in sorted(glob.glob("*.js")) if p != "playwright.config.js"]
     for path in web_files:
         shutil.copy(path, os.path.join("_site", os.path.basename(path)))
