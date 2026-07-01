@@ -25,6 +25,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#presentTranslationBtn')).toBeDisabled();
     await expect(page.locator('#presentModal')).toHaveCount(1);
     await expect(page.locator('#presentModal')).toBeHidden();
+    await expect(page.locator('#presentModal')).toHaveAttribute('role', 'dialog');
+    await expect(page.locator('#presentModal')).toHaveAttribute('aria-modal', 'true');
     await expect(page.locator('#conversationLog')).toHaveCount(1);
     await expect(page.locator('#conversationLogList')).toHaveCount(1);
     await expect(page.locator('#clearConversationLogBtn')).toHaveCount(1);

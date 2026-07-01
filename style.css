@@ -1645,7 +1645,9 @@ body.recording .language-button.stop {
     }
 
     /* リセット(♻️)を赤(日本語)と緑(English)の中央に置いて左右対称に */
-    .language-button.japanese { order: 1; }
+    /* stop は録音中のみ表示。明示的に order:1 を与え、リセットより前に置く */
+    .language-button.japanese,
+    .language-button.stop { order: 1; }
     .language-button.reset { order: 2; }
     .language-button.english { order: 3; }
 
@@ -1837,7 +1839,7 @@ body.recording .language-button.stop {
     flex-direction: column;
     width: 100%;
     min-height: 100%;
-    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
     animation: modal-in 0.2s ease-out;
 }
 
