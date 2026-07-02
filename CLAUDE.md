@@ -54,6 +54,7 @@ PRを出す前に、サンドボックス等で以下を実行・確認する（
 - **教訓の記録**: ハマりどころや確認済みの正しい手法は `docs/HANDOFF.md` に追記する（既存メモの更新を優先し、重複を作らない。誤りと分かったメモは削除する）。
 
 ## 参照
+- **エージェント実務手順（英語・ユーザー追記欄あり）: `docs/AGENT_PLAYBOOK.md`** ← セッション開始時に必読
 - 作業継続ガイド: `docs/HANDOFF.md`
 - 目標・改善計画: `docs/PROJECT_GOALS_AND_IMPROVEMENT_PLAN.md`
 - 変更履歴: `CHANGELOG.md`
