@@ -1400,6 +1400,80 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========================================
+    // アプリ更新の自動検知（ネイティブ版のみ。PWAはService Workerが自動更新）
+    // ========================================
+    const UPDATE_CHECK_URL = 'https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json';
+    const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6時間
+    const DISMISSED_UPDATE_KEY = 'translatorDismissedUpdate';
+    let lastUpdateCheckAt = 0;
+
+    function compareAppVersions(a, b) {
+        const partsA = String(a).split('.').map(Number);
+        const partsB = String(b).split('.').map(Number);
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const diff = (partsA[i] || 0) - (partsB[i] || 0);
+            if (diff !== 0) return diff;
+        }
+        return 0;
+    }
+
+    function getCurrentAppVersion() {
+        const title = document.querySelector('.app-title');
+        const match = title && title.textContent.match(/v(\d+\.\d+\.\d+)/);
+        return match ? match[1] : null;
+    }
+
+    async function checkForAppUpdate() {
+        if (!window.__BRIDGE_TTS_NATIVE_APP__) return;
+        const now = Date.now();
+        if (now - lastUpdateCheckAt < UPDATE_CHECK_INTERVAL_MS) return;
+        lastUpdateCheckAt = now;
+        try {
+            const response = await fetch(UPDATE_CHECK_URL, { cache: 'no-store' });
+            const source = await response.json();
+            const latest = source && source.apps && source.apps[0] &&
+                source.apps[0].versions && source.apps[0].versions[0] &&
+                source.apps[0].versions[0].version;
+            const current = getCurrentAppVersion();
+            if (!latest || !current || compareAppVersions(latest, current) <= 0) return;
+            if (AppSettingsStorage.getString(DISMISSED_UPDATE_KEY) === latest) return;
+
+            const banner = document.getElementById('updateBanner');
+            const bannerText = document.getElementById('updateBannerText');
+            if (!banner || !bannerText) return;
+            bannerText.textContent = `新しいバージョン v${latest} が利用可能です`;
+            banner.dataset.version = latest;
+            banner.hidden = false;
+        } catch (error) {
+            // オフライン・一時的な失敗は無視（次回の起動/復帰時に再試行）
+        }
+    }
+
+    const updateBannerOpenBtn = document.getElementById('updateBannerOpen');
+    const updateBannerCloseBtn = document.getElementById('updateBannerClose');
+    if (updateBannerOpenBtn) {
+        updateBannerOpenBtn.addEventListener('click', () => {
+            // WKWebViewではwindow.openが外部アプリ起動(UIApplication.open)に委譲される
+            window.open('altstore://', '_blank');
+        });
+    }
+    if (updateBannerCloseBtn) {
+        updateBannerCloseBtn.addEventListener('click', () => {
+            const banner = document.getElementById('updateBanner');
+            if (banner) {
+                AppSettingsStorage.setString(DISMISSED_UPDATE_KEY, banner.dataset.version || '');
+                banner.hidden = true;
+            }
+        });
+    }
+    checkForAppUpdate();
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            checkForAppUpdate();
+        }
+    });
+
+    // ========================================
     // 設定のエクスポート / インポート
     // ========================================
     const exportSettingsBtn = document.getElementById('exportSettingsBtn');

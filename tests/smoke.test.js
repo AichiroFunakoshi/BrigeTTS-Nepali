@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.7.0');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.7.1');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -40,6 +40,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#importSettingsBtn')).toHaveCount(1);
     await expect(page.locator('#latencyOpenValue')).toHaveCount(1);
     await expect(page.locator('#resetLatencyBtn')).toHaveCount(1);
+    await expect(page.locator('#updateBanner')).toHaveCount(1);
+    await expect(page.locator('#updateBanner')).toBeHidden();
     await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
     await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 

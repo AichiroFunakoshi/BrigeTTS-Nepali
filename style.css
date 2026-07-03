@@ -2066,3 +2066,50 @@ body.recording .language-button.stop {
     color: var(--color-text-muted, #888);
     font-size: 12px;
 }
+
+/* ------------------------------------------------------------
+   アプリ更新バナー
+   ------------------------------------------------------------ */
+.update-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-primary-soft, rgba(66, 146, 205, 0.12));
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    margin: 4px 0 6px;
+    font-size: 13px;
+}
+
+.update-banner[hidden] {
+    display: none;
+}
+
+#updateBannerText {
+    flex: 1;
+    min-width: 0;
+}
+
+.update-banner-open {
+    flex: 0 0 auto;
+    background-color: var(--color-primary);
+    color: var(--color-primary-contrast);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.update-banner-close {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px 6px;
+    cursor: pointer;
+}

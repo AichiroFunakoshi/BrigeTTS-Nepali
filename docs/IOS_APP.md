@@ -72,6 +72,10 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 新しいリリースの公開は `v` で始まるタグ（例 `v2.1.0`）をpushするだけで、IPAビルド→Release添付→ソース(apps.json)更新まで自動で行われます。
 
+## 更新の受け取り
+
+新バージョンの通知は二重化されています。①アプリ内バナー（v2.7.1以降）: 起動時に新版を検知して画面上部に表示、タップでAltStoreへ。②AltStore自身の通知: iPhoneの設定→アプリ→AltStore→「Appのバックグラウンド更新」をONにすると、更新の検知通知と7日署名の自動リフレッシュが働きます。配信の全体像と開発者向け手順は [RELEASE_GUIDE.md](RELEASE_GUIDE.md) を参照。
+
 ## アプリ内エラー報告
 
 アプリ（およびWeb版）でエラーが発生すると「⚠️ エラーを報告」ボタンが表示されます。
