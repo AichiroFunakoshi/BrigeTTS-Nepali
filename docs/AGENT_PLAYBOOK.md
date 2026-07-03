@@ -88,8 +88,11 @@ Per CLAUDE.md checklist; execute the cheap ones always:
 - Do not re-read a file just edited; do not re-verify what CI already verifies.
 - Prefer `gh ... --jq` filters over dumping raw JSON.
 - Quote gh api URLs containing `?` (zsh glob breaks otherwise).
-- Long waits: never `sleep` >~80s inside one Desktop Commander call (MCP timeout
-  ≈100s). Poll with a second short call instead.
+- Long waits: NEVER put `sleep` inside a Desktop Commander call. The MCP client
+  times out around ~90s (error -32001), wasting a round-trip even though the
+  command itself completes on the Mac. Fire the command immediately and check
+  the result in the NEXT tool call; for long jobs use `nohup ... &` + poll.
+  Keep timeout_ms ≤ 45000 per call.
 - Reports to the user: outcome first, no play-by-play.
 
 ## 7. Known pitfalls (learned the hard way)

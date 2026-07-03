@@ -937,6 +937,33 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.max(DEBOUNCE_MIN_MS, Math.min(DEBOUNCE_MAX_MS, optimal));
     }
 
+    // 規定サンプル数に達した言語は、新しいデータが入るたびに最適値を自動で再計算・適用する。
+    // ローリングウィンドウ上の90パーセンタイルに常に追従するため、手動の「最適化を実行」を
+    // 待たなくてもデバウンスがパーソナライズされる（ボタンは即時実行手段として残置）。
+    function autoApplyOptimalDebounce(language) {
+        if (language !== 'ja' && language !== 'en') return;
+        if (debounceData[language].length < DEBOUNCE_SAMPLES_REQUIRED) return;
+
+        const optimal = calculateOptimalDebounce(language);
+        debounceOptimized[language] = true;
+        if (optimal === currentDebounce[language]) return;
+
+        currentDebounce[language] = optimal;
+
+        const storedValues = {};
+        ['ja', 'en'].forEach((lang) => {
+            if (debounceOptimized[lang]) {
+                storedValues[lang] = currentDebounce[lang];
+            }
+        });
+        AppSettingsStorage.setOptimizedDebounce(storedValues);
+        debounceOptimizedAt = new Date().toLocaleString('ja-JP', {
+            year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+        AppSettingsStorage.setDebounceOptimizedAt(debounceOptimizedAt);
+        console.log('デバウンス自動最適化:', language, '=', optimal + 'ms');
+    }
+
     // 認識結果の更新間隔を記録（テキストが変化した結果イベントごとに呼ばれる）
     function recordResultInterval(language) {
         const now = Date.now();
@@ -955,6 +982,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearTimeout(debounceDataSaveTimer);
                 }
                 debounceDataSaveTimer = setTimeout(() => {
+                    autoApplyOptimalDebounce(language);
                     saveDebounceData();
                     updateDebounceUI();
                     debounceDataSaveTimer = null;
