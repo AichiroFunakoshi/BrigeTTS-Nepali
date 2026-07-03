@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.6.0');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.6.1');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -272,7 +272,7 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
         stream: true,
         temperature: 0.3,
         systemPrompt: 'system prompt',
-        userPrompt: '以下の日本語テキストを翻訳してください:\n\nこんにちは'
+        userPrompt: '以下の日本語テキストを英語に翻訳してください:\n\nこんにちは'
     });
     expect(consoleErrors).toEqual(expect.arrayContaining([
         expect.stringContaining('ストリーミングレスポンス解析エラー')

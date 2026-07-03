@@ -17,7 +17,7 @@ const TranslatorService = {
                 },
                 {
                     role: 'user',
-                    content: `以下の${this.getSourceLanguageLabel(sourceLanguage)}テキストを翻訳してください:\n\n${text}`
+                    content: `以下の${this.getSourceLanguageLabel(sourceLanguage)}テキストを${sourceLanguage === 'ja' ? '英語' : '日本語'}に翻訳してください:\n\n${text}`
                 }
             ],
             stream: true,

@@ -548,13 +548,16 @@
       "lang": "ja",
       "source": "認知賞の検査を受けたことはありますか。",
       "mustInclude": [
-        "dementia"
+        [
+          "dementia",
+          "cognitive"
+        ]
       ],
       "mustNotInclude": [
         "prize",
         "award"
       ],
-      "note": "誤認識: 認知症→認知賞"
+      "note": "誤認識: 認知症→認知賞。cognitive assessment等も妥当な訳として許容"
     },
     {
       "id": "asr-06",
@@ -799,11 +802,8 @@
           "10 a.m."
         ]
       ],
-      "mustNotInclude": [
-        "10 minutes",
-        "ten minutes"
-      ],
-      "note": "10 minutesとの取り違え検出"
+      "mustNotInclude": [],
+      "note": "10 o'clockが必須。not in 10 minutesの対比表現は正しい訳として許容"
     }
   ]
 }

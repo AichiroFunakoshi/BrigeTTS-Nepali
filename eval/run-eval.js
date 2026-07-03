@@ -74,6 +74,7 @@ async function translate(testCase, apiKey, model) {
         dictionary: testCase.dictionary || []
     });
     const label = testCase.lang === 'ja' ? '日本語' : '英語';
+    const target = testCase.lang === 'ja' ? '英語' : '日本語';
     const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -81,7 +82,7 @@ async function translate(testCase, apiKey, model) {
             model: model,
             messages: [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: `以下の${label}テキストを翻訳してください:\n\n${testCase.source}` }
+                { role: 'user', content: `以下の${label}テキストを${target}に翻訳してください:\n\n${testCase.source}` }
             ],
             temperature: 0.3
         })

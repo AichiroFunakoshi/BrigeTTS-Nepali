@@ -62,6 +62,9 @@ Per CLAUDE.md checklist; execute the cheap ones always:
 - If any cached asset changed (`index.html`, `style.css`, `*.js`, icons, `howto.html`):
   bump `CACHE_VERSION` in `sw.js`.
 - Read the diff once (`git diff`) for unintended changes.
+- NEVER gate a commit on a piped test command (`npx playwright test | grep ...` returns
+  grep's exit code, not the tests'). Run tests to a log file, check `$?` explicitly,
+  then grep the log: `npx playwright test > /tmp/pw.log 2>&1; echo exit=$?`.
 - High-risk changes only: adversarial review by a fresh-context subagent.
 
 ## 5. Release procedure
