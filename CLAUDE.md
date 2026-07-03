@@ -15,7 +15,13 @@
 
 ## 作業環境・リポジトリ規律
 - **GitHub（origin/main）が唯一の正**。複数Macで開発する場合、各Macに `~/Bridge-TTS(Codex)` としてローカルクローンを置く。
-- **セッション開始時の手順**: `git checkout main && git pull --ff-only` で最新化 → `CHANGELOG.md`（[Unreleased]と直近リリース）と `docs/HANDOFF.md` で前回までの状況を把握してから作業に入る。
+- **セッション開始時の手順（指示がなくても必ず実施）**:
+  1. ロック掃除→ `git fetch` → `git status -sb` と `git log --oneline -1` で**ローカルとorigin/mainの一致を確認**。
+     このフォルダは手動コピーで他のMacから持ち込まれることがあり、古い状態・未コミット変更を含み得る。
+     乖離や未知の変更があれば**触る前にユーザーへ報告**（GitHubが唯一の正。手動コピーは種にすぎない）。
+  2. 一致していれば `git checkout main && git pull --ff-only` で最新化。
+  3. `docs/HANDOFF.md`「現在の最新状態」→ `CHANGELOG.md`（[Unreleased]と直近リリース）→ 必要に応じ `docs/AGENT_PLAYBOOK.md` の順で読み、「次にやること」から再開する。
+- **セッション終了時の手順（指示がなくても必ず実施）**: 区切りがついたら `docs/HANDOFF.md` の「現在の最新状態」を更新して作業内容のPRに含める（大きな節目では `docs/handover-YYYY-MM-DD-*.md` も作成）。これにより他のMac・他のセッションが指示なしで継続できる。
 - 作業フォルダは **iCloud Drive の外** のローカル実体のみ。iCloud内コピー（`~/Library/Mobile Documents/.../AI-Workspace/Bridge-TTS(Codex)`）は**廃止済み・参照禁止**（クラウド専用化で読み書き・gitが不安定。内容も古い）。Cowork/Claude Codeのフォルダ選択も必ずローカル側を使う。
 - **Node 22** を使用（`.nvmrc`）。
 - 変更は必ず **ブランチ → PR → マージ**。`main` は保護され直接pushは不可。

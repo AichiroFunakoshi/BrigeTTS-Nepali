@@ -13,6 +13,9 @@ at the bottom as authoritative corrections and fold them into behavior.
 ## 1. Session start protocol
 
 1. Work ONLY in the local clone: `~/Bridge-TTS(Codex)` (never the iCloud copy).
+   NOTE: the user sometimes seeds this folder on a new Mac by MANUALLY COPYING it
+   from another Mac. Treat a fresh session as potentially stale: verify against
+   origin before any work (step 3-4 below), and never assume local files are current.
 2. Clean stale git locks (this environment leaves them):
    `rm -f .git/HEAD.lock .git/index.lock .git/objects/*/tmp_obj_* 2>/dev/null`
 3. `git checkout main && git pull --ff-only`
@@ -21,6 +24,9 @@ at the bottom as authoritative corrections and fold them into behavior.
    - `docs/HANDOFF.md` → section "現在の最新状態" only
    - `CHANGELOG.md` → `[Unreleased]` block + latest release heading only
 5. Confirm a clean tree (`git status -sb`) before touching anything.
+6. If the tree is dirty or diverged from origin/main (manual copy leftovers):
+   STOP and report to the user before discarding anything. Uncommitted changes
+   may be work from another Mac that was never pushed.
 
 ## 2. Change workflow (branch → PR → merge)
 
@@ -115,7 +121,15 @@ Per CLAUDE.md checklist; execute the cheap ones always:
 - The in-app error-report token lives only in the Actions secret
   `ERROR_REPORT_TOKEN` (never in the repo; PAT expires 2026-09-10).
 
-## 8. Handover discipline
+## 8. Session end protocol (run without being asked)
+
+When a work unit is done (feature merged, release tagged, or session winding down):
+1. Update `docs/HANDOFF.md` → "現在の最新状態" (last commit/release, unreleased
+   items, next step) and include it in the same PR as the work when possible.
+2. For major milestones, also add `docs/handover-YYYY-MM-DD[-topic].md` and list it.
+3. Push everything — the next session (any Mac) starts from GitHub, not from memory.
+
+## 8b. Handover discipline
 
 - At every milestone: create `docs/handover-YYYY-MM-DD[-topic].md` AND update
   the "現在の最新状態" + list in `docs/HANDOFF.md`, then merge via PR so other
