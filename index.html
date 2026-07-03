@@ -42,7 +42,7 @@
     <div class="container">
         <header class="app-header">
             <div class="app-header-text">
-                <div class="app-title">BridgeTTS v2.6.1</div>
+                <div class="app-title">BridgeTTS v2.7.0</div>
                 <div class="app-subtitle">日英リアルタイム音声翻訳</div>
                 <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
@@ -147,7 +147,7 @@
         </div>
 
         <div class="app-footer">
-            BridgeTTS v2.6.1 © 2025–2026 ┃ Crafted by A_1_6
+            BridgeTTS v2.7.0 © 2025–2026 ┃ Crafted by A_1_6
         </div>
     </div>
 
@@ -316,6 +316,19 @@
                     <button class="debounce-btn full-reset" id="fullResetDebounceBtn">完全リセット</button>
                 </div>
                 <div class="form-help">音声認識の更新間隔を学習し、翻訳を開始するまでの待ち時間（デバウンス）を言語別に自動で最適化・適用します（各言語30件で有効化、以後も使うほど追従）。「最適化を実行」は手動で即時反映したい場合用です</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">レイテンシ計測（KPI-1の実測）</label>
+                <div class="latency-stats">
+                    <div class="latency-row"><span class="latency-label">訳出開始（目標: 中央値700ms以内）</span><span class="latency-value" id="latencyOpenValue">--</span></div>
+                    <div class="latency-row"><span class="latency-label">訳の確定（目標: 中央値1200ms以内）</span><span class="latency-value" id="latencyDoneValue">--</span></div>
+                    <div class="latency-samples" id="latencySamples">データなし（翻訳すると自動記録されます）</div>
+                </div>
+                <div class="debounce-buttons">
+                    <button class="debounce-btn reset" id="resetLatencyBtn" type="button">計測をリセット</button>
+                </div>
+                <div class="form-help">翻訳のたびに「区切り検出→最初の訳語」「→全文確定」の時間を自動記録します（直近100件・この端末のみ保存）</div>
             </div>
 
             <div class="button-row">

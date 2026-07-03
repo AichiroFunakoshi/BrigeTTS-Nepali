@@ -2031,3 +2031,38 @@ body.recording .language-button.stop {
     font-size: 13px;
     padding: 4px 2px;
 }
+
+/* ------------------------------------------------------------
+   レイテンシ計測（F12）
+   ------------------------------------------------------------ */
+.latency-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+.latency-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.latency-label {
+    color: var(--color-text-muted, #777);
+}
+
+.latency-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.latency-samples {
+    color: var(--color-text-muted, #888);
+    font-size: 12px;
+}

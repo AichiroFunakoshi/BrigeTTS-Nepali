@@ -12,7 +12,8 @@ const AppSettingsStorage = {
         theme: 'translatorTheme',
         conversationLog: 'translatorConversationLog',
         translationDomain: 'translatorTranslationDomain',
-        userDictionary: 'translatorUserDictionary'
+        userDictionary: 'translatorUserDictionary',
+        latencyData: 'translatorLatencyData'
     },
 
     fontSizeValues: ['small', 'medium', 'large', 'xlarge'],
@@ -187,6 +188,23 @@ const AppSettingsStorage = {
 
     setUserDictionary: function(entries) {
         this.setJson(this.keys.userDictionary, Array.isArray(entries) ? entries : []);
+    },
+
+    // レイテンシ計測（F12）: {o: 訳出開始ms, d: 確定ms, t: 記録時刻} の配列
+    getLatencyData: function() {
+        const entries = this.getJson(this.keys.latencyData, []);
+        if (!Array.isArray(entries)) return [];
+        return entries.filter((entry) =>
+            entry && typeof entry.o === 'number' && typeof entry.d === 'number'
+        );
+    },
+
+    setLatencyData: function(entries) {
+        this.setJson(this.keys.latencyData, Array.isArray(entries) ? entries : []);
+    },
+
+    clearLatencyData: function() {
+        this.remove(this.keys.latencyData);
     },
 
     // 設定の一括エクスポート/インポート（APIキーと会話履歴は意図的に含めない）

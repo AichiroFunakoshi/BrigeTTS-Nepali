@@ -1340,6 +1340,66 @@ document.addEventListener('DOMContentLoaded', function() {
     renderUserDictionary();
 
     // ========================================
+    // レイテンシ計測（F12・KPI-1の実測）
+    // ========================================
+    const LATENCY_MAX_SAMPLES = 100;
+    let latencyData = AppSettingsStorage.getLatencyData();
+
+    function latencyPercentile(values, ratio) {
+        if (values.length === 0) return null;
+        const sorted = [...values].sort((a, b) => a - b);
+        return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * ratio))];
+    }
+
+    function updateLatencyUI() {
+        const openElement = document.getElementById('latencyOpenValue');
+        const doneElement = document.getElementById('latencyDoneValue');
+        const samplesElement = document.getElementById('latencySamples');
+        if (!openElement || !doneElement || !samplesElement) return;
+
+        if (latencyData.length === 0) {
+            openElement.textContent = '--';
+            doneElement.textContent = '--';
+            samplesElement.textContent = 'データなし（翻訳すると自動記録されます）';
+            return;
+        }
+        const opens = latencyData.map((sample) => sample.o);
+        const dones = latencyData.map((sample) => sample.d);
+        openElement.textContent = `中央値 ${latencyPercentile(opens, 0.5)}ms ・ 95p ${latencyPercentile(opens, 0.95)}ms`;
+        doneElement.textContent = `中央値 ${latencyPercentile(dones, 0.5)}ms ・ 95p ${latencyPercentile(dones, 0.95)}ms`;
+        samplesElement.textContent = `サンプル: 直近${latencyData.length}件`;
+    }
+
+    function recordLatencySample(openMs, doneMs) {
+        latencyData.push({ o: Math.round(openMs), d: Math.round(doneMs), t: Date.now() });
+        if (latencyData.length > LATENCY_MAX_SAMPLES) {
+            latencyData = latencyData.slice(-LATENCY_MAX_SAMPLES);
+        }
+        AppSettingsStorage.setLatencyData(latencyData);
+        updateLatencyUI();
+    }
+
+    const resetLatencyBtn = document.getElementById('resetLatencyBtn');
+    if (resetLatencyBtn) {
+        resetLatencyBtn.addEventListener('click', () => {
+            latencyData = [];
+            AppSettingsStorage.clearLatencyData();
+            updateLatencyUI();
+        });
+    }
+    updateLatencyUI();
+
+    // 翻訳API接続のウォームアップ（録音開始時にTLS/HTTP2接続を先行確立し、
+    // 最初の翻訳リクエストの接続コスト100〜300msをゼロにする）
+    let lastConnectionWarmupAt = 0;
+    function warmUpTranslationConnection() {
+        const now = Date.now();
+        if (now - lastConnectionWarmupAt < 60000) return;
+        lastConnectionWarmupAt = now;
+        fetch('https://api.openai.com/v1/models', { method: 'HEAD', cache: 'no-store' }).catch(() => {});
+    }
+
+    // ========================================
     // 設定のエクスポート / インポート
     // ========================================
     const exportSettingsBtn = document.getElementById('exportSettingsBtn');
@@ -1866,6 +1926,7 @@ document.addEventListener('DOMContentLoaded', function() {
             lastResultEventTime = 0;
 
             // 認識言語を設定
+            warmUpTranslationConnection();
             recognition.lang = language === 'ja' ? 'ja-JP' : 'en-US';
             recognition.start();
 
@@ -2064,6 +2125,10 @@ document.addEventListener('DOMContentLoaded', function() {
             staleWarning.remove();
         }
 
+        // レイテンシ計測: 区切り検出（デバウンス満了）を起点とする
+        const latencyStartedAt = performance.now();
+        let latencyFirstChunkAt = null;
+
         // 既に翻訳中の場合は新しいリクエストで上書き
         if (translationInProgress) {
             // 既存のリクエストを中断
@@ -2120,6 +2185,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (translationId !== activeTranslationId) {
                         return;
                     }
+                    if (latencyFirstChunkAt === null) {
+                        latencyFirstChunkAt = performance.now();
+                    }
                     translatedText.textContent = currentText;
                 }
             });
@@ -2127,7 +2195,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (translationId !== activeTranslationId) {
                 return;
             }
-            
+
+            if (latencyFirstChunkAt !== null) {
+                recordLatencySample(
+                    latencyFirstChunkAt - latencyStartedAt,
+                    performance.now() - latencyStartedAt
+                );
+            }
+
             console.log('翻訳完了:', {
                 resultLength: translationResult.length,
                 selectedLanguage: selectedLanguage

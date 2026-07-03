@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.6.1');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.7.0');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -38,6 +38,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#domainBadge')).toHaveText('医療・介護・福祉');
     await expect(page.locator('#exportSettingsBtn')).toHaveCount(1);
     await expect(page.locator('#importSettingsBtn')).toHaveCount(1);
+    await expect(page.locator('#latencyOpenValue')).toHaveCount(1);
+    await expect(page.locator('#resetLatencyBtn')).toHaveCount(1);
     await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
     await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 
@@ -323,4 +325,14 @@ test('exports and imports settings as JSON', async ({ page }) => {
     expect(result.rejectedOk).toBe(false);
     expect(result.domain).toBe('daily');
     expect(result.dictSurface).toBe('テスト苑');
+});
+
+test('stores latency samples via settings storage', async ({ page }) => {
+    await page.goto('/');
+    const stored = await page.evaluate(() => {
+        window.AppSettingsStorage.setLatencyData([{ o: 480, d: 950, t: Date.now() }, { o: 'bad' }]);
+        return window.AppSettingsStorage.getLatencyData();
+    });
+    expect(stored.length).toBe(1);
+    expect(stored[0].o).toBe(480);
 });
