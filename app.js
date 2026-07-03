@@ -1217,6 +1217,100 @@ document.addEventListener('DOMContentLoaded', function() {
     // 保存されたテーマを早期適用（index.htmlのインラインスクリプトと同じ状態に同期）
     applyTheme(AppSettingsStorage.getTheme('auto'));
 
+    // ========================================
+    // 翻訳モード（会話領域）とユーザー辞書
+    // ========================================
+    const domainButtons = document.querySelectorAll('.domain-btn');
+    const domainBadge = document.getElementById('domainBadge');
+    const dictReadingInput = document.getElementById('dictReading');
+    const dictSurfaceInput = document.getElementById('dictSurface');
+    const dictEnglishInput = document.getElementById('dictEnglish');
+    const dictAddBtn = document.getElementById('dictAddBtn');
+    const dictListElement = document.getElementById('dictList');
+
+    const DOMAIN_LABELS = { medical: '医療・介護・福祉', daily: '日常会話' };
+    let translationDomain = AppSettingsStorage.getTranslationDomain('medical');
+    let userDictionary = AppSettingsStorage.getUserDictionary();
+
+    function applyTranslationDomain(domain) {
+        translationDomain = domain === 'daily' ? 'daily' : 'medical';
+        domainButtons.forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.domain === translationDomain);
+        });
+        if (domainBadge) {
+            domainBadge.textContent = DOMAIN_LABELS[translationDomain];
+            domainBadge.hidden = false;
+        }
+    }
+
+    domainButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            AppSettingsStorage.setTranslationDomain(btn.dataset.domain);
+            applyTranslationDomain(btn.dataset.domain);
+        });
+    });
+
+    applyTranslationDomain(translationDomain);
+
+    function renderUserDictionary() {
+        if (!dictListElement) return;
+        dictListElement.replaceChildren();
+
+        if (userDictionary.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'user-dict-empty';
+            empty.textContent = '登録された語はありません';
+            dictListElement.appendChild(empty);
+            return;
+        }
+
+        userDictionary.forEach((entry, index) => {
+            const row = document.createElement('div');
+            row.className = 'user-dict-row';
+
+            const text = document.createElement('span');
+            text.className = 'user-dict-text';
+            const reading = entry.reading ? entry.reading + '｜' : '';
+            text.textContent = reading + entry.surface + ' → ' + (entry.english || '（ローマ字）');
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'user-dict-remove';
+            removeButton.textContent = '削除';
+            removeButton.setAttribute('aria-label', entry.surface + ' を辞書から削除');
+            removeButton.addEventListener('click', () => {
+                userDictionary.splice(index, 1);
+                AppSettingsStorage.setUserDictionary(userDictionary);
+                renderUserDictionary();
+            });
+
+            row.append(text, removeButton);
+            dictListElement.appendChild(row);
+        });
+    }
+
+    if (dictAddBtn) {
+        dictAddBtn.addEventListener('click', () => {
+            const surface = dictSurfaceInput ? dictSurfaceInput.value.trim() : '';
+            if (!surface) {
+                if (dictSurfaceInput) dictSurfaceInput.focus();
+                return;
+            }
+            userDictionary.push({
+                reading: dictReadingInput ? dictReadingInput.value.trim() : '',
+                surface: surface,
+                english: dictEnglishInput ? dictEnglishInput.value.trim() : ''
+            });
+            AppSettingsStorage.setUserDictionary(userDictionary);
+            if (dictReadingInput) dictReadingInput.value = '';
+            if (dictSurfaceInput) dictSurfaceInput.value = '';
+            if (dictEnglishInput) dictEnglishInput.value = '';
+            renderUserDictionary();
+        });
+    }
+
+    renderUserDictionary();
+
     // 保存された会話履歴を復元
     loadConversationLog();
 
@@ -1943,7 +2037,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 apiKey: OPENAI_API_KEY,
                 text: text,
                 sourceLanguage: selectedLanguage,
-                systemPrompt: window.PromptService.getTranslationSystemPrompt(),
+                systemPrompt: window.PromptService.getTranslationSystemPrompt({
+                    domain: translationDomain,
+                    dictionary: userDictionary
+                }),
                 signal: signal,
                 onChunk: (currentText) => {
                     if (translationId !== activeTranslationId) {

@@ -10,11 +10,14 @@ const AppSettingsStorage = {
         optimizedDebounce: 'translatorOptimizedDebounce',
         debounceOptimizedAt: 'translatorDebounceOptimizedAt',
         theme: 'translatorTheme',
-        conversationLog: 'translatorConversationLog'
+        conversationLog: 'translatorConversationLog',
+        translationDomain: 'translatorTranslationDomain',
+        userDictionary: 'translatorUserDictionary'
     },
 
     fontSizeValues: ['small', 'medium', 'large', 'xlarge'],
     themeValues: ['auto', 'light', 'dark'],
+    domainValues: ['medical', 'daily'],
 
     normalizeFontSize: function(value, fallback = 'medium') {
         const normalizedFallback = this.fontSizeValues.includes(String(fallback).trim().toLowerCase())
@@ -159,6 +162,31 @@ const AppSettingsStorage = {
 
     setTheme: function(value) {
         this.setString(this.keys.theme, this.themeValues.includes(value) ? value : 'auto');
+    },
+
+    getTranslationDomain: function(defaultValue = 'medical') {
+        const value = localStorage.getItem(this.keys.translationDomain);
+        return this.domainValues.includes(value) ? value : defaultValue;
+    },
+
+    setTranslationDomain: function(value) {
+        this.setString(this.keys.translationDomain, this.domainValues.includes(value) ? value : 'medical');
+    },
+
+    getUserDictionary: function() {
+        const entries = this.getJson(this.keys.userDictionary, []);
+        if (!Array.isArray(entries)) return [];
+        return entries.filter((entry) =>
+            entry && typeof entry.surface === 'string' && entry.surface.trim() !== ''
+        ).map((entry) => ({
+            reading: typeof entry.reading === 'string' ? entry.reading : '',
+            surface: entry.surface,
+            english: typeof entry.english === 'string' ? entry.english : ''
+        }));
+    },
+
+    setUserDictionary: function(entries) {
+        this.setJson(this.keys.userDictionary, Array.isArray(entries) ? entries : []);
     },
 
     getConversationLog: function() {

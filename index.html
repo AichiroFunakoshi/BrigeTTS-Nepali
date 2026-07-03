@@ -44,6 +44,7 @@
             <div class="app-header-text">
                 <div class="app-title">BridgeTTS v2.4.0</div>
                 <div class="app-subtitle">日英リアルタイム音声翻訳</div>
+                <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
             <div class="header-buttons">
             <button class="settings-button font-size-toggle" id="fontSizeToggleBtn" type="button" aria-label="文字サイズを変更">
@@ -204,6 +205,27 @@
                 <label class="form-label" for="openaiKey">OpenAI APIキー</label>
                 <input type="text" id="openaiKey" class="form-input" placeholder="sk-...">
                 <div class="form-help">APIキーは<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAIダッシュボード</a>から取得できます。翻訳時はブラウザからOpenAI APIへ直接送信されます。</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">翻訳モード（会話領域）</label>
+                <div class="theme-controls" id="domainControls">
+                    <button class="domain-btn" data-domain="medical" type="button">医療・介護・福祉</button>
+                    <button class="domain-btn" data-domain="daily" type="button">日常会話</button>
+                </div>
+                <div class="form-help">会話の領域に合わせて翻訳方針を切り替えます（専門用語の解釈が正確になります）</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">ユーザー辞書（固有名詞の対訳）</label>
+                <div class="user-dict-form">
+                    <input type="text" id="dictReading" class="form-input" placeholder="よみ（例: さくらえん）">
+                    <input type="text" id="dictSurface" class="form-input" placeholder="表記（例: さくら苑）※必須">
+                    <input type="text" id="dictEnglish" class="form-input" placeholder="英語表記（空欄＝ローマ字）">
+                    <button type="button" class="dict-add-btn" id="dictAddBtn">辞書に追加</button>
+                </div>
+                <div class="user-dict-list" id="dictList"></div>
+                <div class="form-help">施設名・人名などを登録すると、翻訳モードに関わらず常に正しい表記・英語で翻訳されます（この端末にのみ保存）</div>
             </div>
 
             <div class="form-group">

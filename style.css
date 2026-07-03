@@ -957,7 +957,8 @@ body.recording .language-button.stop {
     justify-content: center;
 }
 
-.theme-btn {
+.theme-btn,
+.domain-btn {
     flex: 1;
     padding: 10px 12px;
     border: 2px solid var(--color-border);
@@ -970,18 +971,21 @@ body.recording .language-button.stop {
     transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
-.theme-btn:hover {
+.theme-btn:hover,
+.domain-btn:hover {
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
 
-.theme-btn.active {
+.theme-btn.active,
+.domain-btn.active {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
     color: var(--color-primary-contrast);
 }
 
-.theme-btn:focus-visible {
+.theme-btn:focus-visible,
+.domain-btn:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
@@ -1531,7 +1535,7 @@ body.recording .language-button.stop {
 
     .font-size-controls-modal { gap: 6px; }
     .font-size-btn { padding: 8px 10px; font-size: 13px; }
-    .theme-btn { padding: 8px 10px; font-size: 13px; }
+    .theme-btn, .domain-btn { padding: 8px 10px; font-size: 13px; }
 
     .translation-box { padding: 10px 12px; }
     .tap-hint { font-size: 10px; padding: 2px 6px; }
@@ -1940,4 +1944,87 @@ body.recording .language-button.stop {
 
 .font-size-toggle-label > span {
     font-size: 11px;
+}
+
+/* ------------------------------------------------------------
+   翻訳モードバッジとユーザー辞書
+   ------------------------------------------------------------ */
+.domain-badge {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: 999px;
+    padding: 1px 8px;
+    white-space: nowrap;
+}
+
+.user-dict-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.user-dict-form .form-input {
+    margin: 0;
+}
+
+.dict-add-btn {
+    grid-column: 1 / -1;
+    padding: 9px 12px;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dict-add-btn:active {
+    transform: scale(0.98);
+}
+
+.user-dict-list {
+    margin-top: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-dict-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+.user-dict-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-dict-remove {
+    flex: 0 0 auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-text);
+    font-size: 12px;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
+.user-dict-empty {
+    color: var(--color-text-muted, #888);
+    font-size: 13px;
+    padding: 4px 2px;
 }

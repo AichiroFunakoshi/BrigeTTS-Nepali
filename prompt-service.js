@@ -22,8 +22,50 @@ const PromptService = {
 10. 出力は自然で会話的にする。
 11. 翻訳のみを出力し、解説や補足コメントは含めない（文化的な概念の括弧内説明は除く）。誤認識を修正した場合も、修正の説明は出力しない。`,
 
-    getTranslationSystemPrompt: function() {
-        return this.translationSystemPrompt;
+    // 会話領域ごとの翻訳方針（設定「翻訳モード」で切り替え）
+    domainDirectives: {
+        medical: `【会話領域: 医療・介護・福祉】
+この会話は医療・介護・福祉の現場（リハビリテーション、精神科、嚥下、看護、介護サービス等）で行われている。
+- 症状・疾患・薬剤・検査・訓練・制度に関する語は、正確な専門用語として解釈し、英語では標準的な医学・介護英語を用いる。
+- 読みが曖昧な語は医療・介護の文脈を優先して復元する（例:「えんげ」→「嚥下」、「そしゃく」→「咀嚼」、「じょくそう」→「褥瘡」）。
+- 患者・利用者に向けた発話は、正確さを保ちながら平易で丁寧な表現にする。`,
+        daily: `【会話領域: 日常会話】
+この会話は日常的な場面で行われている。専門用語よりも自然で平易な口語表現を優先し、会話として滑らかな訳にする。`
+    },
+
+    buildUserDictionarySection: function(dictionary) {
+        if (!Array.isArray(dictionary) || dictionary.length === 0) {
+            return '';
+        }
+        const MAX_ENTRIES = 50;
+        const lines = dictionary.slice(0, MAX_ENTRIES).map((entry) => {
+            const reading = entry.reading ? `${entry.reading}｜` : '';
+            const english = entry.english ? entry.english : '（ヘボン式ローマ字）';
+            return `- ${reading}${entry.surface} → ${english}`;
+        });
+        return `【ユーザー辞書（会話領域の設定に関わらず、最優先で常に適用）】
+以下はユーザーが登録した固有名詞（施設名・人名など）の正しい表記と英語表記である。
+- 入力中にこれらの語、または読み・音が近い語（音声認識の誤変換を含む）が現れた場合、必ずこの正しい表記に復元したうえで、指定の英語表記を使用する。
+- 英語表記が「（ヘボン式ローマ字）」となっている語は、翻訳せずヘボン式ローマ字で表記する。
+登録語（よみ｜表記 → 英語）:
+${lines.join('\n')}`;
+    },
+
+    getTranslationSystemPrompt: function(options) {
+        const opts = options || {};
+        const sections = [this.translationSystemPrompt];
+
+        const directive = this.domainDirectives[opts.domain];
+        if (directive) {
+            sections.push(directive);
+        }
+
+        const dictionarySection = this.buildUserDictionarySection(opts.dictionary);
+        if (dictionarySection) {
+            sections.push(dictionarySection);
+        }
+
+        return sections.join('\n\n');
     }
 };
 

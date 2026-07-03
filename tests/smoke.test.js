@@ -33,6 +33,9 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('.conversation-log-replay')).toHaveCount(0);
     await expect(page.locator('#conversationLog')).toBeHidden();
     await expect(page.locator('#historyButton')).toBeVisible();
+    await expect(page.locator('#domainControls .domain-btn')).toHaveCount(2);
+    await expect(page.locator('#dictAddBtn')).toHaveCount(1);
+    await expect(page.locator('#domainBadge')).toHaveText('医療・介護・福祉');
     await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
     await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 
@@ -65,6 +68,20 @@ test('loads the default translation prompt rules', async ({ page }) => {
     expect(prompt).toContain('英語の場合は日本語');
     expect(prompt).toContain('フィラー');
     expect(prompt).toContain('翻訳のみを出力');
+
+    // 翻訳モード（会話領域）とユーザー辞書のプロンプト注入
+    const injectedPrompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt({
+        domain: 'medical',
+        dictionary: [{ reading: 'さくらえん', surface: 'さくら苑', english: 'Sakura-en' }]
+    }));
+    expect(injectedPrompt).toContain('医療・介護・福祉');
+    expect(injectedPrompt).toContain('さくら苑');
+    expect(injectedPrompt).toContain('Sakura-en');
+    expect(injectedPrompt).toContain('ユーザー辞書');
+
+    const dailyPrompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt({ domain: 'daily' }));
+    expect(dailyPrompt).toContain('日常会話');
+    expect(dailyPrompt).not.toContain('ユーザー辞書');
 });
 
 test('uses side-by-side result boxes in landscape', async ({ page }) => {
