@@ -9,7 +9,7 @@
 
 - **最終更新**: 2026-07-03
 - **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除）
-- **最新リリース**: **v2.7.0**（配信済み）= レイテンシ計測F12（設定画面に訳出開始/確定の中央値・95p表示）＋翻訳API接続ウォームアップ。それ以前: v2.6.1=プロンプト品質修正（評価50ケース**100%**・致命的誤訳0件=KPI-3達成）、v2.6.0=設定エクスポート・インポート/評価ハーネス、v2.5.0=翻訳モード/ユーザー辞書/デバウンス自動適用
+- **最新リリース**: **v2.7.1**（配信済み）= アプリ内更新通知バナー（apps.json照会→AltStore起動導線）＋配信手順書 docs/RELEASE_GUIDE.md。v2.7.0=レイテンシ計測F12＋接続ウォームアップ。それ以前: v2.6.1=プロンプト品質修正（評価50ケース**100%**・致命的誤訳0件=KPI-3達成）、v2.6.0=設定エクスポート・インポート/評価ハーネス、v2.5.0=翻訳モード/ユーザー辞書/デバウンス自動適用
 - **未リリースの改良**: なし
 - **品質ベースライン**: eval/cases.json 50件で100%（比較メモは docs/evaluation-cases.md）。プロンプト/モデル変更時は `OPENAI_API_KEY=... node eval/run-eval.js` で前後比較すること
 - **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
@@ -100,4 +100,6 @@ npm run test:smoke -- --reporter=line
 - `main` への取り込みは push → PR → マージで行う（直接編集しない）。
 - この共同作業環境は `.git` の `unlink` が制限され、コミット時に空ロックが残ることがある。
   Mac Terminal で掃除: `rm -f .git/HEAD.lock .git/index.lock .git/objects/*/tmp_obj_* 2>/dev/null`
+- GitHub Pagesのデプロイが「Deployment failed, try again later」で連続失敗することがある（GitHub側の一過性障害）。
+  10分ほど置いて `gh workflow run altstore-source.yml` で再実行すれば復旧する。ipa/Release本体は影響を受けない。
 - 翻訳には OpenAI APIキーが必要（端末の localStorage に保存。共有端末では使用後リセット）。
