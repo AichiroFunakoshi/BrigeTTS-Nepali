@@ -13,7 +13,7 @@
 - **未リリースの改良**: 設定エクスポート/インポート（F10・v2.6予定）
 - **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
 - **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
-- **次にやること**: F11 翻訳品質評価ハーネス（ロードマップは docs/PROJECT_GOALS_AND_IMPROVEMENT_PLAN.md §6）
+- **次にやること**: v2.6.0リリース判断（F10/F11完了）→ v2.7: F12レイテンシ計測から着手（設計は PROJECT_GOALS §6「v2.7 レイテンシ設計」）
 
 ---
 

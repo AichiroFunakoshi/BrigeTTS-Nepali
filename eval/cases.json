@@ -1,0 +1,809 @@
+{
+  "description": "BridgeTTS 翻訳品質評価ケース。mustInclude: 各要素が訳文に含まれること(配列要素は『いずれか1つ』で可)。mustNotInclude: いずれも含まれないこと。ja→enは小文字化して照合、en→jaはそのまま部分一致。critical: 誤ると臨床的に危険なケース(KPI-3の致命的誤訳判定対象)。",
+  "cases": [
+    {
+      "id": "reha-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "今日は理学療法の後に作業療法があります。",
+      "mustInclude": [
+        "physical therapy",
+        "occupational therapy"
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-02",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "麻痺のある右手も、少しずつ動かす練習をしましょう。",
+      "mustInclude": [
+        [
+          "paraly",
+          "weakness"
+        ],
+        [
+          "right hand",
+          "right arm"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-03",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "歩行器を使って廊下を往復してみましょう。",
+      "mustInclude": [
+        [
+          "walker",
+          "walking frame"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-04",
+      "domain": "medical",
+      "lang": "en",
+      "source": "Does it hurt when you bend your knee?",
+      "mustInclude": [
+        "膝",
+        [
+          "曲げ",
+          "まげ"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-05",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "拘縮を防ぐために、毎日関節を動かします。",
+      "mustInclude": [
+        "contracture",
+        "joint"
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-06",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "立ち上がるときは、ふらつきに注意してください。",
+      "mustInclude": [
+        [
+          "unsteady",
+          "dizz",
+          "balance",
+          "wobbl"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-07",
+      "domain": "medical",
+      "lang": "en",
+      "source": "Please raise your arm as high as you can.",
+      "mustInclude": [
+        "腕",
+        [
+          "上げ",
+          "挙げ"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "reha-08",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "退院後も自主トレーニングを続けてください。",
+      "mustInclude": [
+        [
+          "discharge",
+          "after leaving the hospital"
+        ],
+        [
+          "exercise",
+          "training"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "眠れない日が続いていますか。",
+      "mustInclude": [
+        [
+          "sleep",
+          "insomnia"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-02",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "気分の落ち込みは、いつ頃から始まりましたか。",
+      "mustInclude": [
+        [
+          "depress",
+          "low mood",
+          "feeling down",
+          "feel down"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-03",
+      "domain": "medical",
+      "lang": "en",
+      "source": "I feel anxious when I am in a crowd.",
+      "mustInclude": [
+        "不安",
+        [
+          "人混み",
+          "人ごみ",
+          "人が多い"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-04",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "この薬は抗うつ薬で、効果が出るまで2週間ほどかかります。",
+      "critical": true,
+      "mustInclude": [
+        "antidepressant",
+        [
+          "two weeks",
+          "2 weeks"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-05",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "幻聴が聞こえるときは、無理をせずに教えてください。",
+      "mustInclude": [
+        [
+          "auditory hallucination",
+          "hearing voices",
+          "hear voices"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-06",
+      "domain": "medical",
+      "lang": "en",
+      "source": "Have you had any thoughts of hurting yourself?",
+      "critical": true,
+      "mustInclude": [
+        [
+          "傷つけ",
+          "自傷"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "psy-07",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "デイケアには週に何回通っていますか。",
+      "mustInclude": [
+        [
+          "day care",
+          "daycare",
+          "day-care"
+        ],
+        [
+          "a week",
+          "per week",
+          "weekly"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "swal-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "嚥下の検査をしますので、少量の水を飲んでください。",
+      "mustInclude": [
+        "swallow",
+        "water"
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "swal-02",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "むせやすいので、とろみをつけた飲み物にしましょう。",
+      "critical": true,
+      "mustInclude": [
+        [
+          "thicken",
+          "thickened"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "swal-03",
+      "domain": "medical",
+      "lang": "en",
+      "source": "Take small bites and chew slowly.",
+      "mustInclude": [
+        [
+          "ゆっくり"
+        ],
+        [
+          "噛ん",
+          "噛み",
+          "咀嚼",
+          "かん"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "swal-04",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "誤嚥性肺炎を防ぐため、食後は30分座って過ごしてください。",
+      "critical": true,
+      "mustInclude": [
+        "aspiration pneumonia",
+        [
+          "30 minutes",
+          "thirty minutes"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "swal-05",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "咀嚼が難しい場合は、刻み食に変更できます。",
+      "mustInclude": [
+        [
+          "chew",
+          "mastication"
+        ],
+        [
+          "minced",
+          "chopped",
+          "cut into small",
+          "bite-sized"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "swal-06",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "体重が先月より2キロ減っています。",
+      "critical": true,
+      "mustInclude": [
+        [
+          "2 kg",
+          "2 kilograms",
+          "two kilograms",
+          "2kg"
+        ],
+        [
+          "lost",
+          "decreas",
+          "down"
+        ]
+      ],
+      "mustNotInclude": [
+        [
+          "2 kg more",
+          "gained"
+        ]
+      ]
+    },
+    {
+      "id": "ward-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "血圧を測りますので、腕まくりをしてください。",
+      "mustInclude": [
+        "blood pressure",
+        [
+          "sleeve",
+          "roll up"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ward-02",
+      "domain": "medical",
+      "lang": "en",
+      "source": "When did you last take your blood thinner?",
+      "critical": true,
+      "mustInclude": [
+        [
+          "抗凝固",
+          "サラサラ",
+          "さらさら",
+          "血液を固まりにくく"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ward-03",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "採血の結果は、明日の朝にわかります。",
+      "mustInclude": [
+        [
+          "blood test",
+          "blood draw",
+          "blood sample",
+          "blood work"
+        ],
+        [
+          "tomorrow morning"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ward-04",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "傷口は濡らさないようにしてください。",
+      "critical": true,
+      "mustInclude": [
+        [
+          "wound",
+          "incision"
+        ],
+        [
+          "wet",
+          "dry"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ward-05",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "褥瘡の予防のため、2時間ごとに体の向きを変えます。",
+      "mustInclude": [
+        [
+          "pressure ulcer",
+          "pressure sore",
+          "bedsore",
+          "pressure injur"
+        ],
+        [
+          "every two hours",
+          "every 2 hours"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "care-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "介護保険の申請はお済みですか。",
+      "mustInclude": [
+        [
+          "long-term care insurance",
+          "nursing care insurance",
+          "long term care insurance"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "care-02",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "ケアマネジャーと相談して、デイサービスの回数を決めましょう。",
+      "mustInclude": [
+        "care manager",
+        [
+          "day service",
+          "day care",
+          "daycare",
+          "adult day"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "care-03",
+      "domain": "medical",
+      "lang": "en",
+      "source": "Is there a fee for the transportation service?",
+      "mustInclude": [
+        [
+          "送迎",
+          "移送",
+          "交通"
+        ],
+        [
+          "料金",
+          "費用",
+          "有料"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "care-04",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "要介護認定の結果が出るまで、約1か月かかります。",
+      "mustInclude": [
+        [
+          "certification",
+          "assessment",
+          "eligibility"
+        ],
+        [
+          "one month",
+          "1 month",
+          "a month"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "asr-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "演芸機能の検査をします。",
+      "critical": true,
+      "mustInclude": [
+        "swallow"
+      ],
+      "mustNotInclude": [
+        "entertainment",
+        "comedy",
+        "performance"
+      ],
+      "note": "誤認識: えんげ(嚥下)→演芸"
+    },
+    {
+      "id": "asr-02",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "じょく創の処置を行います。",
+      "mustInclude": [
+        [
+          "pressure ulcer",
+          "pressure sore",
+          "bedsore",
+          "pressure injur"
+        ]
+      ],
+      "mustNotInclude": [],
+      "note": "表記ゆれ: 褥瘡"
+    },
+    {
+      "id": "asr-03",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "投石の予定は明日の午前です。",
+      "critical": true,
+      "mustInclude": [
+        "dialysis"
+      ],
+      "mustNotInclude": [
+        [
+          "throwing stones",
+          "stone throwing",
+          "throw stones"
+        ]
+      ],
+      "note": "誤認識: とうせき(透析)→投石"
+    },
+    {
+      "id": "asr-04",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "移動のときは補講器を使ってください。",
+      "mustInclude": [
+        [
+          "walker",
+          "walking frame",
+          "walking aid"
+        ]
+      ],
+      "mustNotInclude": [
+        "lecture",
+        "supplementary"
+      ],
+      "note": "誤認識: 歩行器→補講器"
+    },
+    {
+      "id": "asr-05",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "認知賞の検査を受けたことはありますか。",
+      "mustInclude": [
+        "dementia"
+      ],
+      "mustNotInclude": [
+        "prize",
+        "award"
+      ],
+      "note": "誤認識: 認知症→認知賞"
+    },
+    {
+      "id": "asr-06",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "いろうから栄養を入れています。",
+      "mustInclude": [
+        [
+          "gastrostomy",
+          "feeding tube",
+          "g-tube",
+          "peg"
+        ]
+      ],
+      "mustNotInclude": [],
+      "note": "ひらがな入力: 胃ろう"
+    },
+    {
+      "id": "asr-07",
+      "domain": "medical",
+      "lang": "en",
+      "source": "I have a pain in my nee.",
+      "mustInclude": [
+        "膝"
+      ],
+      "mustNotInclude": [],
+      "note": "誤認識: knee→nee"
+    },
+    {
+      "id": "asr-08",
+      "domain": "medical",
+      "lang": "en",
+      "source": "Please weight here for a moment.",
+      "mustInclude": [
+        [
+          "待っ",
+          "お待ち"
+        ]
+      ],
+      "mustNotInclude": [
+        "体重",
+        "重さ"
+      ],
+      "note": "誤認識: wait→weight"
+    },
+    {
+      "id": "dict-01",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "明日はさくら苑に行く日です。",
+      "dictionary": [
+        {
+          "reading": "さくらえん",
+          "surface": "さくら苑",
+          "english": "Sakura-en Day Care Center"
+        }
+      ],
+      "mustInclude": [
+        "sakura-en"
+      ],
+      "mustNotInclude": [
+        "cherry"
+      ],
+      "note": "辞書: 施設名"
+    },
+    {
+      "id": "dict-02",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "担当は山田花子です。",
+      "dictionary": [
+        {
+          "reading": "やまだはなこ",
+          "surface": "山田花子",
+          "english": "Hanako Yamada"
+        }
+      ],
+      "mustInclude": [
+        "hanako yamada"
+      ],
+      "mustNotInclude": [],
+      "note": "辞書: 人名"
+    },
+    {
+      "id": "dict-03",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "向日葵ホームの見学は木曜日です。",
+      "dictionary": [
+        {
+          "reading": "ひまわりほーむ",
+          "surface": "ひまわりホーム",
+          "english": "Himawari Home"
+        }
+      ],
+      "mustInclude": [
+        "himawari home",
+        "thursday"
+      ],
+      "mustNotInclude": [
+        "sunflower"
+      ],
+      "note": "辞書+誤変換: ひまわり→向日葵"
+    },
+    {
+      "id": "dict-04",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "青葉台クリニックに紹介状を書きます。",
+      "dictionary": [
+        {
+          "reading": "あおばだい",
+          "surface": "青葉台クリニック",
+          "english": ""
+        }
+      ],
+      "mustInclude": [
+        "aobadai",
+        "referral"
+      ],
+      "mustNotInclude": [],
+      "note": "辞書: 英語未指定→ローマ字"
+    },
+    {
+      "id": "daily-01",
+      "domain": "daily",
+      "lang": "ja",
+      "source": "すみません、駅までの道を教えてもらえますか。",
+      "mustInclude": [
+        "station"
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-02",
+      "domain": "daily",
+      "lang": "en",
+      "source": "Could you speak a little more slowly?",
+      "mustInclude": [
+        "ゆっくり"
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-03",
+      "domain": "daily",
+      "lang": "ja",
+      "source": "今は急いでいないので、あとで大丈夫です。",
+      "mustInclude": [
+        "later"
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-04",
+      "domain": "daily",
+      "lang": "en",
+      "source": "I am not sure if this is the right line.",
+      "mustInclude": [
+        [
+          "わかりません",
+          "分かりません",
+          "わからない",
+          "分からない",
+          "自信がありません",
+          "かどうか"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-05",
+      "domain": "daily",
+      "lang": "ja",
+      "source": "予約した名前は船越です。午後7時に二名です。",
+      "mustInclude": [
+        "funakoshi",
+        [
+          "7",
+          "seven"
+        ],
+        [
+          "two people",
+          "2 people",
+          "for two",
+          "party of two"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-06",
+      "domain": "daily",
+      "lang": "en",
+      "source": "Is there an additional charge for late checkout?",
+      "mustInclude": [
+        [
+          "チェックアウト"
+        ],
+        [
+          "追加料金",
+          "別料金",
+          "追加費用"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-07",
+      "domain": "medical",
+      "lang": "ja",
+      "source": "痛み止めは飲みましたが、熱は下がっていません。",
+      "critical": true,
+      "mustInclude": [
+        [
+          "painkiller",
+          "pain reliever",
+          "pain medication",
+          "pain medicine"
+        ],
+        "fever",
+        [
+          "not",
+          "still",
+          "hasn"
+        ]
+      ],
+      "mustNotInclude": []
+    },
+    {
+      "id": "daily-08",
+      "domain": "daily",
+      "lang": "ja",
+      "source": "10分ではなく、10時に戻ってきてください。",
+      "critical": true,
+      "mustInclude": [
+        [
+          "10 o'clock",
+          "ten o'clock",
+          "10:00",
+          "10 am",
+          "10 a.m."
+        ]
+      ],
+      "mustNotInclude": [
+        "10 minutes",
+        "ten minutes"
+      ],
+      "note": "10 minutesとの取り違え検出"
+    }
+  ]
+}
