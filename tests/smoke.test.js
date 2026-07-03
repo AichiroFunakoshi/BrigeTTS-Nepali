@@ -36,6 +36,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#domainControls .domain-btn')).toHaveCount(2);
     await expect(page.locator('#dictAddBtn')).toHaveCount(1);
     await expect(page.locator('#domainBadge')).toHaveText('医療・介護・福祉');
+    await expect(page.locator('#exportSettingsBtn')).toHaveCount(1);
+    await expect(page.locator('#importSettingsBtn')).toHaveCount(1);
     await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
     await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 
@@ -292,4 +294,33 @@ test('cycles font size from the header toggle', async ({ page }) => {
     await page.locator('#fontSizeToggleBtn').click();
     await expect(page.locator('#translatedText')).toHaveClass(/size-large/);
     await expect(page.locator('#originalText')).toHaveClass(/size-large/);
+});
+
+test('exports and imports settings as JSON', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(() => {
+        window.AppSettingsStorage.setTranslationDomain('daily');
+        window.AppSettingsStorage.setUserDictionary([{ reading: 'てすと', surface: 'テスト苑', english: 'Test-en' }]);
+        const json = window.AppSettingsStorage.exportSettings();
+
+        // 別の状態に変更してから復元できることを確認
+        window.AppSettingsStorage.setTranslationDomain('medical');
+        window.AppSettingsStorage.setUserDictionary([]);
+        const imported = window.AppSettingsStorage.importSettings(json);
+        const rejected = window.AppSettingsStorage.importSettings('{"app":"other"}');
+
+        return {
+            ok: imported.ok,
+            count: imported.count,
+            rejectedOk: rejected.ok,
+            domain: window.AppSettingsStorage.getTranslationDomain(),
+            dictSurface: (window.AppSettingsStorage.getUserDictionary()[0] || {}).surface
+        };
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.count).toBeGreaterThan(0);
+    expect(result.rejectedOk).toBe(false);
+    expect(result.domain).toBe('daily');
+    expect(result.dictSurface).toBe('テスト苑');
 });

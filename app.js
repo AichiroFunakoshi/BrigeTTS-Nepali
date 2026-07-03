@@ -1339,6 +1339,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     renderUserDictionary();
 
+    // ========================================
+    // 設定のエクスポート / インポート
+    // ========================================
+    const exportSettingsBtn = document.getElementById('exportSettingsBtn');
+    const importSettingsBtn = document.getElementById('importSettingsBtn');
+
+    if (exportSettingsBtn) {
+        exportSettingsBtn.addEventListener('click', async () => {
+            const json = AppSettingsStorage.exportSettings();
+            try {
+                await navigator.clipboard.writeText(json);
+                alert('設定をクリップボードにコピーしました。\nメモ等に保管するか、移行先の端末の「インポート」で貼り付けてください。');
+            } catch (error) {
+                prompt('自動コピーできませんでした。以下を手動でコピーしてください:', json);
+            }
+        });
+    }
+
+    if (importSettingsBtn) {
+        importSettingsBtn.addEventListener('click', async () => {
+            let text = '';
+            if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+                try {
+                    text = await navigator.clipboard.readText();
+                } catch (error) {
+                    text = '';
+                }
+            }
+            if (!text || !text.trim()) {
+                text = prompt('エクスポートした設定データを貼り付けてください:') || '';
+            }
+            if (!text.trim()) return;
+
+            const check = AppSettingsStorage.importSettings(text.trim(), { dryRun: true });
+            if (!check.ok) {
+                alert('インポートできません: ' + check.error);
+                return;
+            }
+            if (!confirm(check.count + '項目の設定を取り込みます。\n現在の設定は上書きされ、アプリを再読み込みします。よろしいですか？')) {
+                return;
+            }
+            AppSettingsStorage.importSettings(text.trim());
+            location.reload();
+        });
+    }
+
     // 保存された会話履歴を復元
     loadConversationLog();
 

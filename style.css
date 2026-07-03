@@ -958,7 +958,8 @@ body.recording .language-button.stop {
 }
 
 .theme-btn,
-.domain-btn {
+.domain-btn,
+.backup-btn {
     flex: 1;
     padding: 10px 12px;
     border: 2px solid var(--color-border);
@@ -972,7 +973,8 @@ body.recording .language-button.stop {
 }
 
 .theme-btn:hover,
-.domain-btn:hover {
+.domain-btn:hover,
+.backup-btn:hover {
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -985,7 +987,8 @@ body.recording .language-button.stop {
 }
 
 .theme-btn:focus-visible,
-.domain-btn:focus-visible {
+.domain-btn:focus-visible,
+.backup-btn:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
@@ -1535,7 +1538,7 @@ body.recording .language-button.stop {
 
     .font-size-controls-modal { gap: 6px; }
     .font-size-btn { padding: 8px 10px; font-size: 13px; }
-    .theme-btn, .domain-btn { padding: 8px 10px; font-size: 13px; }
+    .theme-btn, .domain-btn, .backup-btn { padding: 8px 10px; font-size: 13px; }
 
     .translation-box { padding: 10px 12px; }
     .tap-hint { font-size: 10px; padding: 2px 6px; }

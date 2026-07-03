@@ -7,13 +7,13 @@
 
 ## ▶️ 現在の最新状態（このセクションを毎回更新する）
 
-- **最終更新**: 2026-07-02
+- **最終更新**: 2026-07-03
 - **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除）
-- **最新コミット**: PR #44（CLAUDE.md: マルチMac運用とFable5行動規範）＋本申し送りPR
-- **未リリースの改良**: docs/ダッシュボード関連のみ（次版に含める）。**v2.4.0はタグpush済み・配信済み**
+- **最新コミット**: v2.5.0リリース済み（翻訳モード・ユーザー辞書・デバウンス自動適用）＋本PR（ビジョン確定・設定エクスポート/インポート）
+- **未リリースの改良**: 設定エクスポート/インポート（F10・v2.6予定）
 - **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
 - **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
-- **次にやること**: 次の改善へ（作業手順は docs/AGENT_PLAYBOOK.md を参照）
+- **次にやること**: F11 翻訳品質評価ハーネス（ロードマップは docs/PROJECT_GOALS_AND_IMPROVEMENT_PLAN.md §6）
 
 ---
 

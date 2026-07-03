@@ -189,6 +189,55 @@ const AppSettingsStorage = {
         this.setJson(this.keys.userDictionary, Array.isArray(entries) ? entries : []);
     },
 
+    // 設定の一括エクスポート/インポート（APIキーと会話履歴は意図的に含めない）
+    exportableKeys: ['ttsEnabled', 'autoTtsEnabled', 'ttsSpeed', 'fontSize', 'theme',
+        'translationDomain', 'userDictionary',
+        'debounceData', 'optimizedDebounce', 'debounceOptimizedAt'],
+
+    exportSettings: function() {
+        const data = {};
+        this.exportableKeys.forEach((name) => {
+            const raw = localStorage.getItem(this.keys[name]);
+            if (raw !== null) {
+                data[name] = raw;
+            }
+        });
+        return JSON.stringify({
+            app: 'BridgeTTS',
+            type: 'settings-export',
+            formatVersion: 1,
+            exportedAt: new Date().toISOString(),
+            data: data
+        });
+    },
+
+    importSettings: function(jsonText, options) {
+        const dryRun = Boolean(options && options.dryRun);
+        let parsed;
+        try {
+            parsed = JSON.parse(jsonText);
+        } catch (error) {
+            return { ok: false, error: 'JSONとして読み取れません' };
+        }
+        if (!parsed || parsed.app !== 'BridgeTTS' || parsed.type !== 'settings-export' ||
+            typeof parsed.data !== 'object' || parsed.data === null) {
+            return { ok: false, error: 'BridgeTTSの設定エクスポートではありません' };
+        }
+        let count = 0;
+        this.exportableKeys.forEach((name) => {
+            if (typeof parsed.data[name] === 'string') {
+                if (!dryRun) {
+                    localStorage.setItem(this.keys[name], parsed.data[name]);
+                }
+                count++;
+            }
+        });
+        if (count === 0) {
+            return { ok: false, error: '取り込める設定が含まれていません' };
+        }
+        return { ok: true, count: count };
+    },
+
     getConversationLog: function() {
         const entries = this.getJson(this.keys.conversationLog, []);
         if (!Array.isArray(entries)) return [];
