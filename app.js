@@ -761,6 +761,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!OPENAI_API_KEY) {
             openaiKeyInput.value = DEFAULT_OPENAI_API_KEY;
+            const firstRunIntro = document.getElementById('firstRunIntro');
+            if (firstRunIntro) {
+                firstRunIntro.hidden = false; // 初回セットアップガイド（キー保存済みなら出さない）
+            }
             apiModal.style.display = 'flex';
             lockBodyScroll();
         } else {

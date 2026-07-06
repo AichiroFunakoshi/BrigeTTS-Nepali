@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.7.1');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.8.0');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -47,6 +47,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
 
     await expect(page.locator('#apiModal')).toBeVisible();
     await expect(page.locator('#openaiKey')).toBeVisible();
+    await expect(page.locator('#firstRunIntro')).toBeVisible();
 
     const modules = await page.evaluate(() => ({
         settingsStorage: Boolean(window.AppSettingsStorage),

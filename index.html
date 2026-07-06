@@ -42,7 +42,7 @@
     <div class="container">
         <header class="app-header">
             <div class="app-header-text">
-                <div class="app-title">BridgeTTS v2.7.1</div>
+                <div class="app-title">BridgeTTS v2.8.0</div>
                 <div class="app-subtitle">日英リアルタイム音声翻訳</div>
                 <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="app-footer">
-            BridgeTTS v2.7.1 © 2025–2026 ┃ Crafted by A_1_6
+            BridgeTTS v2.8.0 © 2025–2026 ┃ Crafted by A_1_6
         </div>
     </div>
 
@@ -204,6 +204,17 @@
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
                 設定
+            </div>
+
+            <div class="first-run-intro" id="firstRunIntro" hidden>
+                <div class="first-run-title">👋 BridgeTTSへようこそ</div>
+                <p>日本語と英語の対面会話をリアルタイムに翻訳するアプリです。利用開始まで3ステップです。</p>
+                <ol>
+                    <li><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAIのAPIキー発行ページ</a>でキーを作成し、<code>sk-</code>で始まる文字列をコピー</li>
+                    <li>下の入力欄に貼り付けて「保存して開始」</li>
+                    <li>最初の録音時に<strong>マイクと音声認識の許可</strong>を求められたら「許可」を選択（翻訳に必須）</li>
+                </ol>
+                <p class="first-run-note">APIキーはこの端末内にのみ保存され、翻訳時にOpenAIへ直接送信されます。操作の詳細は<a href="howto.html" target="_blank">使い方ガイド</a>を参照してください。</p>
             </div>
             <p class="modal-description">翻訳アプリを使用するにはAPIキーを入力してください。キーはこの端末のブラウザに保存され、リポジトリには保存されません。共有端末では使用後にリセットしてください。</p>
 
