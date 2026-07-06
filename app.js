@@ -1383,6 +1383,89 @@ document.addEventListener('DOMContentLoaded', function() {
         updateLatencyUI();
     }
 
+    // ---- API使用量の概算（F15: 使用量の可視化） ----
+    const NANO_PRICE_IN = 0.10 / 1e6;      // USD/トークン（gpt-4.1-nano 非キャッシュ入力）
+    const NANO_PRICE_CACHED = 0.025 / 1e6; // 同キャッシュ済み入力
+    const NANO_PRICE_OUT = 0.40 / 1e6;     // 同出力
+    let usageTotals = AppSettingsStorage.getUsageTotals();
+
+    function updateUsageUI() {
+        const element = document.getElementById('apiUsageSummary');
+        if (!element) return;
+        const totalTokens = usageTotals.inTokens + usageTotals.cachedTokens + usageTotals.outTokens;
+        if (totalTokens === 0) {
+            element.textContent = 'まだ使用データがありません';
+            return;
+        }
+        const cost = usageTotals.inTokens * NANO_PRICE_IN +
+            usageTotals.cachedTokens * NANO_PRICE_CACHED +
+            usageTotals.outTokens * NANO_PRICE_OUT;
+        const since = new Date(usageTotals.since).toLocaleDateString('ja-JP');
+        element.textContent = `${since}から 約${totalTokens.toLocaleString()}トークン ≒ $${cost.toFixed(3)}`;
+    }
+
+    function recordApiUsage(usage) {
+        if (!usage || typeof usage.prompt_tokens !== 'number') return;
+        const cached = (usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens) || 0;
+        usageTotals.inTokens += Math.max(0, usage.prompt_tokens - cached);
+        usageTotals.cachedTokens += cached;
+        usageTotals.outTokens += usage.completion_tokens || 0;
+        AppSettingsStorage.setUsageTotals(usageTotals);
+        updateUsageUI();
+    }
+
+    const resetUsageBtn = document.getElementById('resetUsageBtn');
+    if (resetUsageBtn) {
+        resetUsageBtn.addEventListener('click', () => {
+            usageTotals = { inTokens: 0, cachedTokens: 0, outTokens: 0, since: Date.now() };
+            AppSettingsStorage.clearUsageTotals();
+            updateUsageUI();
+        });
+    }
+    updateUsageUI();
+
+    // ---- レイテンシ計測データのIssue送信（開発協力・アカウント不要） ----
+    const sendLatencyBtn = document.getElementById('sendLatencyBtn');
+    if (sendLatencyBtn) {
+        sendLatencyBtn.addEventListener('click', async () => {
+            if (latencyData.length === 0) {
+                alert('まだ計測データがありません。翻訳を数回使ってから送信してください。');
+                return;
+            }
+            const opens = latencyData.map((sample) => sample.o);
+            const dones = latencyData.map((sample) => sample.d);
+            const version = getCurrentAppVersion() || '不明';
+            const environment = window.__BRIDGE_TTS_NATIVE_APP__ ? 'iOSネイティブ' : 'ブラウザ/PWA';
+            const openMedian = latencyPercentile(opens, 0.5);
+            const title = `レイテンシ報告: v${version} 訳出開始 中央値${openMedian}ms（${environment}）`;
+            const body = [
+                '## レイテンシ計測レポート',
+                `- バージョン: v${version} / 環境: ${environment}`,
+                `- サンプル: 直近${latencyData.length}件`,
+                `- 訳出開始: 中央値 ${openMedian}ms ・ 95p ${latencyPercentile(opens, 0.95)}ms（目標: 中央値700ms）`,
+                `- 訳の確定: 中央値 ${latencyPercentile(dones, 0.5)}ms ・ 95p ${latencyPercentile(dones, 0.95)}ms（目標: 中央値1200ms）`,
+                `- デバウンス: ja ${currentDebounce['ja']}ms / en ${currentDebounce['en']}ms`,
+                `- UA: ${navigator.userAgent}`
+            ].join('\n');
+
+            sendLatencyBtn.disabled = true;
+            sendLatencyBtn.textContent = '送信中...';
+            try {
+                const issueUrl = await window.ErrorReporter.postIssue({
+                    title: title, body: body, labels: ['latency-report']
+                });
+                alert(issueUrl
+                    ? '計測データを送信しました。ご協力ありがとうございます。'
+                    : 'Issue作成画面を開きました。内容を確認して送信してください。');
+            } catch (error) {
+                alert('送信に失敗しました: ' + (error && error.message ? error.message : error));
+            } finally {
+                sendLatencyBtn.disabled = false;
+                sendLatencyBtn.textContent = '計測データを送信';
+            }
+        });
+    }
+
     const resetLatencyBtn = document.getElementById('resetLatencyBtn');
     if (resetLatencyBtn) {
         resetLatencyBtn.addEventListener('click', () => {
@@ -2259,6 +2342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     dictionary: userDictionary
                 }),
                 signal: signal,
+                onUsage: recordApiUsage,
                 onChunk: (currentText) => {
                     if (translationId !== activeTranslationId) {
                         return;

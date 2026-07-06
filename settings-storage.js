@@ -13,7 +13,8 @@ const AppSettingsStorage = {
         conversationLog: 'translatorConversationLog',
         translationDomain: 'translatorTranslationDomain',
         userDictionary: 'translatorUserDictionary',
-        latencyData: 'translatorLatencyData'
+        latencyData: 'translatorLatencyData',
+        usageTotals: 'translatorUsageTotals'
     },
 
     fontSizeValues: ['small', 'medium', 'large', 'xlarge'],
@@ -205,6 +206,28 @@ const AppSettingsStorage = {
 
     clearLatencyData: function() {
         this.remove(this.keys.latencyData);
+    },
+
+    // API使用量の累計（F15: 使用量の可視化）
+    getUsageTotals: function() {
+        const totals = this.getJson(this.keys.usageTotals, null);
+        if (totals && typeof totals.inTokens === 'number' && typeof totals.outTokens === 'number') {
+            return {
+                inTokens: totals.inTokens,
+                cachedTokens: typeof totals.cachedTokens === 'number' ? totals.cachedTokens : 0,
+                outTokens: totals.outTokens,
+                since: totals.since || Date.now()
+            };
+        }
+        return { inTokens: 0, cachedTokens: 0, outTokens: 0, since: Date.now() };
+    },
+
+    setUsageTotals: function(totals) {
+        this.setJson(this.keys.usageTotals, totals);
+    },
+
+    clearUsageTotals: function() {
+        this.remove(this.keys.usageTotals);
     },
 
     // 設定の一括エクスポート/インポート（APIキーと会話履歴は意図的に含めない）

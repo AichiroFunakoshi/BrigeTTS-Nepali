@@ -21,6 +21,7 @@ const TranslatorService = {
                 }
             ],
             stream: true,
+            stream_options: { include_usage: true },
             temperature: 0.3
         };
     },
@@ -42,7 +43,7 @@ const TranslatorService = {
         return new Error(errorData?.error?.message || `OpenAI APIがステータスを返しました: ${response.status}`);
     },
 
-    translateStream: async function({ apiKey, text, sourceLanguage, systemPrompt, signal, onChunk, timeoutMs = 30000 }) {
+    translateStream: async function({ apiKey, text, sourceLanguage, systemPrompt, signal, onChunk, onUsage, timeoutMs = 30000 }) {
         const requestController = new AbortController();
         const relayAbort = () => requestController.abort();
 
@@ -89,6 +90,10 @@ const TranslatorService = {
                 buffer = lines.pop() || '';
 
                 for (const line of lines) {
+                    const usage = this.parseStreamUsage(line);
+                    if (usage && typeof onUsage === 'function') {
+                        onUsage(usage);
+                    }
                     const content = this.parseStreamLine(line);
                     if (!content) continue;
 
@@ -114,6 +119,19 @@ const TranslatorService = {
             if (signal) {
                 signal.removeEventListener('abort', relayAbort);
             }
+        }
+    },
+
+    // ストリーミング最終チャンクのusage（stream_options.include_usage有効時のみ付与される）
+    parseStreamUsage: function(line) {
+        if (!line.startsWith('data: ') || line === 'data: [DONE]') {
+            return null;
+        }
+        try {
+            const data = JSON.parse(line.substring(6));
+            return data.usage || null;
+        } catch (error) {
+            return null;
         }
     },
 

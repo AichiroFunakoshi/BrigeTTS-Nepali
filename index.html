@@ -42,7 +42,7 @@
     <div class="container">
         <header class="app-header">
             <div class="app-header-text">
-                <div class="app-title">BridgeTTS v2.8.0</div>
+                <div class="app-title">BridgeTTS v2.9.0</div>
                 <div class="app-subtitle">日英リアルタイム音声翻訳</div>
                 <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="app-footer">
-            BridgeTTS v2.8.0 © 2025–2026 ┃ Crafted by A_1_6
+            BridgeTTS v2.9.0 © 2025–2026 ┃ Crafted by A_1_6
         </div>
     </div>
 
@@ -343,9 +343,19 @@
                     <div class="latency-samples" id="latencySamples">データなし（翻訳すると自動記録されます）</div>
                 </div>
                 <div class="debounce-buttons">
+                    <button class="debounce-btn optimize" id="sendLatencyBtn" type="button">計測データを送信</button>
                     <button class="debounce-btn reset" id="resetLatencyBtn" type="button">計測をリセット</button>
                 </div>
-                <div class="form-help">翻訳のたびに「区切り検出→最初の訳語」「→全文確定」の時間を自動記録します（直近100件・この端末のみ保存）</div>
+                <div class="form-help">翻訳のたびに「区切り検出→最初の訳語」「→全文確定」の時間を自動記録します（直近100件・この端末のみ保存）。「計測データを送信」で統計値のみを開発に共有できます（会話内容は含まれません）</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">API使用量（概算）</label>
+                <div class="latency-samples" id="apiUsageSummary">まだ使用データがありません</div>
+                <div class="debounce-buttons">
+                    <button class="debounce-btn reset" id="resetUsageBtn" type="button">使用量をリセット</button>
+                </div>
+                <div class="form-help">翻訳APIのトークン数から料金を概算します（gpt-4.1-nano料金基準・この端末のみ）。正確な請求はOpenAIダッシュボードで確認してください</div>
             </div>
 
             <div class="button-row">

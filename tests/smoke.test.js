@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.8.0');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.9.0');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -42,6 +42,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#resetLatencyBtn')).toHaveCount(1);
     await expect(page.locator('#updateBanner')).toHaveCount(1);
     await expect(page.locator('#updateBanner')).toBeHidden();
+    await expect(page.locator('#sendLatencyBtn')).toHaveCount(1);
+    await expect(page.locator('#apiUsageSummary')).toHaveCount(1);
     await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
     await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
 
@@ -338,4 +340,19 @@ test('stores latency samples via settings storage', async ({ page }) => {
     });
     expect(stored.length).toBe(1);
     expect(stored[0].o).toBe(480);
+});
+
+test('parses streaming usage chunk and exposes generic issue poster', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(() => ({
+        usage: window.TranslatorService.parseStreamUsage(
+            'data: {"choices":[],"usage":{"prompt_tokens":10,"completion_tokens":5}}'
+        ),
+        noUsage: window.TranslatorService.parseStreamUsage('data: [DONE]'),
+        hasPostIssue: typeof window.ErrorReporter.postIssue === 'function'
+    }));
+    expect(result.usage.prompt_tokens).toBe(10);
+    expect(result.usage.completion_tokens).toBe(5);
+    expect(result.noUsage).toBe(null);
+    expect(result.hasPostIssue).toBe(true);
 });

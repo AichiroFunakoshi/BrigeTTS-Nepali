@@ -226,7 +226,7 @@ const ErrorReporter = {
             sendButton.disabled = true;
             sendButton.textContent = '送信中...';
             try {
-                const issueUrl = await this.sendToGitHub(report, token);
+                const issueUrl = await this.sendToGitHub(report);
                 alert('エラーレポートを送信しました。ご協力ありがとうございます。\n' + issueUrl);
                 modal.remove();
             } catch (error) {
@@ -354,8 +354,16 @@ const ErrorReporter = {
         return '';
     },
 
-    sendToGitHub: async function(report, token) {
-        const content = this.buildIssueContent(report);
+    // 汎用Issue送信。トークンがあれば直接作成しURLを返す。
+    // なければIssue下書き画面を開いて null を返す（エラー報告・レイテンシ報告で共用）。
+    postIssue: async function({ title, body, labels }) {
+        const token = this.getReportToken();
+        if (!token) {
+            const issueUrl = 'https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues/new' +
+                `?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+            window.open(issueUrl, '_blank');
+            return null;
+        }
         const response = await fetch('https://api.github.com/repos/AichiroFunakoshi/Bridge-TTS-Codex-/issues', {
             method: 'POST',
             headers: {
@@ -363,17 +371,18 @@ const ErrorReporter = {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                title: content.title,
-                body: content.body,
-                labels: ['error-report']
-            })
+            body: JSON.stringify({ title: title, body: body, labels: labels || [] })
         });
         if (!response.ok) {
             throw new Error('GitHub APIエラー: HTTP ' + response.status);
         }
         const issue = await response.json();
         return issue.html_url;
+    },
+
+    sendToGitHub: async function(report) {
+        const content = this.buildIssueContent(report);
+        return this.postIssue({ title: content.title, body: content.body, labels: ['error-report'] });
     },
 
     openGitHubIssue: function(report) {
@@ -385,3 +394,4 @@ const ErrorReporter = {
 };
 
 ErrorReporter.init();
+window.ErrorReporter = ErrorReporter;
