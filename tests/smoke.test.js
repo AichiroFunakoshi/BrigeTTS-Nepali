@@ -34,6 +34,8 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#conversationLog')).toBeHidden();
     await expect(page.locator('#historyButton')).toBeVisible();
     await expect(page.locator('#domainControls .domain-btn')).toHaveCount(2);
+    await expect(page.locator('#strategyControls .strategy-btn')).toHaveCount(2);
+    await expect(page.locator('#strategyControls .strategy-btn.active')).toHaveText('標準（全文再翻訳）');
     await expect(page.locator('#dictAddBtn')).toHaveCount(1);
     await expect(page.locator('#domainBadge')).toHaveText('医療・介護・福祉');
     await expect(page.locator('#exportSettingsBtn')).toHaveCount(1);
@@ -91,6 +93,46 @@ test('loads the default translation prompt rules', async ({ page }) => {
     const dailyPrompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt({ domain: 'daily' }));
     expect(dailyPrompt).toContain('日常会話');
     expect(dailyPrompt).not.toContain('ユーザー辞書');
+});
+
+test('supports monotonic translation mode modules', async ({ page }) => {
+    await page.goto('/');
+
+    const result = await page.evaluate(() => {
+        const refinePrompt = window.PromptService.getRefinementSystemPrompt({ domain: 'medical' });
+        const payload = window.TranslatorService.createPayload({
+            text: 'x',
+            sourceLanguage: 'ja',
+            systemPrompt: 's',
+            userContent: 'CUSTOM'
+        });
+        const defaultPayload = window.TranslatorService.createPayload({
+            text: 'こんにちは',
+            sourceLanguage: 'ja',
+            systemPrompt: 's'
+        });
+        window.AppSettingsStorage.setTranslationStrategy('monotonic');
+        const stored = window.AppSettingsStorage.getTranslationStrategy();
+        window.AppSettingsStorage.setTranslationStrategy('bogus');
+        const fallback = window.AppSettingsStorage.getTranslationStrategy();
+        return {
+            refineHasDraft: refinePrompt.includes('下書き'),
+            refineKeepsOrder: refinePrompt.includes('語順の骨格'),
+            refineHasDomain: refinePrompt.includes('医療・介護・福祉'),
+            customUserContent: payload.messages[1].content,
+            defaultUserContent: defaultPayload.messages[1].content,
+            stored: stored,
+            fallback: fallback
+        };
+    });
+
+    expect(result.refineHasDraft).toBe(true);
+    expect(result.refineKeepsOrder).toBe(true);
+    expect(result.refineHasDomain).toBe(true);
+    expect(result.customUserContent).toBe('CUSTOM');
+    expect(result.defaultUserContent).toBe('以下の日本語テキストを英語に翻訳してください:\n\nこんにちは');
+    expect(result.stored).toBe('monotonic');
+    expect(result.fallback).toBe('retranslation');
 });
 
 test('uses side-by-side result boxes in landscape', async ({ page }) => {

@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 重複防止のための変数
     let processedResultIds = new Set(); // 処理済みの結果IDを追跡
+    let recognitionSessionId = 0; // 認識セッション連番（自動再起動後にresultIdが衝突して発話が失われるのを防ぐ）
     let lastTranslatedText = ''; // 最後に翻訳した内容を記録
     let translationDebounceTimer = null;
     let conversationEntries = [];
@@ -1284,6 +1285,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     applyTranslationDomain(translationDomain);
 
+    // ========================================
+    // 翻訳方式（標準=全文再翻訳 / 順送りβ）
+    // ========================================
+    const strategyButtons = document.querySelectorAll('#strategyControls .strategy-btn');
+    let translationStrategy = AppSettingsStorage.getTranslationStrategy('retranslation');
+    let activeTranslationStrategy = 'retranslation'; // 録音セッションに適用中の方式（録音開始時に確定）
+
+    function applyTranslationStrategy(strategy) {
+        translationStrategy = strategy === 'monotonic' ? 'monotonic' : 'retranslation';
+        strategyButtons.forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.strategy === translationStrategy);
+        });
+    }
+
+    strategyButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            AppSettingsStorage.setTranslationStrategy(btn.dataset.strategy);
+            applyTranslationStrategy(btn.dataset.strategy);
+        });
+    });
+
+    applyTranslationStrategy(translationStrategy);
+
     function renderUserDictionary() {
         if (!dictListElement) return;
         dictListElement.replaceChildren();
@@ -1800,6 +1824,7 @@ document.addEventListener('DOMContentLoaded', function() {
         processedResultIds.clear();
         lastTranslatedText = '';
         lastTranslationResult = ''; // TTS用の翻訳結果もクリア
+        resetMonotonicState(); // 順送り訳（β）の状態もクリア
         originalText.textContent = '';
         translatedText.textContent = '';
         // 注意: 会話履歴は端末に保存されるため、リセットでは消去しない
@@ -1851,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         recognition.onstart = function() {
             console.log('音声認識開始。言語:', recognition.lang);
+            recognitionSessionId += 1;
             isRecognitionRunning = true;
             listeningIndicator.classList.add('visible');
 
@@ -1900,8 +1926,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = event.results[i];
                 const transcript = result[0].transcript.trim();
 
-                // 各結果に一意のIDを生成（位置＋内容）
-                const resultId = `${i}-${transcript}`;
+                // 各結果に一意のIDを生成（セッション＋位置＋内容）
+                const resultId = `${recognitionSessionId}-${i}-${transcript}`;
 
                 // 確定した結果の場合
                 if (result.isFinal) {
@@ -1920,10 +1946,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
 
                         // 日本語入力の場合、文章を整形
-                        if (selectedLanguage === 'ja') {
-                            finalText += japaneseFormatter.format(transcript) + ' ';
-                        } else {
-                            finalText += transcript + ' ';
+                        const formattedTranscript = selectedLanguage === 'ja'
+                            ? japaneseFormatter.format(transcript)
+                            : transcript;
+                        finalText += formattedTranscript + ' ';
+
+                        // 順送り訳（β）: 確定セグメントをチャンクとして積み上げる
+                        if (activeTranslationStrategy === 'monotonic') {
+                            enqueueMonotonicChunk(formattedTranscript);
                         }
                     } else {
                         // 処理済みの確定結果も表示用には追加
@@ -1937,10 +1967,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // 表示テキスト (確定結果 + 暫定結果)
-            const displayText = (finalText + interimText).trim();
+            // 順送り訳（β）では確定チャンクを認識セッションをまたいで保持・表示する
+            const displayText = activeTranslationStrategy === 'monotonic'
+                ? (monoSourceSegments.join(' ') + ' ' + interimText).trim()
+                : (finalText + interimText).trim();
 
             // デバウンス最適化用: 認識結果が実際に変化した間隔を記録
-            if (displayText && displayText !== originalText.textContent) {
+            // （順送りβは学習の対象外。全文再翻訳方式のデバウンス値を汚染しないため）
+            if (activeTranslationStrategy !== 'monotonic' && displayText && displayText !== originalText.textContent) {
                 recordResultInterval(selectedLanguage);
             }
 
@@ -1956,8 +1990,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 targetLanguage.textContent = '日本語';
             }
             
-            // 新しいコンテンツがある場合、翻訳をトリガー
-            if (hasNewContent && displayText !== lastTranslatedText) {
+            // 新しいコンテンツがある場合、翻訳をトリガー（順送りβはチャンク確定時に翻訳するため対象外）
+            if (activeTranslationStrategy !== 'monotonic' && hasNewContent && displayText !== lastTranslatedText) {
                 // 翻訳処理をデバウンス（言語に応じて動的調整）
                 clearTimeout(translationDebounceTimer);
                 const dynamicDebounce = getOptimalDebounce(selectedLanguage);
@@ -2036,6 +2070,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // 選択言語を設定
         selectedLanguage = language;
 
+        // 翻訳方式をこのセッションに確定し、順送り訳（β）の状態をリセット
+        activeTranslationStrategy = translationStrategy;
+        resetMonotonicState();
+
         // UIと変数をリセット
         processedResultIds.clear();
         lastTranslatedText = '';
@@ -2103,6 +2141,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 録音停止（停止ボタン・自動停止用）
     function stopRecording() {
         finishRecordingSession({ stopTts: true });
+        // 順送り訳（β）: 残チャンクの訳出完了を待って整形パスを実行
+        if (activeTranslationStrategy === 'monotonic') {
+            scheduleMonotonicFinalize();
+        }
         // 会話モード: 停止後に最後の翻訳結果を自動読み上げ（設定有効時のみ）
         armAutoSpeak();
     }
@@ -2422,6 +2464,234 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // ========================================
+    // 順送り訳（β）: チャンク逐次訳出＋停止時整形パス
+    // ========================================
+    // 設計: docs/POST_MEASUREMENT_PLAN.md §3（増分翻訳）の凍結方式を土台に、
+    // 録音停止時の整形パス（誤訳・冗長の修正。順送りの語順骨格は保持）を追加した試験機能。
+    // 既存の全文再翻訳経路（translateText）には手を入れず、翻訳方式の設定で切り替える。
+    let monoSourceSegments = [];     // 確定した原文チャンク（発話順）
+    let monoTranslatedCount = 0;     // 訳出済みチャンク数
+    let monoTranslation = '';        // 確定訳の連結（凍結。以後再翻訳しない）
+    let monoChunkInFlight = false;   // チャンク翻訳の実行中フラグ
+    let monoRefineInFlight = false;  // 整形パスの実行中フラグ
+    let monoFinalizePending = false; // 停止後の整形パス待機フラグ
+    let monoGeneration = 0;          // リセット世代（非同期処理の取り違え防止）
+    let monoAbortController = null;
+    const MONO_CONTEXT_SEGMENTS = 2;             // チャンク翻訳に添える直前原文の数
+    const MONO_CONTEXT_TRANSLATION_CHARS = 200;  // チャンク翻訳に添える直前訳文の最大文字数
+    const MONO_FINALIZE_DELAY_MS = 400;          // 停止後、遅延到着する確定結果を待つ時間
+
+    function resetMonotonicState() {
+        monoGeneration += 1;
+        if (monoAbortController) {
+            monoAbortController.abort();
+            monoAbortController = null;
+        }
+        if (monoChunkInFlight || monoRefineInFlight) {
+            // 中断した非同期処理のfinallyは世代不一致でスキップされるため、ここで表示状態を戻す
+            translationInProgress = false;
+            translatingIndicator.classList.remove('visible');
+            updateTranslatingState(false);
+        }
+        monoSourceSegments = [];
+        monoTranslatedCount = 0;
+        monoTranslation = '';
+        monoChunkInFlight = false;
+        monoRefineInFlight = false;
+        monoFinalizePending = false;
+    }
+
+    // 確定訳と追加分の結合（英語はスペース区切り、日本語はそのまま連結）
+    function joinMonoTranslation(base, addition) {
+        const trimmedAddition = (addition || '').trim();
+        if (!trimmedAddition) return base;
+        if (!base) return trimmedAddition;
+        return selectedLanguage === 'ja' ? base + ' ' + trimmedAddition : base + trimmedAddition;
+    }
+
+    function renderMonotonicTranslation(streamingText) {
+        translatedText.textContent = joinMonoTranslation(monoTranslation, streamingText || '');
+    }
+
+    function enqueueMonotonicChunk(chunk) {
+        const trimmed = (chunk || '').trim();
+        if (!trimmed) return;
+        monoSourceSegments.push(trimmed);
+        if (!isRecording) {
+            // 停止後に遅延到着した確定結果: 訳出後に整形・確定をやり直す
+            monoFinalizePending = true;
+        }
+        pumpMonotonicQueue();
+    }
+
+    function buildMonotonicUserContent(chunk) {
+        const sourceLabel = selectedLanguage === 'ja' ? '日本語' : '英語';
+        const targetLabel = selectedLanguage === 'ja' ? '英語' : '日本語';
+        let context = '';
+        if (monoTranslatedCount > 0) {
+            const contextSource = monoSourceSegments
+                .slice(Math.max(0, monoTranslatedCount - MONO_CONTEXT_SEGMENTS), monoTranslatedCount)
+                .join(' ');
+            const contextTranslation = monoTranslation.slice(-MONO_CONTEXT_TRANSLATION_CHARS);
+            context = `直前の発話（文脈。翻訳しないこと）:\n原文: ${contextSource}\n訳文: ${contextTranslation}\n\n`;
+        }
+        return `${context}以下の${sourceLabel}テキストは発話の続きである。上の文脈に自然につながる${targetLabel}訳のみを出力してください:\n\n${chunk}`;
+    }
+
+    // 未訳チャンクを発話順に1件ずつ翻訳する（直列実行。順序保証のため並列化しない。
+    // 整形パス実行中は待機し、整形完了後に再開される）
+    async function pumpMonotonicQueue() {
+        if (monoChunkInFlight || monoRefineInFlight) return;
+        if (monoTranslatedCount >= monoSourceSegments.length) {
+            maybeRunMonotonicRefine();
+            return;
+        }
+        const generation = monoGeneration;
+        const chunk = monoSourceSegments[monoTranslatedCount];
+        monoChunkInFlight = true;
+        translationInProgress = true;
+        translatingIndicator.classList.add('visible');
+        updateTranslatingState(true);
+        errorMessage.textContent = '';
+        try {
+            monoAbortController = new AbortController();
+            const result = await window.TranslatorService.translateStream({
+                apiKey: OPENAI_API_KEY,
+                text: chunk,
+                sourceLanguage: selectedLanguage,
+                systemPrompt: window.PromptService.getTranslationSystemPrompt({
+                    domain: translationDomain,
+                    dictionary: userDictionary
+                }),
+                userContent: buildMonotonicUserContent(chunk),
+                signal: monoAbortController.signal,
+                onUsage: recordApiUsage,
+                onChunk: (currentText) => {
+                    if (generation !== monoGeneration) return;
+                    renderMonotonicTranslation(currentText);
+                }
+            });
+            if (generation !== monoGeneration) return;
+            monoTranslation = joinMonoTranslation(monoTranslation, result);
+            monoTranslatedCount += 1;
+            renderMonotonicTranslation('');
+        } catch (error) {
+            // 世代が進んでいればリセットによる中断（表示・状態は resetMonotonicState が処理済み）
+            if (generation !== monoGeneration) return;
+            // 世代一致のままの AbortError は translateStream 内部のタイムアウト
+            console.error('順送り訳: チャンク翻訳エラー:', error);
+            errorMessage.textContent = error.name === 'AbortError'
+                ? '翻訳リクエストがタイムアウトしました。'
+                : error.message;
+            // 訳抜けは停止時の整形パスが原文全体と照合して回収するため、次のチャンクへ進む
+            monoTranslatedCount += 1;
+        } finally {
+            if (generation === monoGeneration) {
+                monoChunkInFlight = false;
+                translationInProgress = false;
+                translatingIndicator.classList.remove('visible');
+                updateTranslatingState(false);
+            }
+        }
+        if (generation === monoGeneration) {
+            pumpMonotonicQueue();
+        }
+    }
+
+    // 録音停止時: 遅延到着する確定結果を待ってから整形パスへ
+    function scheduleMonotonicFinalize() {
+        const generation = monoGeneration;
+        setTimeout(() => {
+            if (generation !== monoGeneration) return;
+            monoFinalizePending = true;
+            pumpMonotonicQueue();
+        }, MONO_FINALIZE_DELAY_MS);
+    }
+
+    function maybeRunMonotonicRefine() {
+        if (!monoFinalizePending || monoChunkInFlight || isRecording) return;
+        if (monoTranslatedCount < monoSourceSegments.length) return;
+        monoFinalizePending = false;
+
+        const fullSource = monoSourceSegments.join(' ').trim();
+        const draft = monoTranslation.trim();
+        if (!fullSource || !draft) return;
+
+        if (monoSourceSegments.length < 2) {
+            // 単一チャンクはチャンク訳＝全文訳のため整形を省略（短い発話の応答を速く保つ）
+            commitMonotonicResult(fullSource, draft);
+            return;
+        }
+        runMonotonicRefine(fullSource, draft);
+    }
+
+    // 訳の確定処理（履歴保存・TTS用保存・自動読み上げ）。translateText完了時と同じ扱いに揃える
+    function commitMonotonicResult(fullSource, finalTranslation) {
+        monoTranslation = finalTranslation;
+        translatedText.textContent = finalTranslation;
+        lastTranslationResult = finalTranslation;
+        updateTranslationBoxState(true);
+        updateTranslationCompleteState(true);
+        addConversationLogEntry(fullSource, finalTranslation, selectedLanguage);
+        checkTranslationQuality(fullSource, finalTranslation, selectedLanguage, translationBox);
+        if (autoSpeakArmed && !isRecording) {
+            triggerAutoSpeak();
+        }
+    }
+
+    // 整形パス: 原文全体と下書き訳を突き合わせ、誤訳・冗長・音の紛らわしさを修正する
+    // （語順の骨格＝順送りは保持。プロンプトは PromptService.refinementSystemPrompt）
+    async function runMonotonicRefine(fullSource, draft) {
+        const generation = monoGeneration;
+        monoRefineInFlight = true;
+        translationInProgress = true;
+        translatingIndicator.classList.add('visible');
+        updateTranslatingState(true);
+        try {
+            monoAbortController = new AbortController();
+            const sourceLabel = selectedLanguage === 'ja' ? '日本語' : '英語';
+            const result = await window.TranslatorService.translateStream({
+                apiKey: OPENAI_API_KEY,
+                text: draft,
+                sourceLanguage: selectedLanguage,
+                systemPrompt: window.PromptService.getRefinementSystemPrompt({
+                    domain: translationDomain,
+                    dictionary: userDictionary
+                }),
+                userContent: `原文（${sourceLabel}）:\n${fullSource}\n\n下書き訳:\n${draft}\n\n方針に従って下書き訳を仕上げ、完成した訳文のみを出力してください。`,
+                signal: monoAbortController.signal,
+                onUsage: recordApiUsage,
+                onChunk: (currentText) => {
+                    if (generation !== monoGeneration) return;
+                    translatedText.textContent = currentText;
+                }
+            });
+            if (generation !== monoGeneration) return;
+            const refined = (result || '').trim();
+            commitMonotonicResult(fullSource, refined || draft);
+        } catch (error) {
+            // 世代が進んでいればリセットによる中断（表示・状態は resetMonotonicState が処理済み）
+            if (generation !== monoGeneration) return;
+            // 世代一致のままの AbortError は translateStream 内部のタイムアウト
+            console.error('順送り訳: 整形パスエラー:', error);
+            errorMessage.textContent = error.name === 'AbortError'
+                ? '整形リクエストがタイムアウトしました。'
+                : error.message;
+            // 整形に失敗しても下書き訳を確定として使う（訳が消えるより良い）
+            commitMonotonicResult(fullSource, draft);
+        } finally {
+            if (generation === monoGeneration) {
+                monoRefineInFlight = false;
+                translationInProgress = false;
+                translatingIndicator.classList.remove('visible');
+                updateTranslatingState(false);
+                // 整形中に遅延到着したチャンクがあれば訳出→再整形する
+                pumpMonotonicQueue();
+            }
+        }
+    }
+
     // アプリ初期化
     loadApiKeys();
 });

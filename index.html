@@ -234,6 +234,15 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">翻訳方式</label>
+                <div class="theme-controls" id="strategyControls">
+                    <button class="strategy-btn" data-strategy="retranslation" type="button">標準（全文再翻訳）</button>
+                    <button class="strategy-btn" data-strategy="monotonic" type="button">順送り（β）</button>
+                </div>
+                <div class="form-help">順送りは発話の区切りごとに前から訳を積み上げ、停止時に全体を整えます（表示が安定・長い発話でも速い。試験機能）。切り替えは次の録音から有効です</div>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">ユーザー辞書（固有名詞の対訳）</label>
                 <div class="user-dict-form">
                     <input type="text" id="dictReading" class="form-input" placeholder="よみ（例: さくらえん）">

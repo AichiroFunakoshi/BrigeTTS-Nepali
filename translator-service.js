@@ -7,7 +7,7 @@ const TranslatorService = {
         return sourceLanguage === 'ja' ? '日本語' : '英語';
     },
 
-    createPayload: function({ text, sourceLanguage, systemPrompt }) {
+    createPayload: function({ text, sourceLanguage, systemPrompt, userContent }) {
         return {
             model: this.model,
             messages: [
@@ -17,7 +17,8 @@ const TranslatorService = {
                 },
                 {
                     role: 'user',
-                    content: `以下の${this.getSourceLanguageLabel(sourceLanguage)}テキストを${sourceLanguage === 'ja' ? '英語' : '日本語'}に翻訳してください:\n\n${text}`
+                    // userContent指定時はそれを優先（順送り訳βの文脈付きチャンク翻訳・整形パス用）
+                    content: userContent || `以下の${this.getSourceLanguageLabel(sourceLanguage)}テキストを${sourceLanguage === 'ja' ? '英語' : '日本語'}に翻訳してください:\n\n${text}`
                 }
             ],
             stream: true,
@@ -43,7 +44,7 @@ const TranslatorService = {
         return new Error(errorData?.error?.message || `OpenAI APIがステータスを返しました: ${response.status}`);
     },
 
-    translateStream: async function({ apiKey, text, sourceLanguage, systemPrompt, signal, onChunk, onUsage, timeoutMs = 30000 }) {
+    translateStream: async function({ apiKey, text, sourceLanguage, systemPrompt, userContent, signal, onChunk, onUsage, timeoutMs = 30000 }) {
         const requestController = new AbortController();
         const relayAbort = () => requestController.abort();
 
@@ -64,7 +65,7 @@ const TranslatorService = {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + String(apiKey).trim()
                 },
-                body: JSON.stringify(this.createPayload({ text, sourceLanguage, systemPrompt })),
+                body: JSON.stringify(this.createPayload({ text, sourceLanguage, systemPrompt, userContent })),
                 signal: requestController.signal
             });
 

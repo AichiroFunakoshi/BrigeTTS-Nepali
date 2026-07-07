@@ -12,6 +12,7 @@ const AppSettingsStorage = {
         theme: 'translatorTheme',
         conversationLog: 'translatorConversationLog',
         translationDomain: 'translatorTranslationDomain',
+        translationStrategy: 'translatorTranslationStrategy',
         userDictionary: 'translatorUserDictionary',
         latencyData: 'translatorLatencyData',
         usageTotals: 'translatorUsageTotals'
@@ -20,6 +21,7 @@ const AppSettingsStorage = {
     fontSizeValues: ['small', 'medium', 'large', 'xlarge'],
     themeValues: ['auto', 'light', 'dark'],
     domainValues: ['medical', 'daily'],
+    strategyValues: ['retranslation', 'monotonic'],
 
     normalizeFontSize: function(value, fallback = 'medium') {
         const normalizedFallback = this.fontSizeValues.includes(String(fallback).trim().toLowerCase())
@@ -175,6 +177,16 @@ const AppSettingsStorage = {
         this.setString(this.keys.translationDomain, this.domainValues.includes(value) ? value : 'medical');
     },
 
+    // 翻訳方式: 'retranslation'（標準・全文再翻訳） / 'monotonic'（順送りβ）
+    getTranslationStrategy: function(defaultValue = 'retranslation') {
+        const value = localStorage.getItem(this.keys.translationStrategy);
+        return this.strategyValues.includes(value) ? value : defaultValue;
+    },
+
+    setTranslationStrategy: function(value) {
+        this.setString(this.keys.translationStrategy, this.strategyValues.includes(value) ? value : 'retranslation');
+    },
+
     getUserDictionary: function() {
         const entries = this.getJson(this.keys.userDictionary, []);
         if (!Array.isArray(entries)) return [];
@@ -232,7 +244,7 @@ const AppSettingsStorage = {
 
     // 設定の一括エクスポート/インポート（APIキーと会話履歴は意図的に含めない）
     exportableKeys: ['ttsEnabled', 'autoTtsEnabled', 'ttsSpeed', 'fontSize', 'theme',
-        'translationDomain', 'userDictionary',
+        'translationDomain', 'translationStrategy', 'userDictionary',
         'debounceData', 'optimizedDebounce', 'debounceOptimizedAt'],
 
     exportSettings: function() {

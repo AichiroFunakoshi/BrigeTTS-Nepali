@@ -7,6 +7,7 @@
  *   node eval/run-eval.js --dry-run                        # API呼び出しなしで構成検証
  *   OPENAI_API_KEY=... node eval/run-eval.js --domain medical --limit 10
  *   OPENAI_API_KEY=... node eval/run-eval.js --id asr-01,dict-03
+ *   OPENAI_API_KEY=... node eval/run-eval.js --monotonic     # 順送り訳β: 文脈付きチャンク翻訳の検証
  *
  * 判定:
  *   - mustInclude: 各要素が訳文に含まれること（要素が配列の場合はいずれか1つで可）
@@ -32,7 +33,7 @@ const DEFAULT_MODEL = 'gpt-4.1-nano';
 const CONCURRENCY = 4;
 
 function parseArgs(argv) {
-    const args = { dryRun: false, domain: null, ids: null, limit: null, model: DEFAULT_MODEL };
+    const args = { dryRun: false, domain: null, ids: null, limit: null, model: DEFAULT_MODEL, monotonic: false };
     for (let i = 2; i < argv.length; i++) {
         const a = argv[i];
         if (a === '--dry-run') args.dryRun = true;
@@ -40,6 +41,7 @@ function parseArgs(argv) {
         else if (a === '--id') args.ids = argv[++i].split(',').map((s) => s.trim());
         else if (a === '--limit') args.limit = parseInt(argv[++i], 10);
         else if (a === '--model') args.model = argv[++i];
+        else if (a === '--monotonic') args.monotonic = true;
     }
     return args;
 }
@@ -75,6 +77,10 @@ async function translate(testCase, apiKey, model) {
     });
     const label = testCase.lang === 'ja' ? '日本語' : '英語';
     const target = testCase.lang === 'ja' ? '英語' : '日本語';
+    // 順送り訳β: 文脈付きチャンク翻訳（app.js buildMonotonicUserContent と同形式）
+    const userContent = testCase.context
+        ? `直前の発話（文脈。翻訳しないこと）:\n原文: ${testCase.context.source}\n訳文: ${testCase.context.translation}\n\n以下の${label}テキストは発話の続きである。上の文脈に自然につながる${target}訳のみを出力してください:\n\n${testCase.source}`
+        : `以下の${label}テキストを${target}に翻訳してください:\n\n${testCase.source}`;
     const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -82,7 +88,7 @@ async function translate(testCase, apiKey, model) {
             model: model,
             messages: [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: `以下の${label}テキストを${target}に翻訳してください:\n\n${testCase.source}` }
+                { role: 'user', content: userContent }
             ],
             temperature: 0.3
         })
@@ -96,7 +102,8 @@ async function translate(testCase, apiKey, model) {
 
 async function main() {
     const args = parseArgs(process.argv);
-    const casesFile = JSON.parse(fs.readFileSync(path.join(__dirname, 'cases.json'), 'utf8'));
+    const casesFile = JSON.parse(fs.readFileSync(
+        path.join(__dirname, args.monotonic ? 'cases-monotonic.json' : 'cases.json'), 'utf8'));
     let cases = casesFile.cases;
     if (args.domain) cases = cases.filter((c) => c.domain === args.domain);
     if (args.ids) cases = cases.filter((c) => args.ids.includes(c.id));

@@ -1,0 +1,55 @@
+{
+    "description": "順送り訳（β）チャンク翻訳の文脈維持テスト（POST_MEASUREMENT_PLAN §3.3の品質ゲート）。直前チャンクの原文・訳文を文脈として渡し、代名詞・省略主語が正しく解決されるかを検証する。実行: OPENAI_API_KEY=... node eval/run-eval.js --monotonic",
+    "cases": [
+        {
+            "id": "mono-01",
+            "domain": "daily",
+            "lang": "ja",
+            "critical": true,
+            "context": { "source": "田中さんが来ました。", "translation": "Mr. Tanaka has arrived." },
+            "source": "彼は薬を持っています。",
+            "mustInclude": [["he has", "he is", "he's", "he brought"]],
+            "mustNotInclude": ["she "]
+        },
+        {
+            "id": "mono-02",
+            "domain": "daily",
+            "lang": "ja",
+            "critical": false,
+            "context": { "source": "佐藤さんは明日休みます。", "translation": "Ms. Sato will be off tomorrow." },
+            "source": "代わりに私が担当します。",
+            "mustInclude": [["i will", "i'll", "i am", "i'm"]],
+            "mustNotInclude": []
+        },
+        {
+            "id": "mono-03",
+            "domain": "medical",
+            "lang": "ja",
+            "critical": false,
+            "context": { "source": "嚥下機能の評価を行いました。", "translation": "We evaluated the swallowing function." },
+            "source": "結果は良好でした。",
+            "mustInclude": [["good", "favorable", "satisfactory", "fine"]],
+            "mustNotInclude": []
+        },
+        {
+            "id": "mono-04",
+            "domain": "medical",
+            "lang": "en",
+            "critical": true,
+            "context": { "source": "Mr. Smith visited the clinic yesterday.", "translation": "スミスさんは昨日クリニックに来ました。" },
+            "source": "He complained of back pain.",
+            "mustInclude": [["彼", "スミス"], ["腰", "背中"]],
+            "mustNotInclude": ["彼女"]
+        },
+        {
+            "id": "mono-05",
+            "domain": "medical",
+            "lang": "en",
+            "critical": false,
+            "context": { "source": "The physical therapist will come at two.", "translation": "理学療法士は2時に来ます。" },
+            "source": "Please get ready before that.",
+            "mustInclude": [["準備", "支度"]],
+            "mustNotInclude": []
+        }
+    ]
+}
