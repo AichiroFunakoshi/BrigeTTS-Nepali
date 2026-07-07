@@ -13,6 +13,7 @@
 - **未リリースの改良**: なし
 - **品質ベースライン**: eval/cases.json 50件で100%（比較メモは docs/evaluation-cases.md）。プロンプト/モデル変更時は `OPENAI_API_KEY=... node eval/run-eval.js` で前後比較すること
 - **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
+- **Cowork環境**: サンドボックスでのテスト実行は `scripts/cowork-setup.sh` で構築可（→「⚠️ 既知の注意点」参照）
 - **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
 - **次にやること**: **ユーザー側**=①実機で「計測データを送信」（latency-report Issueに集まる）②同僚テスト（聞き取り項目: POST_MEASUREMENT_PLAN §5）。**エージェント側**=latency-report Issueが届いたら POST_MEASUREMENT_PLAN §1の判定基準で増分翻訳の要否を決めて実行
 
@@ -100,6 +101,11 @@ npm run test:smoke -- --reporter=line
 - `main` への取り込みは push → PR → マージで行う（直接編集しない）。
 - この共同作業環境は `.git` の `unlink` が制限され、コミット時に空ロックが残ることがある。
   Mac Terminal で掃除: `rm -f .git/HEAD.lock .git/index.lock .git/objects/*/tmp_obj_* 2>/dev/null`
+  Cowork内で「Operation not permitted」になる場合は、ファイル削除の許可（allow file delete）を得れば掃除できる。
+- **Cowork（Claudeサンドボックス）での開発**（2026-07-03確認）:
+  - テスト環境構築は `bash scripts/cowork-setup.sh` を「✅ セットアップ完了」が出るまで繰り返し実行（シェル45秒制限のため分割再開式）。完了後は `LD_LIBRARY_PATH=$HOME/.local/lib-extra/lib npm run test:smoke` でsmoke全11件が実行できる。
+  - サンドボックスからは `git push` 不可（認証なし）。ブランチ・コミット・PRは GitHub MCP（server-github）経由で作成し、ローカル作業ツリーは汚さない。
+  - apt/deb/condaはプロキシ遮断。npmレジストリとPlaywright CDNは通る。
 - GitHub Pagesのデプロイが「Deployment failed, try again later」で連続失敗することがある（GitHub側の一過性障害）。
   10分ほど置いて `gh workflow run altstore-source.yml` で再実行すれば復旧する。ipa/Release本体は影響を受けない。
 - 翻訳には OpenAI APIキーが必要（端末の localStorage に保存。共有端末では使用後リセット）。
