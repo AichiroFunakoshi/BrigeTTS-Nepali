@@ -16,7 +16,6 @@
 - **Cowork環境**: サンドボックスでのテスト実行は `scripts/cowork-setup.sh` で構築可（→「⚠️ 既知の注意点」参照）
 - **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
 - **次にやること**: **ユーザー側**=①実機で「計測データを送信」（latency-report Issueに集まる）②同僚テスト（聞き取り項目: POST_MEASUREMENT_PLAN §5）。**エージェント側**=latency-report Issueが届いたら POST_MEASUREMENT_PLAN §1の判定基準で増分翻訳の要否を決めて実行（2026-07-08時点でIssue 0件・待機中）
-- **保留中の構想（着手指示があるまで凍結）**: 文献引用による独自翻訳スタイルの構築。実装は既存の翻訳モード切替機構（`prompt-service.js` の `domainDirectives` / `settings-storage.js` の `domainValues` / 設定画面ボタン）への最小差分で載せる方針まで合意済み。A案=第3モード「独自スタイル」新設 / B案=医療モードの文献ベース強化（未決定）。検証は eval/cases.json 50ケース（ベースライン100%）で前後比較
 
 ---
 
