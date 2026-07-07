@@ -7,15 +7,16 @@
 
 ## ▶️ 現在の最新状態（このセクションを毎回更新する）
 
-- **最終更新**: 2026-07-03
-- **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除）
+- **最終更新**: 2026-07-08
+- **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除。PR #59=Coworkセットアップスクリプトもマージ済み）
 - **最新リリース**: **v2.9.0**（配信済み）= レイテンシ計測のIssue送信（`latency-report`）＋API使用量可視化F15（プロキシ化は見送り確定）。実装候補の残りは増分翻訳・投機的先行翻訳のみで、**着手判断は実測データ次第**（判定基準と詳細設計: [POST_MEASUREMENT_PLAN.md](POST_MEASUREMENT_PLAN.md)）。それ以前: v2.6.1=プロンプト品質修正（評価50ケース**100%**・致命的誤訳0件=KPI-3達成）、v2.6.0=設定エクスポート・インポート/評価ハーネス、v2.5.0=翻訳モード/ユーザー辞書/デバウンス自動適用
 - **未リリースの改良**: なし
 - **品質ベースライン**: eval/cases.json 50件で100%（比較メモは docs/evaluation-cases.md）。プロンプト/モデル変更時は `OPENAI_API_KEY=... node eval/run-eval.js` で前後比較すること
 - **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
 - **Cowork環境**: サンドボックスでのテスト実行は `scripts/cowork-setup.sh` で構築可（→「⚠️ 既知の注意点」参照）
 - **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
-- **次にやること**: **ユーザー側**=①実機で「計測データを送信」（latency-report Issueに集まる）②同僚テスト（聞き取り項目: POST_MEASUREMENT_PLAN §5）。**エージェント側**=latency-report Issueが届いたら POST_MEASUREMENT_PLAN §1の判定基準で増分翻訳の要否を決めて実行
+- **次にやること**: **ユーザー側**=①実機で「計測データを送信」（latency-report Issueに集まる）②同僚テスト（聞き取り項目: POST_MEASUREMENT_PLAN §5）。**エージェント側**=latency-report Issueが届いたら POST_MEASUREMENT_PLAN §1の判定基準で増分翻訳の要否を決めて実行（2026-07-08時点でIssue 0件・待機中）
+- **保留中の構想（着手指示があるまで凍結）**: 文献引用による独自翻訳スタイルの構築。実装は既存の翻訳モード切替機構（`prompt-service.js` の `domainDirectives` / `settings-storage.js` の `domainValues` / 設定画面ボタン）への最小差分で載せる方針まで合意済み。A案=第3モード「独自スタイル」新設 / B案=医療モードの文献ベース強化（未決定）。検証は eval/cases.json 50ケース（ベースライン100%）で前後比較
 
 ---
 
