@@ -5,6 +5,7 @@ const AppSettingsStorage = {
         ttsEnabled: 'translatorTTSEnabled',
         autoTtsEnabled: 'translatorAutoTTSEnabled',
         ttsSpeed: 'translatorTTSSpeed',
+        ttsVoiceJa: 'translatorTTSVoiceJa',
         fontSize: 'translatorFontSize',
         debounceData: 'translatorDebounceData',
         optimizedDebounce: 'translatorOptimizedDebounce',
@@ -90,6 +91,16 @@ const AppSettingsStorage = {
 
     setTtsSpeed: function(value) {
         this.setString(this.keys.ttsSpeed, value);
+    },
+
+    // 日本語読み上げ音声のユーザー指定（音声名）。空文字=自動選択。
+    // 端末ごとに利用可能な音声が異なるためエクスポート対象には含めない。
+    getTtsVoiceJa: function() {
+        return this.getString(this.keys.ttsVoiceJa, '').trim();
+    },
+
+    setTtsVoiceJa: function(value) {
+        this.setString(this.keys.ttsVoiceJa, String(value).trim());
     },
 
     getFontSize: function(defaultValue = 'medium') {
@@ -195,7 +206,14 @@ const AppSettingsStorage = {
         ).map((entry) => ({
             reading: typeof entry.reading === 'string' ? entry.reading : '',
             surface: entry.surface,
-            english: typeof entry.english === 'string' ? entry.english : ''
+            english: typeof entry.english === 'string' ? entry.english : '',
+            // 誤認識パターン: 音声認識がこの語に書き起こしがちな別表記
+            // （例: 禄寿園に対する「60円」）。翻訳前にsurfaceへ決定的に置換される。
+            aliases: Array.isArray(entry.aliases)
+                ? entry.aliases
+                    .filter((alias) => typeof alias === 'string' && alias.trim() !== '')
+                    .map((alias) => alias.trim())
+                : []
         }));
     },
 

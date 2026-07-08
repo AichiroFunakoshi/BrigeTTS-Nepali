@@ -64,7 +64,7 @@ const TtsService = {
                name.includes('ayumi');
     },
 
-    getBestVoiceForLanguage: function(langCode) {
+    getBestVoiceForLanguage: function(langCode, preferredVoiceName) {
         if (!langCode || typeof langCode !== 'string') {
             console.warn('無効な言語コード:', langCode);
             return null;
@@ -76,6 +76,18 @@ const TtsService = {
 
         const langPrefix = langCode.split('-')[0];
         const isJapanese = langPrefix === 'ja';
+
+        // ユーザーが設定で明示的に選択した音声を最優先する
+        if (preferredVoiceName) {
+            const preferred = this.voices.find((voice) =>
+                voice.name === preferredVoiceName && voice.lang.startsWith(langPrefix)
+            );
+            if (preferred) {
+                console.log('音声選択（ユーザー指定）:', preferred.name, preferred.lang);
+                return preferred;
+            }
+            console.warn('指定された音声が見つからないため自動選択します:', preferredVoiceName);
+        }
 
         if (isJapanese) {
             const premiumVoice = this.voices.find((voice) =>
@@ -115,7 +127,7 @@ const TtsService = {
         return null;
     },
 
-    speak: function({ text, sourceLanguage, enabled, speed, onBeforeSpeak, onStart, onEnd, onError, onPlayingChange }) {
+    speak: function({ text, sourceLanguage, enabled, speed, preferredVoiceName, onBeforeSpeak, onStart, onEnd, onError, onPlayingChange }) {
         console.log('speakTranslation呼び出し:', {
             text: text ? text.substring(0, 50) + '...' : 'null',
             language: sourceLanguage,
@@ -163,7 +175,7 @@ const TtsService = {
         const targetLang = sourceLanguage === 'ja' ? 'en-US' : 'ja-JP';
         utterance.lang = targetLang;
 
-        const selectedVoice = this.getBestVoiceForLanguage(targetLang);
+        const selectedVoice = this.getBestVoiceForLanguage(targetLang, preferredVoiceName);
         if (selectedVoice) {
             utterance.voice = selectedVoice;
         }
@@ -225,12 +237,14 @@ const TtsService = {
             // 冒頭がフェードイン/欠落するため、再生用セッションへの切替完了を
             // 待ってから発話を開始する（通知が来ない場合は300msで開始）。
             // 以前の「無音ウォームアップ発話」方式は約1秒の遅延があったため廃止。
+            // さらに、切替通知の直後は出力経路がまだ安定せず最初の語
+            // （"the" 等の短い語）が欠けることがあるため、150ms置いてから発話する。
             let started = false;
             const startOnce = () => {
                 if (started) return;
                 started = true;
                 clearTimeout(fallbackTimer);
-                startSpeaking();
+                setTimeout(startSpeaking, 150);
             };
             const fallbackTimer = setTimeout(startOnce, 300);
             window.__bridgeNativePrepareTTS(startOnce);

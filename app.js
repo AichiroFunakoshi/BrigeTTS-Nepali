@@ -283,6 +283,9 @@ document.addEventListener('DOMContentLoaded', function() {
             sourceLanguage: language,
             enabled: isTTSEnabled,
             speed: ttsSpeed,
+            // 発話言語は入力言語の反転（ja入力→en発話）。日本語で発話する場合のみ
+            // ユーザー指定の日本語音声を渡す
+            preferredVoiceName: language === 'ja' ? '' : ttsVoiceJa,
             onBeforeSpeak: () => {
                 // TTS実行＝1ターンの終了として音声入力を完全に停止する。
                 // （TTS終了後の自動再開は行わない。次の入力は開始ボタンから。
@@ -348,6 +351,12 @@ document.addEventListener('DOMContentLoaded', function() {
         recognitionHealthCheckInterval = setInterval(() => {
             if (!isRecording || !recognition) {
                 return;
+            }
+
+            // 異常終了検出: 直近ログとともにハートビートを更新
+            // （フリーズするとこの更新が止まり、次回起動時に異常終了と判定できる）
+            if (window.ErrorReporter) {
+                window.ErrorReporter.heartbeat();
             }
 
             const now = Date.now();
@@ -1114,6 +1123,44 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // 日本語の読み上げ音声の選択
+    const ttsVoiceJaSelect = document.getElementById('ttsVoiceJaSelect');
+    let ttsVoiceJa = AppSettingsStorage.getTtsVoiceJa();
+
+    function populateTtsVoiceJaSelect() {
+        if (!ttsVoiceJaSelect || !window.TtsService) return;
+        if (window.TtsService.voices.length === 0) {
+            window.TtsService.loadVoices();
+        }
+        const jaVoices = window.TtsService.voices.filter((voice) => voice.lang.startsWith('ja'));
+
+        ttsVoiceJaSelect.replaceChildren();
+        const autoOption = document.createElement('option');
+        autoOption.value = '';
+        autoOption.textContent = '自動（高品質を優先）';
+        ttsVoiceJaSelect.appendChild(autoOption);
+
+        jaVoices.forEach((voice) => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = voice.name;
+            ttsVoiceJaSelect.appendChild(option);
+        });
+        // 保存済みの音声が端末に存在しない場合は「自動」に表示を戻す
+        ttsVoiceJaSelect.value = jaVoices.some((voice) => voice.name === ttsVoiceJa) ? ttsVoiceJa : '';
+    }
+
+    if (ttsVoiceJaSelect) {
+        populateTtsVoiceJaSelect();
+        // iOSでは音声リストの読み込みが遅れることがあるため、開いた時に再取得する
+        ttsVoiceJaSelect.addEventListener('focus', populateTtsVoiceJaSelect);
+        ttsVoiceJaSelect.addEventListener('change', () => {
+            ttsVoiceJa = ttsVoiceJaSelect.value;
+            AppSettingsStorage.setTtsVoiceJa(ttsVoiceJa);
+            console.log('日本語読み上げ音声を変更:', ttsVoiceJa || '自動');
+        });
+    }
+
     // デバウンス最適化ボタン
     const optimizeDebounceBtn = document.getElementById('optimizeDebounceBtn');
     if (optimizeDebounceBtn) {
@@ -1258,12 +1305,70 @@ document.addEventListener('DOMContentLoaded', function() {
     const dictReadingInput = document.getElementById('dictReading');
     const dictSurfaceInput = document.getElementById('dictSurface');
     const dictEnglishInput = document.getElementById('dictEnglish');
+    const dictAliasesInput = document.getElementById('dictAliases');
     const dictAddBtn = document.getElementById('dictAddBtn');
     const dictListElement = document.getElementById('dictList');
 
     const DOMAIN_LABELS = { medical: '医療・介護・福祉', daily: '日常会話' };
     let translationDomain = AppSettingsStorage.getTranslationDomain('medical');
     let userDictionary = AppSettingsStorage.getUserDictionary();
+
+    // 録音セッション中に使う辞書のスナップショット（録音開始時に確定）。
+    // 録音中に辞書を編集すると、置換結果が変わって処理済み判定（resultId）が
+    // 崩れ、確定結果の重複処理が起こり得るため、セッション内では固定する。
+    let recordingDictionarySnapshot = null;
+
+    // 数字境界を考慮した置換: エイリアスが数字で始まる/終わる場合、
+    // 隣接文字が数字なら別の数値の一部（例:「960円」の中の「60円」）と
+    // みなして置換しない
+    const DIGIT_PATTERN = /[0-9０-９]/;
+    function replaceAliasWithBoundary(text, alias, surface) {
+        let result = '';
+        let index = 0;
+        while (index <= text.length) {
+            const found = text.indexOf(alias, index);
+            if (found === -1) {
+                result += text.slice(index);
+                break;
+            }
+            const prevChar = found > 0 ? text[found - 1] : '';
+            const nextChar = text[found + alias.length] || '';
+            const headBlocked = DIGIT_PATTERN.test(alias[0]) && DIGIT_PATTERN.test(prevChar);
+            const tailBlocked = DIGIT_PATTERN.test(alias[alias.length - 1]) && DIGIT_PATTERN.test(nextChar);
+            if (headBlocked || tailBlocked) {
+                result += text.slice(index, found + alias.length);
+            } else {
+                result += text.slice(index, found) + surface;
+            }
+            index = found + alias.length;
+        }
+        return result;
+    }
+
+    // 辞書の誤認識パターン置換: 音声認識が固有名詞を「読みが同じ別語」に
+    // 書き起こした場合（例:「禄寿園」→「60円」）、LLMには「60円=禄寿園」という
+    // 知識がなくプロンプトだけでは復元できない。認識テキストの段階で
+    // 正しい表記へ決定的に文字列置換して保証する。
+    function applyDictionaryAliases(text) {
+        if (!text) return text;
+        const dictionary = recordingDictionarySnapshot || userDictionary;
+        let result = text;
+        dictionary.forEach((entry) => {
+            if (!Array.isArray(entry.aliases)) return;
+            entry.aliases.forEach((alias) => {
+                // 包含関係にあるエイリアスは誤爆する（例: surface「さくら苑」に
+                // alias「さくら」→「さくら苑苑」）ため適用しない
+                if (!alias || alias === entry.surface ||
+                    entry.surface.includes(alias) || alias.includes(entry.surface)) {
+                    return;
+                }
+                if (result.includes(alias)) {
+                    result = replaceAliasWithBoundary(result, alias, entry.surface);
+                }
+            });
+        });
+        return result;
+    }
 
     function applyTranslationDomain(domain) {
         translationDomain = domain === 'daily' ? 'daily' : 'medical';
@@ -1327,7 +1432,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const text = document.createElement('span');
             text.className = 'user-dict-text';
             const reading = entry.reading ? entry.reading + '｜' : '';
-            text.textContent = reading + entry.surface + ' → ' + (entry.english || '（ローマ字）');
+            const aliases = Array.isArray(entry.aliases) && entry.aliases.length > 0
+                ? '（誤認識: ' + entry.aliases.join('、') + '）'
+                : '';
+            text.textContent = reading + entry.surface + ' → ' + (entry.english || '（ローマ字）') + aliases;
 
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
@@ -1352,15 +1460,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (dictSurfaceInput) dictSurfaceInput.focus();
                 return;
             }
+            const aliases = dictAliasesInput
+                ? dictAliasesInput.value.split(/[、,，/／]/)
+                    .map((alias) => alias.trim())
+                    // 表記と包含関係にあるパターンは置換誤爆の原因になるため登録しない
+                    .filter((alias) => alias !== '' && alias !== surface &&
+                        !surface.includes(alias) && !alias.includes(surface))
+                : [];
             userDictionary.push({
                 reading: dictReadingInput ? dictReadingInput.value.trim() : '',
                 surface: surface,
-                english: dictEnglishInput ? dictEnglishInput.value.trim() : ''
+                english: dictEnglishInput ? dictEnglishInput.value.trim() : '',
+                aliases: aliases
             });
             AppSettingsStorage.setUserDictionary(userDictionary);
             if (dictReadingInput) dictReadingInput.value = '';
             if (dictSurfaceInput) dictSurfaceInput.value = '';
             if (dictEnglishInput) dictEnglishInput.value = '';
+            if (dictAliasesInput) dictAliasesInput.value = '';
             renderUserDictionary();
         });
     }
@@ -1924,7 +2041,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 各認識結果に対して処理
             for (let i = 0; i < event.results.length; i++) {
                 const result = event.results[i];
-                const transcript = result[0].transcript.trim();
+                // 辞書の誤認識パターンを正しい表記へ置換してから処理する
+                // （表示・翻訳・順送りチャンクのすべてに適用される）
+                const transcript = applyDictionaryAliases(result[0].transcript.trim());
 
                 // 各結果に一意のIDを生成（セッション＋位置＋内容）
                 const resultId = `${recognitionSessionId}-${i}-${transcript}`;
@@ -2131,6 +2250,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 音声認識の状態監視を開始
             startRecognitionHealthCheck();
+
+            // 辞書スナップショットをこのセッション用に確定
+            recordingDictionarySnapshot = userDictionary.slice();
+
+            // 異常終了検出: 録音中であることを記録（フリーズ→強制終了の事後検出用）
+            if (window.ErrorReporter) {
+                window.ErrorReporter.markSession(true);
+            }
         } catch (e) {
             console.error('音声認識開始エラー', e);
             errorMessage.textContent = '音声認識の開始に失敗しました: ' + (e?.message || e);
@@ -2164,6 +2291,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 音声認識の状態監視を停止
         stopRecognitionHealthCheck();
+
+        // 異常終了検出: 正常に録音を終了したことを記録
+        if (window.ErrorReporter) {
+            window.ErrorReporter.markSession(false);
+        }
 
         // 再起動カウンターをリセット
         recognitionRestartAttempts = 0;
@@ -2690,6 +2822,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 pumpMonotonicQueue();
             }
         }
+    }
+
+    // 異常終了検出: 前回セッションがフリーズ/強制終了で終わっていないか確認する。
+    // 意図的な終了を異常扱いにしないため、pagehideに加えてvisibilitychange(hidden)でも
+    // 記録を解除する（iOSではバックグラウンド中のOS強制終了や手動終了でpagehideが
+    // 発火しないため。復帰後も録音中ならハートビートが5秒以内に記録を再開する）
+    if (window.ErrorReporter) {
+        window.ErrorReporter.checkPreviousSession();
+        window.addEventListener('pagehide', () => {
+            window.ErrorReporter.markSession(false);
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                window.ErrorReporter.markSession(false);
+            }
+        });
     }
 
     // アプリ初期化

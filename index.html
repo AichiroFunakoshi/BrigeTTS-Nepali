@@ -42,7 +42,7 @@
     <div class="container">
         <header class="app-header">
             <div class="app-header-text">
-                <div class="app-title">BridgeTTS v2.9.1</div>
+                <div class="app-title">BridgeTTS v2.9.2</div>
                 <div class="app-subtitle">日英リアルタイム音声翻訳</div>
                 <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="app-footer">
-            BridgeTTS v2.9.1 © 2025–2026 ┃ Crafted by A_1_6
+            BridgeTTS v2.9.2 © 2025–2026 ┃ Crafted by A_1_6
         </div>
     </div>
 
@@ -248,10 +248,11 @@
                     <input type="text" id="dictReading" class="form-input" placeholder="よみ（例: さくらえん）">
                     <input type="text" id="dictSurface" class="form-input" placeholder="表記（例: さくら苑）※必須">
                     <input type="text" id="dictEnglish" class="form-input" placeholder="英語表記（空欄＝ローマ字）">
+                    <input type="text" id="dictAliases" class="form-input" placeholder="誤認識される表記（例: 60円、六十円）">
                     <button type="button" class="dict-add-btn" id="dictAddBtn">辞書に追加</button>
                 </div>
                 <div class="user-dict-list" id="dictList"></div>
-                <div class="form-help">施設名・人名などを登録すると、翻訳モードに関わらず常に正しい表記・英語で翻訳されます（この端末にのみ保存）</div>
+                <div class="form-help">施設名・人名などを登録すると、翻訳モードに関わらず常に正しい表記・英語で翻訳されます（この端末にのみ保存）。「誤認識される表記」を登録すると、音声認識がその表記に書き起こした時点で正しい表記へ自動置換されます（読点・カンマ区切りで複数可）</div>
             </div>
 
             <div class="form-group">
@@ -299,6 +300,14 @@
                     <button class="speed-btn" data-speed="1.2">×1.2</button>
                 </div>
                 <div class="form-help">音声読み上げのスピードを調整できます</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="ttsVoiceJaSelect">日本語の読み上げ音声</label>
+                <select id="ttsVoiceJaSelect" class="form-input">
+                    <option value="">自動（高品質を優先）</option>
+                </select>
+                <div class="form-help">棒読みに感じる場合は別の声を試してください。iOSは「設定→アクセシビリティ→読み上げコンテンツ→声→日本語」で拡張品質の声（例: Kyoko 拡張）を追加すると選択肢が増えます</div>
             </div>
 
             <div class="form-group">

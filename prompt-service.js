@@ -43,7 +43,10 @@ const PromptService = {
         const lines = dictionary.slice(0, MAX_ENTRIES).map((entry) => {
             const reading = entry.reading ? `${entry.reading}｜` : '';
             const english = entry.english ? entry.english : '（ヘボン式ローマ字）';
-            return `- ${reading}${entry.surface} → ${english}`;
+            const aliases = Array.isArray(entry.aliases) && entry.aliases.length > 0
+                ? `（誤認識されやすい表記: ${entry.aliases.join('、')}。これらは必ずこの語のこと）`
+                : '';
+            return `- ${reading}${entry.surface} → ${english}${aliases}`;
         });
         return `【ユーザー辞書（会話領域の設定に関わらず、最優先で常に適用）】
 以下はユーザーが登録した固有名詞（施設名・人名など）の正しい表記と英語表記である。

@@ -39,6 +39,63 @@ const ErrorReporter = {
         });
     },
 
+    // ========================================
+    // 異常終了の検出（フリーズ→強制終了はJSエラーを出さないため、
+    // 録音中であることをlocalStorageに記録し、次回起動時に照合する）
+    // ========================================
+    sessionStateKey: 'translatorSessionState',
+
+    // 録音開始時にtrue、正常停止・ページ離脱時にfalseで呼び出す。
+    // 録音中はハートビート（heartbeat）で直近ログとともに定期更新する。
+    markSession: function(recording) {
+        try {
+            localStorage.setItem(this.sessionStateKey, JSON.stringify({
+                recording: Boolean(recording),
+                t: Date.now(),
+                // 保存時にもサニタイズする（APIキー等が生ログのまま常駐しないように）
+                logs: recording
+                    ? this.logs.slice(-30).map((log) => ({
+                        ...log,
+                        message: this.sanitizeText(log.message)
+                    }))
+                    : []
+            }));
+        } catch (error) {
+            // localStorageが使えない環境では検出をあきらめる（動作には影響しない）
+        }
+    },
+
+    heartbeat: function() {
+        this.markSession(true);
+    },
+
+    // 起動時に呼び出す。前回セッションが「録音中のまま」終わっていたら、
+    // フリーズ/強制終了の可能性として直前ログを復元しレポート可能にする。
+    checkPreviousSession: function() {
+        let previous = null;
+        try {
+            const raw = localStorage.getItem(this.sessionStateKey);
+            localStorage.removeItem(this.sessionStateKey);
+            if (!raw) return;
+            previous = JSON.parse(raw);
+        } catch (error) {
+            return;
+        }
+        if (!previous || previous.recording !== true) {
+            return;
+        }
+        if (Array.isArray(previous.logs) && previous.logs.length > 0) {
+            this.logs = previous.logs.concat(this.logs).slice(-this.maxLogs);
+        }
+        // previous.t が不正値（範囲外の数値等）だと toISOString() が例外を投げるため検証する
+        const lastBeat = Number.isFinite(previous.t) && Math.abs(previous.t) <= 8.64e15
+            ? new Date(previous.t).toISOString()
+            : '不明';
+        console.error(
+            `前回のセッションが音声入力中に異常終了した可能性があります（フリーズ/強制終了）。最終ハートビート: ${lastBeat}。直前のログを復元しました。`
+        );
+    },
+
     safeSerialize: function(value) {
         if (typeof value === 'string') return value;
         const seen = new WeakSet();
