@@ -42,7 +42,7 @@
     <div class="container">
         <header class="app-header">
             <div class="app-header-text">
-                <div class="app-title">BridgeTTS v2.9.2</div>
+                <div class="app-title">BridgeTTS v2.9.3</div>
                 <div class="app-subtitle">日英リアルタイム音声翻訳</div>
                 <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="app-footer">
-            BridgeTTS v2.9.2 © 2025–2026 ┃ Crafted by A_1_6
+            BridgeTTS v2.9.3 © 2025–2026 ┃ Crafted by A_1_6
         </div>
     </div>
 
@@ -236,10 +236,10 @@
             <div class="form-group">
                 <label class="form-label">翻訳方式</label>
                 <div class="theme-controls" id="strategyControls">
+                    <button class="strategy-btn" data-strategy="monotonic" type="button">順送り（既定）</button>
                     <button class="strategy-btn" data-strategy="retranslation" type="button">標準（全文再翻訳）</button>
-                    <button class="strategy-btn" data-strategy="monotonic" type="button">順送り（β）</button>
                 </div>
-                <div class="form-help">順送りは発話の区切りごとに前から訳を積み上げ、停止時に全体を整えます（表示が安定・長い発話でも速い。試験機能）。切り替えは次の録音から有効です</div>
+                <div class="form-help">順送り（石畳方式・既定）は発話の区切りごとに前から訳を積み上げ、停止時に全体を整えます（表示が安定・長い発話でも速い）。標準は認識のたびに全文を訳し直す従来方式で、不具合時の予備として残しています。切り替えは次の録音から有効です</div>
             </div>
 
             <div class="form-group">

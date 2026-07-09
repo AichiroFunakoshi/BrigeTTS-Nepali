@@ -188,14 +188,15 @@ const AppSettingsStorage = {
         this.setString(this.keys.translationDomain, this.domainValues.includes(value) ? value : 'medical');
     },
 
-    // 翻訳方式: 'retranslation'（標準・全文再翻訳） / 'monotonic'（順送りβ）
-    getTranslationStrategy: function(defaultValue = 'retranslation') {
+    // 翻訳方式: 'monotonic'（順送り＝石畳方式・既定） / 'retranslation'（標準・全文再翻訳＝フォールバック）
+    // v2.9.3（#73第1段階）で既定を順送りに反転。保存済みの設定は尊重する（未設定のみ新既定を適用）
+    getTranslationStrategy: function(defaultValue = 'monotonic') {
         const value = localStorage.getItem(this.keys.translationStrategy);
         return this.strategyValues.includes(value) ? value : defaultValue;
     },
 
     setTranslationStrategy: function(value) {
-        this.setString(this.keys.translationStrategy, this.strategyValues.includes(value) ? value : 'retranslation');
+        this.setString(this.keys.translationStrategy, this.strategyValues.includes(value) ? value : 'monotonic');
     },
 
     getUserDictionary: function() {

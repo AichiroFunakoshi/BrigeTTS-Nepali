@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.9.2');
+    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.9.3');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startEnglishBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -35,7 +35,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#historyButton')).toBeVisible();
     await expect(page.locator('#domainControls .domain-btn')).toHaveCount(2);
     await expect(page.locator('#strategyControls .strategy-btn')).toHaveCount(2);
-    await expect(page.locator('#strategyControls .strategy-btn.active')).toHaveText('標準（全文再翻訳）');
+    await expect(page.locator('#strategyControls .strategy-btn.active')).toHaveText('順送り（既定）');
     await expect(page.locator('#dictAddBtn')).toHaveCount(1);
     await expect(page.locator('#domainBadge')).toHaveText('医療・介護・福祉');
     await expect(page.locator('#exportSettingsBtn')).toHaveCount(1);
@@ -132,7 +132,7 @@ test('supports monotonic translation mode modules', async ({ page }) => {
     expect(result.customUserContent).toBe('CUSTOM');
     expect(result.defaultUserContent).toBe('以下の日本語テキストを英語に翻訳してください:\n\nこんにちは');
     expect(result.stored).toBe('monotonic');
-    expect(result.fallback).toBe('retranslation');
+    expect(result.fallback).toBe('monotonic');
 });
 
 test('uses side-by-side result boxes in landscape', async ({ page }) => {

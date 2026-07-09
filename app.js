@@ -1391,10 +1391,10 @@ document.addEventListener('DOMContentLoaded', function() {
     applyTranslationDomain(translationDomain);
 
     // ========================================
-    // 翻訳方式（標準=全文再翻訳 / 順送りβ）
+    // 翻訳方式（順送り=石畳方式・既定 / 標準=全文再翻訳・フォールバック）
     // ========================================
     const strategyButtons = document.querySelectorAll('#strategyControls .strategy-btn');
-    let translationStrategy = AppSettingsStorage.getTranslationStrategy('retranslation');
+    let translationStrategy = AppSettingsStorage.getTranslationStrategy('monotonic');
     let activeTranslationStrategy = 'retranslation'; // 録音セッションに適用中の方式（録音開始時に確定）
 
     function applyTranslationStrategy(strategy) {
