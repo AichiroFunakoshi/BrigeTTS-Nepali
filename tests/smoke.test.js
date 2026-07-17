@@ -16,9 +16,9 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BridgeTTS v2.9.3');
+    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v2.9.3');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
-    await expect(page.locator('#startEnglishBtn')).toBeVisible();
+    await expect(page.locator('#startNepaliBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
     await expect(page.locator('#copyTranslationBtn')).toBeDisabled();
     await expect(page.locator('#presentTranslationBtn')).toBeVisible();
@@ -47,7 +47,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     await expect(page.locator('#sendLatencyBtn')).toHaveCount(1);
     await expect(page.locator('#apiUsageSummary')).toHaveCount(1);
     await expect(page.locator('#fontSizeToggleBtn')).toBeVisible();
-    await expect(page.locator('.app-subtitle')).toHaveText('日英リアルタイム音声翻訳');
+    await expect(page.locator('.app-subtitle')).toHaveText('日本語・ネパール語リアルタイム音声翻訳');
 
     await expect(page.locator('#apiModal')).toBeVisible();
     await expect(page.locator('#openaiKey')).toBeVisible();
@@ -75,15 +75,16 @@ test('loads the default translation prompt rules', async ({ page }) => {
 
     const prompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt());
 
-    expect(prompt).toContain('日本語の場合は英語');
-    expect(prompt).toContain('英語の場合は日本語');
+    expect(prompt).toContain('日本語の場合はネパール語');
+    expect(prompt).toContain('ネパール語の場合は日本語');
+    expect(prompt).toContain('デーヴァナーガリー文字');
     expect(prompt).toContain('フィラー');
     expect(prompt).toContain('翻訳のみを出力');
 
     // 翻訳モード（会話領域）とユーザー辞書のプロンプト注入
     const injectedPrompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt({
         domain: 'medical',
-        dictionary: [{ reading: 'さくらえん', surface: 'さくら苑', english: 'Sakura-en' }]
+        dictionary: [{ reading: 'さくらえん', surface: 'さくら苑', nepali: 'Sakura-en' }]
     }));
     expect(injectedPrompt).toContain('医療・介護・福祉');
     expect(injectedPrompt).toContain('さくら苑');
@@ -93,6 +94,25 @@ test('loads the default translation prompt rules', async ({ page }) => {
     const dailyPrompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt({ domain: 'daily' }));
     expect(dailyPrompt).toContain('日常会話');
     expect(dailyPrompt).not.toContain('ユーザー辞書');
+});
+
+test('uses Nepali locale for translated speech', async ({ page }) => {
+    await page.goto('/');
+
+    const targetLanguage = await page.evaluate(() => {
+        window.TtsService.initialized = true;
+        window.TtsService.speak({
+            text: 'नमस्ते',
+            sourceLanguage: 'ja',
+            enabled: true,
+            speed: 1
+        });
+        const lang = window.TtsService.currentUtterance?.lang;
+        window.TtsService.stop();
+        return lang;
+    });
+
+    expect(targetLanguage).toBe('ne-NP');
 });
 
 test('supports monotonic translation mode modules', async ({ page }) => {
@@ -130,7 +150,7 @@ test('supports monotonic translation mode modules', async ({ page }) => {
     expect(result.refineKeepsOrder).toBe(true);
     expect(result.refineHasDomain).toBe(true);
     expect(result.customUserContent).toBe('CUSTOM');
-    expect(result.defaultUserContent).toBe('以下の日本語テキストを英語に翻訳してください:\n\nこんにちは');
+    expect(result.defaultUserContent).toBe('以下の日本語テキストをネパール語に翻訳してください:\n\nこんにちは');
     expect(result.stored).toBe('monotonic');
     expect(result.fallback).toBe('monotonic');
 });
@@ -147,7 +167,7 @@ test('uses side-by-side result boxes in landscape', async ({ page }) => {
         const originalRect = document.querySelector('#originalBox').getBoundingClientRect();
         const translationRect = document.querySelector('#translationBox').getBoundingClientRect();
         const jaRect = document.querySelector('#startJapaneseBtn').getBoundingClientRect();
-        const enRect = document.querySelector('#startEnglishBtn').getBoundingClientRect();
+        const enRect = document.querySelector('#startNepaliBtn').getBoundingClientRect();
         const resetRect = document.querySelector('#resetBtn').getBoundingClientRect();
 
         return {
@@ -179,7 +199,7 @@ test('keeps primary controls thumb-friendly in portrait', async ({ page }) => {
 
     const layout = await page.evaluate(() => {
         const japaneseRect = document.querySelector('#startJapaneseBtn').getBoundingClientRect();
-        const englishRect = document.querySelector('#startEnglishBtn').getBoundingClientRect();
+        const englishRect = document.querySelector('#startNepaliBtn').getBoundingClientRect();
         const resetRect = document.querySelector('#resetBtn').getBoundingClientRect();
 
         return {
@@ -321,7 +341,7 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
         stream: true,
         temperature: 0.3,
         systemPrompt: 'system prompt',
-        userPrompt: '以下の日本語テキストを英語に翻訳してください:\n\nこんにちは'
+        userPrompt: '以下の日本語テキストをネパール語に翻訳してください:\n\nこんにちは'
     });
     expect(consoleErrors).toEqual(expect.arrayContaining([
         expect.stringContaining('ストリーミングレスポンス解析エラー')
@@ -349,7 +369,7 @@ test('exports and imports settings as JSON', async ({ page }) => {
     await page.goto('/');
     const result = await page.evaluate(() => {
         window.AppSettingsStorage.setTranslationDomain('daily');
-        window.AppSettingsStorage.setUserDictionary([{ reading: 'てすと', surface: 'テスト苑', english: 'Test-en' }]);
+        window.AppSettingsStorage.setUserDictionary([{ reading: 'てすと', surface: 'テスト苑', nepali: 'Test-en' }]);
         const json = window.AppSettingsStorage.exportSettings();
 
         // 別の状態に変更してから復元できることを確認

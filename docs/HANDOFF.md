@@ -7,20 +7,22 @@
 
 ## ▶️ 現在の最新状態（このセクションを毎回更新する）
 
-- **最終更新**: 2026-07-14（リポジトリ棚卸し・README現状反映）
+- **最終更新**: 2026-07-17（日本語・ネパール語版の独立リポジトリ化）
+- **ネパール語版の初期移植（本ブランチ）**: 元の日英版 `Bridge-TTS-Codex-` の履歴を保持した独立コピーとして `BrigeTTS(Nepali)` を開始。言語コードを `en`→`ne`、音声認識/TTSロケールを `en-US`→`ne-NP`、UI・プロンプト・辞書・デバウンス学習・評価ハーネスを日本語⇄ネパール語へ移行。元リポジトリへの誤push防止のため、元接続は `upstream` として扱う
+- **検証**: 変更JSの `node --check`、ネパール語評価11ケースのdry-run、Playwright smoke 14/14合格。実APIによる翻訳品質評価と、iPhone/Android実機での `ne-NP` 音声認識・TTS音声有無の確認は未実施
+- **作業ブランチ**: `codex/nepali-localization`（GitHub新規リポジトリ作成・初回push待ち）
 - **リポジトリ棚卸し（2026-07-14）**: ①マージ済みPR由来のリモートブランチ37本を全削除（remoteは`main`のみ。全てマージ済みPRとの対応を照合済み）②ログ系Issueを集約: レイテンシ報告#68/#69/#70は要点コメント（訳出開始 中央値703-726ms・確定798-825ms＝ゲート通過）を残してクローズ、TTSエラー#78は#67へ集約しクローズ（**v2.9.2の頭切れ対策後も canceled が再発**した点を#67のコメントに記録。追跡は#67で継続）③READMEをv2.9.3の現状に更新（順送り＝石畳方式が既定・翻訳モード・ユーザー辞書・設定エクスポート・API使用量表示・異常終了検出・日本語読み上げ音声選択・設計文書リンク）
-- **作業ブランチ**: `main`（作業ブランチはすべてマージ済み・削除）
 - **実機フィードバック対応（本PR）**: ①辞書に「誤認識される表記」を追加（「禄寿園」→「60円」問題への決定的置換。数字境界・包含関係ガード付き）②iOSネイティブTTSの頭切れ対策（セッション切替後150ms待機）③日本語読み上げ音声の選択UI ④録音中フリーズ→強制終了の事後検出（ハートビート。次回起動時に直前ログ付きレポート可能）。敵対的レビュー済み（Major2件を修正）
 - **新規Issue**: #71=フリーズ調査（Swift側メインスレッドブロック仮説）、#72=順送りの暫定訳並走表示、#73=順送り既定化の二段階移行提案。ユーザーはA/B比較で順送りを高評価、方式統一を提案中
 - **実測結果**: レイテンシIssue #68-70受領（訳出開始 中央値703-726ms/目標700ms・確定 中央値798-825ms/目標1200ms）。実測ゲートは事実上通過。#67=TTS canceledエラー（頭切れとの関連疑い）
 - **最新リリース**: **v2.9.3**（配信済み・2026-07-09）= **既定の翻訳方式を順送り（石畳方式）に反転**（#73第1段階。標準=全文再翻訳はフォールバックとして設定に残置・保存済み設定は尊重・「β」表記を撤去）。それ以前: v2.9.2=実機フィードバック対応（PR #74。辞書「誤認識される表記」/TTS頭切れ修正/日本語読み上げ音声選択/異常終了検出）。それ以前: v2.9.1=**翻訳方式「順送り（β）」**（PR #64。設定で切替・既定は従来方式で挙動不変・標準方式との直接A/B比較用。※POST_MEASUREMENT_PLAN §1の実測ゲートはユーザー判断でスキップして先行実装）＋仕様書/**石畳方式**文書（PR #66）。それ以前: v2.9.0=レイテンシ計測Issue送信＋API使用量可視化F15、v2.6.1=プロンプト品質修正、v2.6.0=設定エクスポート/評価ハーネス、v2.5.0=翻訳モード/ユーザー辞書/デバウンス自動適用
-- **未リリースの改良**: なし
+- **未リリースの改良**: 日本語・ネパール語版の初期移植（本ブランチ）
 - **順送りの設計文書**: 仕様書=[MONOTONIC_BETA_SPEC.md](MONOTONIC_BETA_SPEC.md)、論文=[ISHIDATAMI_SCHEME.md](ISHIDATAMI_SCHEME.md)（**石畳方式**。v1.1で実機評価・考察深化・不足評価8項目・評価標準化案「石畳ベンチ」・外部レビュー観点を追加。**学会発表を目標に他LLMレビューへ回す予定**。レビュー反映後は石畳ベンチ実装＝レイテンシ計測の方式ラベル対応・erasure自動記録・eval --ab が候補）
 - **品質ベースライン**: 2026-07-08実測: 既存50ケース **49/50（98%）・critical 0**（KPI-3維持）。不合格の`psy-05`（「幻聴」→ auditory hallucination が出ない）は翻訳経路無変更のまま再現するためモデル側の揺らぎ/ドリフトと判断。次回プロンプト調整時に対処（悪化ではなく記録として残す）。順送りβ文脈維持 `--monotonic` は **5/5合格**。プロンプト/モデル変更時は前後比較を必ず実施
-- **最新の申し送り**: [docs/handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md)
+- **最新の申し送り**: [docs/handover-2026-07-17-nepali-fork.md](handover-2026-07-17-nepali-fork.md)
 - **Cowork環境**: サンドボックスでのテスト実行は `scripts/cowork-setup.sh` で構築可（→「⚠️ 既知の注意点」参照）
-- **進捗ダッシュボード**: https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/dashboard.html （リリース/CI/Issue/コミットを一望）
-- **次にやること**: **ユーザー側**=①v2.9.3実機確認（既定が順送りになっていること。v2.9.2分の辞書「誤認識される表記」= 禄寿園/60円の検証・TTS頭切れ・日本語音声選択も）②フリーズ再発時は次回起動時のエラーレポートボタンから送信（#71の材料）③同僚テスト（POST_MEASUREMENT_PLAN §5。順送り既定の状態で実施できる）。**エージェント側**=①#72（暫定訳並走表示）の設計 ②異常終了レポートが届いたら#71の根本修正（Swift側）③1〜2リリース安定後に#73第2段階（標準方式撤廃）の判断をユーザーに確認
+- **進捗ダッシュボード**: https://aichirofunakoshi.github.io/BrigeTTS-Nepali/dashboard.html （リリース/CI/Issue/コミットを一望）
+- **次にやること**: ①GitHub CLIへ再ログインし `AichiroFunakoshi/BrigeTTS-Nepali` を作成・初回push ②GitHub Pagesを有効化 ③iPhone/Android実機で日本語⇄ネパール語の音声認識・TTSを確認 ④実APIで `eval/cases-nepali*.json` を実行し、ネパール語品質ベースラインを確定
 
 ---
 
@@ -52,8 +54,8 @@ git revert -m 1 <マージコミットSHA>     # 例: 2ff46c3（PR #33）
 
 ```bash
 # 1. リポジトリを取得（初回のみ）。※iCloud Drive内ではなくローカル実体に置くこと
-git clone https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-.git
-cd Bridge-TTS-Codex-
+git clone https://github.com/AichiroFunakoshi/BrigeTTS-Nepali.git
+cd BrigeTTS-Nepali
 
 # 2. 最新を取得
 git fetch origin
@@ -82,6 +84,7 @@ npm run test:smoke -- --reporter=line
 
 | 日付 | ファイル | 概要 |
 |---|---|---|
+| 2026-07-17 | [handover-2026-07-17-nepali-fork.md](handover-2026-07-17-nepali-fork.md) | 日本語・ネパール語版の独立コピー作成 / 言語移植 / 初期テスト |
 | 2026-07-02 | [handover-2026-07-02-local-migration.md](handover-2026-07-02-local-migration.md) | ローカル移行確定 / CLAUDE.mdにFable5規範 / 進捗ダッシュボード追加 |
 | 2026-06-23 | [handover-2026-06-23-present-mode.md](handover-2026-06-23-present-mode.md) | 大型表示モード実装 / package.json 版数整合（PR #33 マージ済み・main 2ff46c3） |
 | 2025-10-10 | [handover-2025-10-10-ios-safari-fix.md](handover-2025-10-10-ios-safari-fix.md) | iOS Safari 関連の修正 |

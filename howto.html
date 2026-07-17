@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>使い方 - BridgeTTS</title>
+    <title>使い方 - BrigeTTS(Nepali)</title>
 
     <!-- iOSホーム画面アプリとしての設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -229,8 +229,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>BridgeTTS 使い方ガイド</h1>
-            <p>日本語と英語のリアルタイム音声翻訳アプリ</p>
+            <h1>BrigeTTS(Nepali) 使い方ガイド</h1>
+            <p>日本語とネパール語のリアルタイム音声翻訳アプリ</p>
         </div>
 
         <a href="index.html" class="back-link">← アプリに戻る</a>
@@ -238,7 +238,7 @@
         <div class="content">
             <section class="section">
                 <h2 data-icon="🚀">はじめに</h2>
-                <p>このアプリは、日本語と英語の音声をリアルタイムで翻訳します。話した内容がテキスト化され、自動的に翻訳されます。</p>
+                <p>このアプリは、日本語とネパール語の音声をリアルタイムで翻訳します。話した内容がテキスト化され、自動的に翻訳されます。</p>
 
                 <div class="warning-box">
                     <p><strong>必要なもの:</strong> OpenAI APIキー（翻訳機能に必要）</p>
@@ -249,7 +249,7 @@
                 <h2 data-icon="📝">基本的な使い方</h2>
                 <ol class="step-list">
                     <li>初回起動時にOpenAI APIキーを入力して「保存して開始」をタップ</li>
-                    <li>「開始」（日本語）または「Start」（英語）ボタンをタップ</li>
+                    <li>「開始」（日本語）または「Start」（ネパール語）ボタンをタップ</li>
                     <li>「録音中」と表示されたら、マイクに向かって話すと原文と翻訳が表示されます</li>
                     <li>翻訳ボックスをタップすると、翻訳結果を音声で読み上げます（この時点で音声入力は自動的に終了します）</li>
                     <li>次の入力は、再度「開始」/「Start」ボタンをタップ（途中でやめる場合は「停止」）</li>
@@ -260,7 +260,7 @@
                 </div>
 
                 <div class="tip-box">
-                    <p><strong>ターン制について:</strong> 読み上げ（TTS）の実行は「1回の会話ターンの終了」として扱われ、音声入力は自動的に停止します。読み上げ直後にマイクを自動再開すると冒頭の音声が欠けやすいためで、日英交互の会話でも言語ボタンの押し直しで自然に切り替えられます。また、30秒間音声を検出しない場合は、電池消費と発熱を防ぐため音声入力を自動停止します。</p>
+                    <p><strong>ターン制について:</strong> 読み上げ（TTS）の実行は「1回の会話ターンの終了」として扱われ、音声入力は自動的に停止します。読み上げ直後にマイクを自動再開すると冒頭の音声が欠けやすいためで、日本語・ネパール語交互の会話でも言語ボタンの押し直しで自然に切り替えられます。また、30秒間音声を検出しない場合は、電池消費と発熱を防ぐため音声入力を自動停止します。</p>
                 </div>
             </section>
 
@@ -311,7 +311,7 @@
                 <h2 data-icon="📲">iOSアプリ版（AltStore）</h2>
                 <p>このアプリはPWAとしてホーム画面に追加できるほか、iOSネイティブアプリとしてもインストールできます。</p>
                 <ol class="step-list">
-                    <li>GitHubリポジトリのActionsから未署名IPA（BridgeTTS-unsigned.ipa）をダウンロード</li>
+                    <li>GitHubリポジトリのActionsから未署名IPA（BrigeTTS(Nepali)-unsigned.ipa）をダウンロード</li>
                     <li>IPAをiPhoneに転送（AirDrop / ファイルAppなど）</li>
                     <li>AltStoreの「My Apps」→「＋」からIPAを選択してインストール</li>
                     <li>初回起動時にマイクと音声認識の権限を許可</li>
@@ -333,7 +333,7 @@
                         </tr>
                         <tr>
                             <td>必要サンプル数</td>
-                            <td>言語ごとに30件（日英は独立。片方の言語だけでも最適化可能）</td>
+                            <td>言語ごとに30件（日本語・ネパール語は独立。片方の言語だけでも最適化可能）</td>
                         </tr>
                         <tr>
                             <td>データ収集</td>
@@ -433,7 +433,7 @@
                             <td>文節区切りに対応</td>
                         </tr>
                         <tr>
-                            <td>英語</td>
+                            <td>ネパール語</td>
                             <td>154ms</td>
                             <td>流暢な発話に追従</td>
                         </tr>
@@ -443,7 +443,7 @@
         </div>
 
         <div class="footer">
-            BridgeTTS © 2025 | Crafted by A_1_6
+            BrigeTTS(Nepali) © 2025 | Crafted by A_1_6
         </div>
     </div>
 </body>

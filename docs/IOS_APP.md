@@ -62,8 +62,8 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 ソースを登録しておくと、IPAを手動転送せずにAltStoreだけでインストール・更新が完結します。
 
-1. iPhoneのSafariで https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/altstore.html を開き「AltStoreにソースを追加」をタップ
-   （またはAltStoreの **Sources** → **＋** に `https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json` を貼り付け）
+1. iPhoneのSafariで https://aichirofunakoshi.github.io/BrigeTTS-Nepali/altstore.html を開き「AltStoreにソースを追加」をタップ
+   （またはAltStoreの **Sources** → **＋** に `https://aichirofunakoshi.github.io/BrigeTTS-Nepali/apps.json` を貼り付け）
 2. AltStoreの **Browse** にBridgeTTSが表示されるので **FREE** をタップしてインストール
 3. 新バージョンが公開されると **My Apps** に「アップデート」が表示され、ワンタップで更新できます
    （アプリのデータ・APIキー・設定は引き継がれます）
@@ -81,7 +81,7 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 アプリ（およびWeb版）でエラーが発生すると「⚠️ エラーを報告」ボタンが表示されます。
 タップするとログ（APIキー等は自動マスク）を確認のうえ送信できます。
 
-- **ネイティブアプリ**: GitHubの[Issues](https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues)に `error-report` ラベル付きで直接作成されます（アカウント不要・アプリ内完結）
+- **ネイティブアプリ**: GitHubの[Issues](https://github.com/AichiroFunakoshi/BrigeTTS-Nepali/issues)に `error-report` ラベル付きで直接作成されます（アカウント不要・アプリ内完結）
 - **Web/PWA版**: GitHubのIssue作成画面が下書き付きで開きます（GitHubアカウントが必要）
 
 ネイティブアプリの直接送信を有効にするには、リポジトリ管理者が以下を一度だけ設定します:

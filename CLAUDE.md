@@ -4,14 +4,14 @@
 **セッション開始時に必ず参照し、ここの規律に従うこと。**
 
 ## プロジェクト概要
-- **BridgeTTS**: 日英リアルタイム音声翻訳アプリ。**PWA（ブラウザ）** と **iOSネイティブ（AltStore配布）** の2形態。
+- **BridgeTTS**: 日本語・ネパール語リアルタイム音声翻訳アプリ。**PWA（ブラウザ）** と **iOSネイティブ（AltStore配布）** の2形態。
 - 翻訳: OpenAI `gpt-4.1-nano`（端末から直接呼び出し）。音声: Web Speech API（iOSは `SFSpeechRecognizer` ブリッジで補完）。
 - 主要ファイル: `app.js`（本体・認識制御/翻訳トリガー/UI）, `translator-service.js`, `prompt-service.js`, `tts-service.js`, `native-speech.js`, `settings-storage.js`, `error-reporter.js`, `sw.js`, `index.html`, `style.css`, `ios/`。
 
 ## 触れてはいけない核（要・慎重）
 - **翻訳・音声認識・TTSのコアロジック**（`app.js` の認識制御、`translator-service.js` / `tts-service.js` / `prompt-service.js`）は、検証なしに変更しない。
 - 変更は **「追加中心・最小差分」** を基本とし、既存の挙動を変えない。
-- **TTSの言語**: `TtsService.speak({ sourceLanguage })` は内部で言語を反転して発話言語を決める（`tts-service.js` 内 `sourceLanguage === 'ja' ? 'en-US' : 'ja-JP'`）。呼び出し側には **ソース（入力）言語** を渡す。呼び出し側での反転は二重反転になり禁止。
+- **TTSの言語**: `TtsService.speak({ sourceLanguage })` は内部で言語を反転して発話言語を決める（`tts-service.js` 内 `sourceLanguage === 'ja' ? 'ne-NP' : 'ja-JP'`）。呼び出し側には **ソース（入力）言語** を渡す。呼び出し側での反転は二重反転になり禁止。
 
 ## 作業環境・リポジトリ規律
 - **GitHub（origin/main）が唯一の正**。複数Macで開発する場合、各Macに `~/Bridge-TTS(Codex)` としてローカルクローンを置く。
@@ -60,7 +60,7 @@ PRを出す前に、サンドボックス等で以下を実行・確認する（
 - **教訓の記録**: ハマりどころや確認済みの正しい手法は `docs/HANDOFF.md` に追記する（既存メモの更新を優先し、重複を作らない。誤りと分かったメモは削除する）。
 
 ## 参照
-- **エージェント実務手順（英語・ユーザー追記欄あり）: `docs/AGENT_PLAYBOOK.md`** ← セッション開始時に必読
+- **エージェント実務手順（ネパール語・ユーザー追記欄あり）: `docs/AGENT_PLAYBOOK.md`** ← セッション開始時に必読
 - 作業継続ガイド: `docs/HANDOFF.md`
 - 目標・改善計画: `docs/PROJECT_GOALS_AND_IMPROVEMENT_PLAN.md`
 - 変更履歴: `CHANGELOG.md`

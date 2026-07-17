@@ -4,7 +4,7 @@ const TranslatorService = {
     model: 'gpt-4.1-nano',
 
     getSourceLanguageLabel: function(sourceLanguage) {
-        return sourceLanguage === 'ja' ? '日本語' : '英語';
+        return sourceLanguage === 'ja' ? '日本語' : 'ネパール語';
     },
 
     createPayload: function({ text, sourceLanguage, systemPrompt, userContent }) {
@@ -18,7 +18,7 @@ const TranslatorService = {
                 {
                     role: 'user',
                     // userContent指定時はそれを優先（順送り訳βの文脈付きチャンク翻訳・整形パス用）
-                    content: userContent || `以下の${this.getSourceLanguageLabel(sourceLanguage)}テキストを${sourceLanguage === 'ja' ? '英語' : '日本語'}に翻訳してください:\n\n${text}`
+                    content: userContent || `以下の${this.getSourceLanguageLabel(sourceLanguage)}テキストを${sourceLanguage === 'ja' ? 'ネパール語' : '日本語'}に翻訳してください:\n\n${text}`
                 }
             ],
             stream: true,

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BridgeTTS</title>
+    <title>BrigeTTS(Nepali)</title>
 
     <!-- iOSホーム画面アプリとしての設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BridgeTTS">
+    <meta name="apple-mobile-web-app-title" content="BrigeTTS(Nepali)">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f8">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
 
@@ -42,8 +42,8 @@
     <div class="container">
         <header class="app-header">
             <div class="app-header-text">
-                <div class="app-title">BridgeTTS v2.9.3</div>
-                <div class="app-subtitle">日英リアルタイム音声翻訳</div>
+                <div class="app-title">BrigeTTS(Nepali) v2.9.3</div>
+                <div class="app-subtitle">日本語・ネパール語リアルタイム音声翻訳</div>
                 <span class="domain-badge" id="domainBadge" hidden></span>
             </div>
             <div class="header-buttons">
@@ -83,7 +83,7 @@
                     <span>日本語</span>
                 </button>
 
-                <button class="language-button english" id="startEnglishBtn">
+                <button class="language-button nepali" id="startNepaliBtn">
                     <div class="language-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" width="20" height="20" aria-hidden="true">
                             <path d="M332.2 337.9c-2.8-3.5-7.8-4-11.2-1.2l-19.9 16c-3.5 2.8-4 7.8-1.2 11.2 1.6 1.9 3.9 3 6.2 3 1.8 0 3.5-0.6 5-1.8l19.9-16C334.5 346.4 335 341.4 332.2 337.9z"/>
@@ -91,7 +91,7 @@
                             <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM192 336c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8V336zM192 272c0 4.4-3.6 8-8 8h-64c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h64c4.4 0 8 3.6 8 8V272zM288 368c0 4.4-3.6 8-8 8h-96c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h96c4.4 0 8 3.6 8 8V368zM384 336c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8V336zM384 272c0 4.4-3.6 8-8 8h-64c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h64c4.4 0 8 3.6 8 8V272zM416 208c0 4.4-3.6 8-8 8H296c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h112c4.4 0 8 3.6 8 8V208zM160 208c0 4.4-3.6 8-8 8h-32c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h32c4.4 0 8 3.6 8 8V208zM256 208c0 4.4-3.6 8-8 8h-56c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h56c4.4 0 8 3.6 8 8V208zM128 144c0-4.4 3.6-8 8-8h256c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H136c-4.4 0-8-3.6-8-8V144z"/>
                         </svg>
                     </div>
-                    <span>English</span>
+                    <span>नेपाली</span>
                 </button>
 
                 <button class="language-button stop" id="stopBtn" disabled>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="app-footer">
-            BridgeTTS v2.9.3 © 2025–2026 ┃ Crafted by A_1_6
+            BrigeTTS(Nepali) v2.9.3 © 2025–2026 ┃ Crafted by A_1_6
         </div>
     </div>
 
@@ -207,8 +207,8 @@
             </div>
 
             <div class="first-run-intro" id="firstRunIntro" hidden>
-                <div class="first-run-title">👋 BridgeTTSへようこそ</div>
-                <p>日本語と英語の対面会話をリアルタイムに翻訳するアプリです。利用開始まで3ステップです。</p>
+                <div class="first-run-title">👋 BrigeTTS(Nepali)へようこそ</div>
+                <p>日本語とネパール語の対面会話をリアルタイムに翻訳するアプリです。利用開始まで3ステップです。</p>
                 <ol>
                     <li><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAIのAPIキー発行ページ</a>でキーを作成し、<code>sk-</code>で始まる文字列をコピー</li>
                     <li>下の入力欄に貼り付けて「保存して開始」</li>
@@ -247,12 +247,12 @@
                 <div class="user-dict-form">
                     <input type="text" id="dictReading" class="form-input" placeholder="よみ（例: さくらえん）">
                     <input type="text" id="dictSurface" class="form-input" placeholder="表記（例: さくら苑）※必須">
-                    <input type="text" id="dictEnglish" class="form-input" placeholder="英語表記（空欄＝ローマ字）">
+                    <input type="text" id="dictNepali" class="form-input" placeholder="ネパール語表記（空欄＝ローマ字）">
                     <input type="text" id="dictAliases" class="form-input" placeholder="誤認識される表記（例: 60円、六十円）">
                     <button type="button" class="dict-add-btn" id="dictAddBtn">辞書に追加</button>
                 </div>
                 <div class="user-dict-list" id="dictList"></div>
-                <div class="form-help">施設名・人名などを登録すると、翻訳モードに関わらず常に正しい表記・英語で翻訳されます（この端末にのみ保存）。「誤認識される表記」を登録すると、音声認識がその表記に書き起こした時点で正しい表記へ自動置換されます（読点・カンマ区切りで複数可）</div>
+                <div class="form-help">施設名・人名などを登録すると、翻訳モードに関わらず常に正しい表記・ネパール語で翻訳されます（この端末にのみ保存）。「誤認識される表記」を登録すると、音声認識がその表記に書き起こした時点で正しい表記へ自動置換されます（読点・カンマ区切りで複数可）</div>
             </div>
 
             <div class="form-group">
@@ -332,9 +332,9 @@
                         <span class="debounce-type" id="debounceJaType">(デフォルト)</span>
                     </div>
                     <div class="debounce-info">
-                        <span class="debounce-label">英語:</span>
-                        <span class="debounce-value" id="debounceEnValue">--</span>
-                        <span class="debounce-type" id="debounceEnType">(デフォルト)</span>
+                        <span class="debounce-label">ネパール語:</span>
+                        <span class="debounce-value" id="debounceNeValue">--</span>
+                        <span class="debounce-type" id="debounceNeType">(デフォルト)</span>
                     </div>
                 </div>
                 <div class="debounce-optimized-at" id="debounceOptimizedAt" style="display: none;"></div>
@@ -342,7 +342,7 @@
                     <div class="progress-bar">
                         <div class="progress-fill" id="debounceProgressFill" style="width: 0%"></div>
                     </div>
-                    <span class="progress-text" id="debounceProgressText">データ収集: 日本語 0/30件 ・ 英語 0/30件</span>
+                    <span class="progress-text" id="debounceProgressText">データ収集: 日本語 0/30件 ・ ネパール語 0/30件</span>
                 </div>
                 <div class="remaining-info" id="debounceRemainingInfo"></div>
                 <div class="debounce-buttons">

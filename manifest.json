@@ -1,7 +1,7 @@
 {
-  "name": "BridgeTTS",
-  "short_name": "BridgeTTS",
-  "description": "日英リアルタイム音声翻訳PWA",
+  "name": "BrigeTTS(Nepali)",
+  "short_name": "BrigeTTS(Nepali)",
+  "description": "日本語・ネパール語リアルタイム音声翻訳PWA",
   "icons": [
     {
       "src": "images/icons/icon-120x120.png",

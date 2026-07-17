@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BridgeTTS 図解ガイド</title>
+<title>BrigeTTS(Nepali) 図解ガイド</title>
 <style>
 /* ===== リセット・ベース ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -153,8 +153,8 @@ footer a { color: #60a5fa; text-decoration: none; }
 <body>
 
 <header>
-  <h1>BridgeTTS 図解ガイド</h1>
-  <p>日本語 ⇔ 英語 リアルタイム音声翻訳アプリ — エンドユーザー向け完全ガイド</p>
+  <h1>BrigeTTS(Nepali) 図解ガイド</h1>
+  <p>日本語 ⇔ ネパール語 リアルタイム音声翻訳アプリ — エンドユーザー向け完全ガイド</p>
   <span class="badge">gpt-4.1-nano 搭載 ／ PWA + iOSネイティブアプリ対応</span>
 </header>
 
@@ -183,16 +183,16 @@ footer a { color: #60a5fa; text-decoration: none; }
 <section id="intro">
   <h2>1. はじめに — このアプリでできること</h2>
   <p>
-    <strong>BridgeTTS</strong>は、日本語と英語のあいだをリアルタイムで音声翻訳するアプリです。
+    <strong>BrigeTTS(Nepali)</strong>は、日本語とネパール語のあいだをリアルタイムで音声翻訳するアプリです。
     マイクに向かって話すだけで文字起こし・翻訳が行われ、翻訳結果をタップすると音声で読み上げてくれます。
-    通訳がいない場面での会話や、英語でのやりとりのブリッジとして活用できます。
+    通訳がいない場面での会話や、ネパール語でのやりとりのブリッジとして活用できます。
   </p>
 
   <div class="card card-accent">
     <strong>できること（要点）</strong>
     <ul style="margin-top:8px; padding-left:1.3em;">
-      <li>日本語で話す → 英語に翻訳・表示・読み上げ</li>
-      <li>英語で話す → 日本語に翻訳・表示・読み上げ</li>
+      <li>日本語で話す → ネパール語に翻訳・表示・読み上げ</li>
+      <li>ネパール語で話す → 日本語に翻訳・表示・読み上げ</li>
       <li>翻訳はリアルタイムのストリーミング表示</li>
       <li>翻訳ボックスをタップするだけで音声再生（TTS）</li>
       <li>直近20件の会話履歴を自動保存</li>
@@ -202,7 +202,7 @@ footer a { color: #60a5fa; text-decoration: none; }
   <div class="card card-warn">
     <strong>できないこと・制限</strong>
     <ul style="margin-top:8px; padding-left:1.3em;">
-      <li>日英ペアのみ対応（他の言語ペアは非対応）</li>
+      <li>日本語・ネパール語ペアのみ対応（他の言語ペアは非対応）</li>
       <li>翻訳にはインターネット接続が必須（オフライン翻訳不可）</li>
       <li>翻訳にはOpenAI APIキーの登録が必要（有料API）</li>
       <li>サイレントモード時はTTSが鳴らないことがある</li>
@@ -306,7 +306,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 
       <!-- WebApp層 -->
       <rect x="30" y="134" width="315" height="50" rx="10" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="1.5"/>
-      <text x="187" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af" font-family="sans-serif">BridgeTTS Webアプリ</text>
+      <text x="187" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af" font-family="sans-serif">BrigeTTS(Nepali) Webアプリ</text>
       <text x="187" y="172" text-anchor="middle" font-size="11" fill="#1d4ed8" font-family="sans-serif">翻訳UI ／ OpenAI API呼び出し ／ 会話履歴</text>
 
       <!-- OpenAI -->
@@ -322,14 +322,14 @@ footer a { color: #60a5fa; text-decoration: none; }
       <text x="187" y="296" text-anchor="middle" font-size="11" fill="#4338ca" font-family="sans-serif">Safari → 共有ボタン → ホーム画面に追加</text>
 
       <!-- ===== iOSアプリ右カラム ===== -->
-      <!-- BridgeTTS.app 外枠 -->
+      <!-- BrigeTTS(Nepali).app 外枠 -->
       <rect x="415" y="55" width="315" height="195" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
-      <text x="572" y="77" text-anchor="middle" font-size="13" font-weight="700" fill="#6d28d9" font-family="sans-serif">BridgeTTS.app（iOSネイティブ）</text>
+      <text x="572" y="77" text-anchor="middle" font-size="13" font-weight="700" fill="#6d28d9" font-family="sans-serif">BrigeTTS(Nepali).app（iOSネイティブ）</text>
 
       <!-- WKWebView層 -->
       <rect x="432" y="86" width="281" height="72" rx="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
       <text x="572" y="108" text-anchor="middle" font-size="12" font-weight="700" fill="#4c1d95" font-family="sans-serif">WKWebView</text>
-      <text x="572" y="124" text-anchor="middle" font-size="11" fill="#5b21b6" font-family="sans-serif">BridgeTTS Webアプリ（bundled www/）</text>
+      <text x="572" y="124" text-anchor="middle" font-size="11" fill="#5b21b6" font-family="sans-serif">BrigeTTS(Nepali) Webアプリ（bundled www/）</text>
       <text x="572" y="140" text-anchor="middle" font-size="10" fill="#5b21b6" font-family="sans-serif">翻訳UI ／ OpenAI API ／ speechSynthesis</text>
 
       <!-- JSブリッジ -->
@@ -379,7 +379,7 @@ footer a { color: #60a5fa; text-decoration: none; }
           <tr><td>iPhone / iPad</td><td>iOS 16以降を搭載していること</td></tr>
           <tr><td>PC または Mac</td><td>AltServerのインストール先（Windows/Mac両対応）</td></tr>
           <tr><td>Apple ID</td><td>無料アカウントでOK（開発者登録不要）</td></tr>
-          <tr><td>BridgeTTS-unsigned.ipa</td><td>GitHub Actionsのアーティファクトからダウンロード</td></tr>
+          <tr><td>BrigeTTS(Nepali)-unsigned.ipa</td><td>GitHub Actionsのアーティファクトからダウンロード</td></tr>
           <tr><td>AltStore（iPhoneにインストール済み）</td><td><a href="https://altstore.io" style="color:var(--color-primary)">altstore.io</a> からAltServerを入れてiPhoneに転送</td></tr>
           <tr><td>OpenAI APIキー</td><td>アプリ起動後、設定から入力</td></tr>
         </tbody>
@@ -418,7 +418,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <rect x="256" y="87" width="35" height="6" rx="3" fill="white" opacity=".7"/>
       <rect x="256" y="98" width="42" height="6" rx="3" fill="white" opacity=".5"/>
       <text x="280" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e" font-family="sans-serif">② Artifacts から</text>
-      <text x="280" y="144" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">BridgeTTS-unsigned</text>
+      <text x="280" y="144" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">BrigeTTS(Nepali)-unsigned</text>
       <text x="280" y="158" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">.ipa をダウンロード</text>
 
       <line x1="372" y1="100" x2="402" y2="100" stroke="#6366f1" stroke-width="2" marker-end="url(#arr3)"/>
@@ -495,7 +495,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <rect x="220" y="78" width="520" height="54" rx="12" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
       <circle cx="248" cy="105" r="16" fill="#7c3aed"/>
       <text x="248" y="110" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="sans-serif">2</text>
-      <text x="276" y="97" font-size="12" font-weight="700" fill="#5b21b6" font-family="sans-serif">BridgeTTS-unsigned.ipa をiPhoneへ転送</text>
+      <text x="276" y="97" font-size="12" font-weight="700" fill="#5b21b6" font-family="sans-serif">BrigeTTS(Nepali)-unsigned.ipa をiPhoneへ転送</text>
       <text x="276" y="116" font-size="10.5" fill="#7c3aed" font-family="sans-serif">AirDrop・iCloud Drive・ファイルアプリなどでiPhoneのストレージに保存</text>
 
       <!-- Step 3 -->
@@ -503,7 +503,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <circle cx="248" cy="171" r="16" fill="#16a34a"/>
       <text x="248" y="176" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="sans-serif">3</text>
       <text x="276" y="163" font-size="12" font-weight="700" fill="#15803d" font-family="sans-serif">AltStoreを開く → My Apps → 左上の「＋」→ IPAを選択</text>
-      <text x="276" y="182" font-size="10.5" fill="#16a34a" font-family="sans-serif">ファイル一覧からBridgeTTS-unsigned.ipaをタップして選択</text>
+      <text x="276" y="182" font-size="10.5" fill="#16a34a" font-family="sans-serif">ファイル一覧からBrigeTTS(Nepali)-unsigned.ipaをタップして選択</text>
 
       <!-- Step 4 -->
       <rect x="220" y="210" width="520" height="54" rx="12" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
@@ -544,7 +544,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 
       <!-- App Header -->
       <rect x="248" y="48" width="184" height="36" rx="0" fill="#1e40af"/>
-      <text x="318" y="71" text-anchor="middle" font-size="12" font-weight="800" fill="white" font-family="sans-serif">BridgeTTS</text>
+      <text x="318" y="71" text-anchor="middle" font-size="12" font-weight="800" fill="white" font-family="sans-serif">BrigeTTS(Nepali)</text>
       <!-- 歯車アイコン -->
       <circle cx="407" cy="66" r="8" fill="none" stroke="white" stroke-width="2"/>
       <circle cx="407" cy="66" r="3.5" fill="white"/>
@@ -558,7 +558,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <rect x="256" y="92" width="72" height="32" rx="8" fill="#dc2626"/>
       <text x="292" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="sans-serif">日本語</text>
       <rect x="334" y="92" width="72" height="32" rx="8" fill="#16a34a"/>
-      <text x="370" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="sans-serif">English</text>
+      <text x="370" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="sans-serif">नेपाली</text>
 
       <!-- Reset button (orange circle arrow) -->
       <circle cx="418" cy="108" r="11" fill="#ea580c"/>
@@ -603,10 +603,10 @@ footer a { color: #60a5fa; text-decoration: none; }
       <rect x="14" y="118" width="206" height="28" rx="6" fill="#fef2f2" stroke="#fca5a5"/>
       <text x="117" y="137" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600" font-family="sans-serif">「日本語」ボタン（赤）→ 日本語録音開始</text>
 
-      <!-- Englishボタン -->
+      <!-- ネパール語ボタン -->
       <line x1="384" y1="108" x2="510" y2="130" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
       <rect x="510" y="118" width="230" height="28" rx="6" fill="#f0fdf4" stroke="#86efac"/>
-      <text x="625" y="137" text-anchor="middle" font-size="11" fill="#15803d" font-weight="600" font-family="sans-serif">「English」ボタン（緑）→ 英語録音開始</text>
+      <text x="625" y="137" text-anchor="middle" font-size="11" fill="#15803d" font-weight="600" font-family="sans-serif">「नेपाली」ボタン（緑）→ ネパール語録音開始</text>
 
       <!-- 原文ボックス -->
       <line x1="248" y1="167" x2="220" y2="200" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,2"/>
@@ -631,13 +631,13 @@ footer a { color: #60a5fa; text-decoration: none; }
       <rect x="510" y="173" width="230" height="28" rx="6" fill="#fff7ed" stroke="#fdba74"/>
       <text x="625" y="192" text-anchor="middle" font-size="11" fill="#ea580c" font-weight="600" font-family="sans-serif">リセットボタン（オレンジ）→ 入力欄クリア</text>
     </svg>
-    <figcaption>図5 ： BridgeTTSメイン画面UIモック（引き出し線で各部の名称・機能を注記）</figcaption>
+    <figcaption>図5 ： BrigeTTS(Nepali)メイン画面UIモック（引き出し線で各部の名称・機能を注記）</figcaption>
   </figure>
 
   <h3>基本操作の手順</h3>
   <ol class="step-list">
     <li>アプリを起動し、設定（歯車）からOpenAI APIキーを入力する（初回のみ）</li>
-    <li>「日本語」（赤）または「English」（緑）ボタンをタップして録音を開始する</li>
+    <li>「日本語」（赤）または「नेपाली」（緑）ボタンをタップして録音を開始する</li>
     <li>マイクに向かってはっきり話す（原文ボックスに文字が表示される）</li>
     <li>話し終わると自動で翻訳が始まり、翻訳ボックスにリアルタイムで結果が表示される</li>
     <li>翻訳完了後、翻訳ボックスが緑色になったらタップして音声読み上げ（再生中タップで停止）</li>
@@ -691,7 +691,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 
       <!-- 下部ラベル: デバウンス説明 -->
       <rect x="310" y="155" width="165" height="26" rx="8" fill="#fff3e0" stroke="#fb923c"/>
-      <text x="392" y="173" text-anchor="middle" font-size="10" fill="#c2410c" font-family="sans-serif">待ち時間: 日本語346ms ／ 英語154ms</text>
+      <text x="392" y="173" text-anchor="middle" font-size="10" fill="#c2410c" font-family="sans-serif">待ち時間: 日本語346ms ／ ネパール語300ms</text>
     </svg>
     <figcaption>図6 ： 状態遷移。待機 → 録音中（青点滅）→ 翻訳中（オレンジ点滅）→ 完了（緑・タップで読み上げ）</figcaption>
   </figure>
@@ -739,7 +739,7 @@ footer a { color: #60a5fa; text-decoration: none; }
         <tr>
           <td><strong>デバウンス最適化</strong></td>
           <td>使用パターン学習（任意）</td>
-          <td>合計50件・各言語15件の使用データで最適化可能。初期値は日本語346ms/英語154ms</td>
+          <td>合計50件・各言語15件の使用データで最適化可能。初期値は日本語346ms/ネパール語300ms</td>
         </tr>
       </tbody>
     </table>
@@ -881,7 +881,7 @@ footer a { color: #60a5fa; text-decoration: none; }
   <ol class="step-list">
     <li>PCのAltServerを起動し、iPhoneと同じWi-Fiに接続する</li>
     <li>iPhoneでAltStoreを開く</li>
-    <li>「My Apps」タブでBridgeTTSの「Refresh」をタップ</li>
+    <li>「My Apps」タブでBrigeTTS(Nepali)の「Refresh」をタップ</li>
     <li>署名が更新され、さらに7日間使用可能になる</li>
   </ol>
 
@@ -891,7 +891,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 
   <h3>3アプリ制限について</h3>
   <div class="card card-warn">
-    無料のApple IDでサイドロードできるアプリは同時に<strong>3つまで</strong>です。すでに3つのアプリをサイドロードしている場合は、1つ削除してからBridgeTTSをインストールしてください。有料のApple Developer Program（年額制）に加入すると、この制限と7日の署名期限が大幅に緩和されます。
+    無料のApple IDでサイドロードできるアプリは同時に<strong>3つまで</strong>です。すでに3つのアプリをサイドロードしている場合は、1つ削除してからBrigeTTS(Nepali)をインストールしてください。有料のApple Developer Program（年額制）に加入すると、この制限と7日の署名期限が大幅に緩和されます。
   </div>
 
   <h3>APIキー管理</h3>
@@ -938,7 +938,7 @@ footer a { color: #60a5fa; text-decoration: none; }
           <td>文節区切りに対応した自然な応答（500msから31%改善）</td>
         </tr>
         <tr>
-          <td>英語</td>
+          <td>ネパール語</td>
           <td><strong>154 ms</strong></td>
           <td>連続流暢な話し方パターンに追従（500msから69%改善）</td>
         </tr>
@@ -955,7 +955,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <tbody>
         <tr>
           <td>対応言語ペア</td>
-          <td colspan="2">日本語 ⇔ 英語のみ</td>
+          <td colspan="2">日本語 ⇔ ネパール語のみ</td>
         </tr>
         <tr>
           <td>翻訳方式</td>
@@ -1014,7 +1014,7 @@ footer a { color: #60a5fa; text-decoration: none; }
         <tr>
           <td>音声が認識されない</td>
           <td>マイク権限が未許可 / 周囲の騒音</td>
-          <td>設定アプリ → BridgeTTS → マイクをON。静かな場所ではっきり話す</td>
+          <td>設定アプリ → BrigeTTS(Nepali) → マイクをON。静かな場所ではっきり話す</td>
         </tr>
         <tr>
           <td>TTSが鳴らない</td>
@@ -1118,9 +1118,9 @@ footer a { color: #60a5fa; text-decoration: none; }
 </main>
 
 <footer>
-  <p>BridgeTTS 図解ガイド ／ 対象アプリ: Bridge-TTS Codex（gpt-4.1-nano搭載）</p>
+  <p>BrigeTTS(Nepali) 図解ガイド ／ 対象アプリ: Bridge-TTS Codex（gpt-4.1-nano搭載）</p>
   <p style="margin-top:6px;">
-    <a href="https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-">GitHubリポジトリ</a>
+    <a href="https://github.com/AichiroFunakoshi/BrigeTTS-Nepali">GitHubリポジトリ</a>
     ／
     <a href="https://platform.openai.com/api-keys">OpenAI APIキー取得</a>
     ／

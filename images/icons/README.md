@@ -1,4 +1,4 @@
-# BridgeTTS アイコン
+# BrigeTTS(Nepali) アイコン
 
 PWA用アイコンファイル一覧:
 

@@ -416,12 +416,12 @@ const ErrorReporter = {
     postIssue: async function({ title, body, labels }) {
         const token = this.getReportToken();
         if (!token) {
-            const issueUrl = 'https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues/new' +
+            const issueUrl = 'https://github.com/AichiroFunakoshi/BrigeTTS-Nepali/issues/new' +
                 `?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
             window.open(issueUrl, '_blank');
             return null;
         }
-        const response = await fetch('https://api.github.com/repos/AichiroFunakoshi/Bridge-TTS-Codex-/issues', {
+        const response = await fetch('https://api.github.com/repos/AichiroFunakoshi/BrigeTTS-Nepali/issues', {
             method: 'POST',
             headers: {
                 'Accept': 'application/vnd.github+json',
@@ -444,7 +444,7 @@ const ErrorReporter = {
 
     openGitHubIssue: function(report) {
         const content = this.buildIssueContent(report);
-        const issueUrl = 'https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-/issues/new' +
+        const issueUrl = 'https://github.com/AichiroFunakoshi/BrigeTTS-Nepali/issues/new' +
             `?title=${encodeURIComponent(content.title)}&body=${encodeURIComponent(content.body)}`;
         window.open(issueUrl, '_blank');
     }

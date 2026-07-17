@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // DOM要素
     const startJapaneseBtn = document.getElementById('startJapaneseBtn');
-    const startEnglishBtn = document.getElementById('startEnglishBtn');
+    const startNepaliBtn = document.getElementById('startNepaliBtn');
     const stopBtn = document.getElementById('stopBtn');
     const stopBtnText = document.getElementById('stopBtnText');
     const resetBtn = document.getElementById('resetBtn');
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTranslationController = null;
     let translationInProgress = false;
     let activeTranslationId = 0;
-    let selectedLanguage = ''; // 'ja' は日本語、'en' は英語
+    let selectedLanguage = ''; // 'ja' は日本語、'ne' はネパール語
     let lastTranslationTime = 0;
     let isRecognitionRunning = false; // 音声認識が実行中かどうか
 
@@ -133,13 +133,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 言語別デフォルトデバウンス設定（科学的アプローチに基づく）
     const DEFAULT_DEBOUNCE = {
         'ja': 346,  // 日本語最適値（文節区切り対応・31%改善）
-        'en': 154   // 英語最適値（流暢性追従・69%改善）
+        'ne': 300   // ネパール語暫定値（利用データ30件以降は端末ごとに自動最適化）
     };
 
     // 現在のデバウンス設定（パーソナライズ可能）
     let currentDebounce = {
         'ja': DEFAULT_DEBOUNCE['ja'],
-        'en': DEFAULT_DEBOUNCE['en']
+        'ne': DEFAULT_DEBOUNCE['ne']
     };
 
     // パーソナライズドデバウンス最適化用データ
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 更新間隔より十分長く、かつ必要以上に待たない値になるため、
     // 「更新が止まった＝発話の区切り」を端末・話者に合わせて判定できる。
     const DEBOUNCE_SAMPLE_SIZE = 50; // 言語ごとに保持する最大サンプル数（ローリングウィンドウ）
-    const DEBOUNCE_SAMPLES_REQUIRED = 30; // 最適化に必要な言語ごとのサンプル数（日英は独立して最適化可能）
+    const DEBOUNCE_SAMPLES_REQUIRED = 30; // 最適化に必要な言語ごとのサンプル数（日本語・ネパール語は独立して最適化可能）
     const DEBOUNCE_MIN_MS = 150; // デバウンス最小値（ms）短すぎると翻訳リクエストが乱発される
     const DEBOUNCE_MAX_MS = 800; // デバウンス最大値（ms）
     const DEBOUNCE_BUFFER_FACTOR = 1.2; // 90パーセンタイルへのバッファ係数
@@ -159,10 +159,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const TTS_SPEED_DEFAULT = 1.0; // TTS速度デフォルト値
     let debounceData = {
         'ja': [], // 日本語のポーズ間隔データ
-        'en': []  // 英語のポーズ間隔データ
+        'ne': []  // ネパール語のポーズ間隔データ
     };
     let lastResultEventTime = 0; // 最後に認識結果が更新された時刻（デバウンス学習用）
-    let debounceOptimized = { 'ja': false, 'en': false }; // 言語別の最適化済みフラグ
+    let debounceOptimized = { 'ja': false, 'ne': false }; // 言語別の最適化済みフラグ
     let debounceOptimizedAt = null; // 最適化実行日時
     let debounceDataSaveTimer = null; // データ保存用デバウンスタイマー
     const DEBOUNCE_DATA_SAVE_DELAY = 2000; // データ保存のデバウンス遅延（ms）
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const direction = document.createElement('span');
             direction.className = 'conversation-log-direction';
-            direction.textContent = entry.sourceLanguage === 'ja' ? '日 → 英' : '英 → 日';
+            direction.textContent = entry.sourceLanguage === 'ja' ? '日 → ネ' : 'ネ → 日';
             meta.appendChild(direction);
 
             const timeLabel = formatConversationTimestamp(entry.timestamp);
@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function isSupportedConversationLanguage(language) {
-        return language === 'ja' || language === 'en';
+        return language === 'ja' || language === 'ne';
     }
 
     function saveConversationLog() {
@@ -791,7 +791,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 型と構造の検証
                 if (parsed && typeof parsed === 'object') {
                     // 各言語のデータを検証してフィルタリング
-                    ['ja', 'en'].forEach(lang => {
+                    ['ja', 'ne'].forEach(lang => {
                         if (Array.isArray(parsed[lang])) {
                             // 有効な数値のみ保持（範囲チェック付き）
                             debounceData[lang] = parsed[lang].filter(
@@ -808,7 +808,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 最適化されたデバウンス値（言語ごとに独立して保存・適用）
             const optimized = AppSettingsStorage.getOptimizedDebounce();
             if (optimized && typeof optimized === 'object') {
-                ['ja', 'en'].forEach(lang => {
+                ['ja', 'ne'].forEach(lang => {
                     const val = optimized[lang];
                     if (typeof val === 'number' && !isNaN(val) && val >= DEBOUNCE_MIN_MS && val <= DEBOUNCE_MAX_MS) {
                         currentDebounce[lang] = val;
@@ -831,10 +831,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             console.error('デバウンスデータ読み込みエラー:', e);
             // エラー時はデフォルト値にリセット
-            debounceData = { 'ja': [], 'en': [] };
+            debounceData = { 'ja': [], 'ne': [] };
             currentDebounce['ja'] = DEFAULT_DEBOUNCE['ja'];
-            currentDebounce['en'] = DEFAULT_DEBOUNCE['en'];
-            debounceOptimized = { 'ja': false, 'en': false };
+            currentDebounce['ne'] = DEFAULT_DEBOUNCE['ne'];
+            debounceOptimized = { 'ja': false, 'ne': false };
         }
     }
 
@@ -850,9 +850,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // デバウンスUI更新
     function updateDebounceUI() {
         const jaValueEl = document.getElementById('debounceJaValue');
-        const enValueEl = document.getElementById('debounceEnValue');
+        const neValueEl = document.getElementById('debounceNeValue');
         const jaTypeEl = document.getElementById('debounceJaType');
-        const enTypeEl = document.getElementById('debounceEnType');
+        const neTypeEl = document.getElementById('debounceNeType');
         const progressFill = document.getElementById('debounceProgressFill');
         const progressText = document.getElementById('debounceProgressText');
         const optimizeBtn = document.getElementById('optimizeDebounceBtn');
@@ -860,15 +860,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const remainingInfoEl = document.getElementById('debounceRemainingInfo');
 
         if (jaValueEl) jaValueEl.textContent = `${currentDebounce['ja']}ms`;
-        if (enValueEl) enValueEl.textContent = `${currentDebounce['en']}ms`;
+        if (neValueEl) neValueEl.textContent = `${currentDebounce['ne']}ms`;
 
         if (jaTypeEl) {
             jaTypeEl.textContent = debounceOptimized['ja'] ? '(最適化済み)' : '(デフォルト)';
             jaTypeEl.className = debounceOptimized['ja'] ? 'debounce-type optimized' : 'debounce-type';
         }
-        if (enTypeEl) {
-            enTypeEl.textContent = debounceOptimized['en'] ? '(最適化済み)' : '(デフォルト)';
-            enTypeEl.className = debounceOptimized['en'] ? 'debounce-type optimized' : 'debounce-type';
+        if (neTypeEl) {
+            neTypeEl.textContent = debounceOptimized['ne'] ? '(最適化済み)' : '(デフォルト)';
+            neTypeEl.className = debounceOptimized['ne'] ? 'debounce-type optimized' : 'debounce-type';
         }
 
         // 最適化日時の表示
@@ -881,22 +881,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // プログレスバー更新（言語別・日英は独立して最適化可能）
+        // プログレスバー更新（言語別・日本語・ネパール語は独立して最適化可能）
         const jaSamples = debounceData['ja'].length;
-        const enSamples = debounceData['en'].length;
+        const neSamples = debounceData['ne'].length;
         const jaReady = jaSamples >= DEBOUNCE_SAMPLES_REQUIRED;
-        const enReady = enSamples >= DEBOUNCE_SAMPLES_REQUIRED;
-        const progress = Math.min((Math.max(jaSamples, enSamples) / DEBOUNCE_SAMPLES_REQUIRED) * 100, 100);
+        const neReady = neSamples >= DEBOUNCE_SAMPLES_REQUIRED;
+        const progress = Math.min((Math.max(jaSamples, neSamples) / DEBOUNCE_SAMPLES_REQUIRED) * 100, 100);
         if (progressFill) progressFill.style.width = `${progress}%`;
         if (progressText) {
-            progressText.textContent = `データ収集: 日本語 ${Math.min(jaSamples, DEBOUNCE_SAMPLES_REQUIRED)}/${DEBOUNCE_SAMPLES_REQUIRED}件 ・ 英語 ${Math.min(enSamples, DEBOUNCE_SAMPLES_REQUIRED)}/${DEBOUNCE_SAMPLES_REQUIRED}件`;
+            progressText.textContent = `データ収集: 日本語 ${Math.min(jaSamples, DEBOUNCE_SAMPLES_REQUIRED)}/${DEBOUNCE_SAMPLES_REQUIRED}件 ・ ネパール語 ${Math.min(neSamples, DEBOUNCE_SAMPLES_REQUIRED)}/${DEBOUNCE_SAMPLES_REQUIRED}件`;
         }
 
         // 最適化可能状況の表示（片方の言語だけでも最適化できる）
         if (remainingInfoEl) {
             const readyLangs = [];
             if (jaReady) readyLangs.push('日本語');
-            if (enReady) readyLangs.push('英語');
+            if (neReady) readyLangs.push('ネパール語');
 
             if (readyLangs.length > 0) {
                 remainingInfoEl.textContent = `✓ ${readyLangs.join('・')}を最適化できます（言語ごとに独立して適用されます）`;
@@ -904,8 +904,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 remainingInfoEl.className = 'remaining-info ready';
             } else {
                 const jaRemaining = DEBOUNCE_SAMPLES_REQUIRED - jaSamples;
-                const enRemaining = DEBOUNCE_SAMPLES_REQUIRED - enSamples;
-                remainingInfoEl.textContent = `必要残り: 日本語${jaRemaining}件 / 英語${enRemaining}件（どちらか一方だけでも最適化できます）`;
+                const neRemaining = DEBOUNCE_SAMPLES_REQUIRED - neSamples;
+                remainingInfoEl.textContent = `必要残り: 日本語${jaRemaining}件 / ネパール語${neRemaining}件（どちらか一方だけでも最適化できます）`;
                 remainingInfoEl.style.display = 'block';
                 remainingInfoEl.className = 'remaining-info';
             }
@@ -913,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 最適化ボタンの有効/無効（いずれかの言語が規定数に達していれば有効）
         if (optimizeBtn) {
-            const canOptimize = jaReady || enReady;
+            const canOptimize = jaReady || neReady;
             optimizeBtn.disabled = !canOptimize;
             optimizeBtn.className = canOptimize ? 'debounce-btn optimize ready' : 'debounce-btn optimize disabled';
         }
@@ -955,7 +955,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ローリングウィンドウ上の90パーセンタイルに常に追従するため、手動の「最適化を実行」を
     // 待たなくてもデバウンスがパーソナライズされる（ボタンは即時実行手段として残置）。
     function autoApplyOptimalDebounce(language) {
-        if (language !== 'ja' && language !== 'en') return;
+        if (language !== 'ja' && language !== 'ne') return;
         if (debounceData[language].length < DEBOUNCE_SAMPLES_REQUIRED) return;
 
         const optimal = calculateOptimalDebounce(language);
@@ -965,7 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentDebounce[language] = optimal;
 
         const storedValues = {};
-        ['ja', 'en'].forEach((lang) => {
+        ['ja', 'ne'].forEach((lang) => {
             if (debounceOptimized[lang]) {
                 storedValues[lang] = currentDebounce[lang];
             }
@@ -981,7 +981,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 認識結果の更新間隔を記録（テキストが変化した結果イベントごとに呼ばれる）
     function recordResultInterval(language) {
         const now = Date.now();
-        if (lastResultEventTime > 0 && (language === 'ja' || language === 'en')) {
+        if (lastResultEventTime > 0 && (language === 'ja' || language === 'ne')) {
             const interval = now - lastResultEventTime;
             // 有効な範囲のデータのみ記録
             // （極端に短い間隔と、発話の区切り＝ポーズによる長い間隔を除外）
@@ -1165,13 +1165,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const optimizeDebounceBtn = document.getElementById('optimizeDebounceBtn');
     if (optimizeDebounceBtn) {
         optimizeDebounceBtn.addEventListener('click', () => {
-            // 規定サンプル数に達した言語のみ最適化（日英は独立。片方だけでも可）
+            // 規定サンプル数に達した言語のみ最適化（日本語・ネパール語は独立。片方だけでも可）
             const results = [];
-            ['ja', 'en'].forEach((lang) => {
+            ['ja', 'ne'].forEach((lang) => {
                 if (debounceData[lang].length >= DEBOUNCE_SAMPLES_REQUIRED) {
                     currentDebounce[lang] = calculateOptimalDebounce(lang);
                     debounceOptimized[lang] = true;
-                    results.push(`${lang === 'ja' ? '日本語' : '英語'}: ${currentDebounce[lang]}ms`);
+                    results.push(`${lang === 'ja' ? '日本語' : 'ネパール語'}: ${currentDebounce[lang]}ms`);
                 }
             });
 
@@ -1191,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 保存（最適化済みの言語の値のみ保存し、未最適化の言語はデフォルトを維持）
             const storedValues = {};
-            ['ja', 'en'].forEach((lang) => {
+            ['ja', 'ne'].forEach((lang) => {
                 if (debounceOptimized[lang]) {
                     storedValues[lang] = currentDebounce[lang];
                 }
@@ -1217,8 +1217,8 @@ document.addEventListener('DOMContentLoaded', function() {
         resetDebounceBtn.addEventListener('click', () => {
             if (confirm('デバウンス設定をデフォルトに戻しますか？\n収集したデータは保持されます。')) {
                 currentDebounce['ja'] = DEFAULT_DEBOUNCE['ja'];
-                currentDebounce['en'] = DEFAULT_DEBOUNCE['en'];
-                debounceOptimized = { 'ja': false, 'en': false };
+                currentDebounce['ne'] = DEFAULT_DEBOUNCE['ne'];
+                debounceOptimized = { 'ja': false, 'ne': false };
                 debounceOptimizedAt = null;
 
                 AppSettingsStorage.clearOptimizedDebounce();
@@ -1237,12 +1237,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (confirm('デバウンス設定と収集データを完全にリセットしますか？\n\n⚠️ この操作は取り消せません。\n収集した全てのデータが削除されます。')) {
                 // 設定をリセット
                 currentDebounce['ja'] = DEFAULT_DEBOUNCE['ja'];
-                currentDebounce['en'] = DEFAULT_DEBOUNCE['en'];
-                debounceOptimized = { 'ja': false, 'en': false };
+                currentDebounce['ne'] = DEFAULT_DEBOUNCE['ne'];
+                debounceOptimized = { 'ja': false, 'ne': false };
                 debounceOptimizedAt = null;
 
                 // データをリセット
-                debounceData = { 'ja': [], 'en': [] };
+                debounceData = { 'ja': [], 'ne': [] };
                 lastResultEventTime = 0;
 
                 // ストレージをクリア
@@ -1304,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const domainBadge = document.getElementById('domainBadge');
     const dictReadingInput = document.getElementById('dictReading');
     const dictSurfaceInput = document.getElementById('dictSurface');
-    const dictEnglishInput = document.getElementById('dictEnglish');
+    const dictNepaliInput = document.getElementById('dictNepali');
     const dictAliasesInput = document.getElementById('dictAliases');
     const dictAddBtn = document.getElementById('dictAddBtn');
     const dictListElement = document.getElementById('dictList');
@@ -1435,7 +1435,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const aliases = Array.isArray(entry.aliases) && entry.aliases.length > 0
                 ? '（誤認識: ' + entry.aliases.join('、') + '）'
                 : '';
-            text.textContent = reading + entry.surface + ' → ' + (entry.english || '（ローマ字）') + aliases;
+            text.textContent = reading + entry.surface + ' → ' + (entry.nepali || '（ローマ字）') + aliases;
 
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
@@ -1470,13 +1470,13 @@ document.addEventListener('DOMContentLoaded', function() {
             userDictionary.push({
                 reading: dictReadingInput ? dictReadingInput.value.trim() : '',
                 surface: surface,
-                english: dictEnglishInput ? dictEnglishInput.value.trim() : '',
+                nepali: dictNepaliInput ? dictNepaliInput.value.trim() : '',
                 aliases: aliases
             });
             AppSettingsStorage.setUserDictionary(userDictionary);
             if (dictReadingInput) dictReadingInput.value = '';
             if (dictSurfaceInput) dictSurfaceInput.value = '';
-            if (dictEnglishInput) dictEnglishInput.value = '';
+            if (dictNepaliInput) dictNepaliInput.value = '';
             if (dictAliasesInput) dictAliasesInput.value = '';
             renderUserDictionary();
         });
@@ -1585,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `- サンプル: 直近${latencyData.length}件`,
                 `- 訳出開始: 中央値 ${openMedian}ms ・ 95p ${latencyPercentile(opens, 0.95)}ms（目標: 中央値700ms）`,
                 `- 訳の確定: 中央値 ${latencyPercentile(dones, 0.5)}ms ・ 95p ${latencyPercentile(dones, 0.95)}ms（目標: 中央値1200ms）`,
-                `- デバウンス: ja ${currentDebounce['ja']}ms / en ${currentDebounce['en']}ms`,
+                `- デバウンス: ja ${currentDebounce['ja']}ms / ne ${currentDebounce['ne']}ms`,
                 `- UA: ${navigator.userAgent}`
             ].join('\n');
 
@@ -1630,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // アプリ更新の自動検知（ネイティブ版のみ。PWAはService Workerが自動更新）
     // ========================================
-    const UPDATE_CHECK_URL = 'https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json';
+    const UPDATE_CHECK_URL = 'https://aichirofunakoshi.github.io/BrigeTTS-Nepali/apps.json';
     const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6時間
     const DISMISSED_UPDATE_KEY = 'translatorDismissedUpdate';
     let lastUpdateCheckAt = 0;
@@ -1856,7 +1856,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 言語ボタンを有効化
         startJapaneseBtn.addEventListener('click', () => startRecording('ja'));
-        startEnglishBtn.addEventListener('click', () => startRecording('en'));
+        startNepaliBtn.addEventListener('click', () => startRecording('ne'));
         stopBtn.addEventListener('click', stopRecording);
         resetBtn.addEventListener('click', resetContent);
 
@@ -2103,9 +2103,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 言語インジケータを更新
             if (selectedLanguage === 'ja') {
                 sourceLanguage.textContent = '日本語';
-                targetLanguage.textContent = '英語';
+                targetLanguage.textContent = 'ネパール語';
             } else {
-                sourceLanguage.textContent = '英語';
+                sourceLanguage.textContent = 'ネパール語';
                 targetLanguage.textContent = '日本語';
             }
             
@@ -2155,7 +2155,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isRecordingState) {
             // 開始ボタンを非表示、停止ボタンを表示
             startJapaneseBtn.style.display = 'none';
-            startEnglishBtn.style.display = 'none';
+            startNepaliBtn.style.display = 'none';
             stopBtn.style.display = 'flex';
             stopBtn.disabled = false;
             resetBtn.disabled = true; // 録音中はリセット無効化
@@ -2163,9 +2163,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // 開始ボタンを表示、停止ボタンを非表示
             startJapaneseBtn.style.display = 'flex';
-            startEnglishBtn.style.display = 'flex';
+            startNepaliBtn.style.display = 'flex';
             startJapaneseBtn.disabled = false;
-            startEnglishBtn.disabled = false;
+            startNepaliBtn.disabled = false;
             stopBtn.style.display = 'none';
             stopBtn.disabled = true;
             resetBtn.disabled = false; // 録音停止中はリセット有効化
@@ -2209,14 +2209,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // 言語インジケータを更新
         if (language === 'ja') {
             sourceLanguage.textContent = '日本語';
-            targetLanguage.textContent = '英語';
+            targetLanguage.textContent = 'ネパール語';
             // 停止ボタンのテキストを日本語に設定
             stopBtnText.textContent = '停止';
         } else {
-            sourceLanguage.textContent = '英語';
+            sourceLanguage.textContent = 'ネパール語';
             targetLanguage.textContent = '日本語';
-            // 停止ボタンのテキストを英語に設定
-            stopBtnText.textContent = 'Stop';
+            // 停止ボタンのテキストをネパール語に設定
+            stopBtnText.textContent = 'रोक्नुहोस्';
         }
         
         // UIを更新（マイク準備完了＝recognition.onstart で「録音中」に切り替わる。
@@ -2245,7 +2245,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 認識言語を設定
             warmUpTranslationConnection();
-            recognition.lang = language === 'ja' ? 'ja-JP' : 'en-US';
+            recognition.lang = language === 'ja' ? 'ja-JP' : 'ne-NP';
             recognition.start();
 
             // 音声認識の状態監視を開始
@@ -2326,16 +2326,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * 翻訳結果の品質をチェックする
-     * 日本語から英語への翻訳で未翻訳の日本語が残っている場合に警告を表示
+     * 日本語からネパール語への翻訳で未翻訳の日本語が残っている場合に警告を表示
      * 括弧内の日本語（例：「staff meeting (担当者会議)」）は正常な翻訳として扱う
      * @param {string} originalText - 元のテキスト
      * @param {string} translatedText - 翻訳されたテキスト
-     * @param {string} sourceLanguage - 元の言語（'ja' または 'en'）
+     * @param {string} sourceLanguage - 元の言語（'ja' または 'ne'）
      * @param {HTMLElement} targetElement - 警告を表示する要素（translationBox）
      * @returns {boolean} - 品質に問題がある場合true
      */
     function checkTranslationQuality(originalText, translatedText, sourceLanguage, targetElement) {
-        // 日本語から英語への翻訳の場合のみチェック
+        // 日本語からネパール語への翻訳の場合のみチェック
         if (sourceLanguage !== 'ja') {
             return false;
         }
@@ -2634,7 +2634,7 @@ document.addEventListener('DOMContentLoaded', function() {
         monoFinalizePending = false;
     }
 
-    // 確定訳と追加分の結合（英語はスペース区切り、日本語はそのまま連結）
+    // 確定訳と追加分の結合（ネパール語はスペース区切り、日本語はそのまま連結）
     function joinMonoTranslation(base, addition) {
         const trimmedAddition = (addition || '').trim();
         if (!trimmedAddition) return base;
@@ -2658,8 +2658,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function buildMonotonicUserContent(chunk) {
-        const sourceLabel = selectedLanguage === 'ja' ? '日本語' : '英語';
-        const targetLabel = selectedLanguage === 'ja' ? '英語' : '日本語';
+        const sourceLabel = selectedLanguage === 'ja' ? '日本語' : 'ネパール語';
+        const targetLabel = selectedLanguage === 'ja' ? 'ネパール語' : '日本語';
         let context = '';
         if (monoTranslatedCount > 0) {
             const contextSource = monoSourceSegments
@@ -2782,7 +2782,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTranslatingState(true);
         try {
             monoAbortController = new AbortController();
-            const sourceLabel = selectedLanguage === 'ja' ? '日本語' : '英語';
+            const sourceLabel = selectedLanguage === 'ja' ? '日本語' : 'ネパール語';
             const result = await window.TranslatorService.translateStream({
                 apiKey: OPENAI_API_KEY,
                 text: draft,

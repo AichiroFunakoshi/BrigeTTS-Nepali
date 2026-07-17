@@ -6,10 +6,10 @@ import os
 import shutil
 import urllib.request
 
-REPO = os.environ.get("GITHUB_REPOSITORY", "AichiroFunakoshi/Bridge-TTS-Codex-")
-PAGES_BASE = "https://aichirofunakoshi.github.io/Bridge-TTS-Codex-"
+REPO = os.environ.get("GITHUB_REPOSITORY", "AichiroFunakoshi/BrigeTTS-Nepali")
+PAGES_BASE = "https://aichirofunakoshi.github.io/BrigeTTS-Nepali"
 DESCRIPTION = (
-    "日本語と英語のリアルタイム音声翻訳アプリ。\n"
+    "日本語とネパール語のリアルタイム音声翻訳アプリ。\n"
     "音声認識で文字起こしし、OpenAI APIで翻訳、音声で読み上げます。\n"
     "利用にはOpenAI APIキーが必要です。"
 )
@@ -43,7 +43,7 @@ def build_versions(releases):
         versions.append({
             "version": version,
             "date": release.get("published_at") or release.get("created_at"),
-            "localizedDescription": notes[:3000] or f"BridgeTTS v{version}",
+            "localizedDescription": notes[:3000] or f"BrigeTTS(Nepali) v{version}",
             "downloadURL": asset["browser_download_url"],
             "size": asset["size"],
             "minOSVersion": "16.0",
@@ -54,16 +54,16 @@ def build_versions(releases):
 def main():
     versions = build_versions(fetch_releases())
     source = {
-        "name": "BridgeTTS Source",
+        "name": "BrigeTTS(Nepali) Source",
         "identifier": "com.a16.bridgetts.source",
-        "subtitle": "日英リアルタイム音声翻訳",
+        "subtitle": "日本語・ネパール語リアルタイム音声翻訳",
         "website": f"https://github.com/{REPO}",
         "iconURL": f"{PAGES_BASE}/icon.png",
         "apps": [{
-            "name": "BridgeTTS",
+            "name": "BrigeTTS(Nepali)",
             "bundleIdentifier": "com.a16.bridgetts",
             "developerName": "A_1_6",
-            "subtitle": "日英リアルタイム音声翻訳",
+            "subtitle": "日本語・ネパール語リアルタイム音声翻訳",
             "localizedDescription": DESCRIPTION,
             "iconURL": f"{PAGES_BASE}/icon.png",
             "tintColor": "#4292CD",
@@ -91,7 +91,7 @@ def main():
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BridgeTTS - AltStoreソース</title>
+<title>BrigeTTS(Nepali) - AltStoreソース</title>
 <style>
 body {{ font-family: -apple-system, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; line-height: 1.7; }}
 img {{ width: 96px; border-radius: 22px; }}
@@ -100,9 +100,9 @@ code {{ background: #f0f0f0; padding: 2px 6px; border-radius: 4px; word-break: b
 </style>
 </head>
 <body>
-<img src="icon.png" alt="BridgeTTS">
-<h1>BridgeTTS</h1>
-<p>日英リアルタイム音声翻訳アプリのAltStoreソースです。</p>
+<img src="icon.png" alt="BrigeTTS(Nepali)">
+<h1>BrigeTTS(Nepali)</h1>
+<p>日本語・ネパール語リアルタイム音声翻訳アプリのAltStoreソースです。</p>
 <p><a class="btn" href="altstore://source?url={source_url}">AltStoreにソースを追加</a></p>
 <p>上のボタンが動かない場合は、AltStoreの「Sources」→「＋」に次のURLを貼り付けてください：</p>
 <p><code>{source_url}</code></p>

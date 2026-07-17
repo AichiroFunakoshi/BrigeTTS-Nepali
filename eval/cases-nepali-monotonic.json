@@ -1,0 +1,35 @@
+{
+  "description": "日本語・ネパール語の順送り訳で、直前チャンクの文脈を維持できるかを確認する初期ケース。",
+  "cases": [
+    {
+      "id": "mono-ne-01",
+      "domain": "medical",
+      "lang": "ja",
+      "critical": true,
+      "context": { "source": "田中さんが来ました。", "translation": "तानाका जी आउनुभयो।" },
+      "source": "彼は薬を持っています。",
+      "mustInclude": [["उहाँ"], ["औषधि"]],
+      "mustNotInclude": []
+    },
+    {
+      "id": "mono-ne-02",
+      "domain": "medical",
+      "lang": "ne",
+      "critical": true,
+      "context": { "source": "तनाकाजी अस्पताल आउनुभयो।", "translation": "田中さんは病院に来ました。" },
+      "source": "उहाँलाई कम्मर दुखेको छ।",
+      "mustInclude": [["田中", "彼"], ["腰"], ["痛"]],
+      "mustNotInclude": ["彼女"]
+    },
+    {
+      "id": "mono-ne-03",
+      "domain": "daily",
+      "lang": "ja",
+      "critical": false,
+      "context": { "source": "明日は休みです。", "translation": "भोलि बिदा छ।" },
+      "source": "代わりに月曜日に来てください。",
+      "mustInclude": [["सोमबार"], ["आउनुहोस्"]],
+      "mustNotInclude": []
+    }
+  ]
+}

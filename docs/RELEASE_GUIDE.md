@@ -34,7 +34,7 @@
 5. **配信確認**（2〜3分後）:
    ```bash
    gh release view vX.Y.Z --json tagName,assets --jq '{tag:.tagName,assets:[.assets[].name]}'
-   curl -s https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json | python3 -c "import json,sys; print([v['version'] for v in json.load(sys.stdin)['apps'][0]['versions']][:2])"
+   curl -s https://aichirofunakoshi.github.io/BrigeTTS-Nepali/apps.json | python3 -c "import json,sys; print([v['version'] for v in json.load(sys.stdin)['apps'][0]['versions']][:2])"
    ```
    1行目でIPA添付、2行目で新版数が先頭に出ていれば配信完了。
 
@@ -57,7 +57,7 @@
 ## 初回インストール（新しいiPhone・同僚への配布）
 
 1. Mac/PCにAltServerを導入し、iPhoneにAltStoreを入れる（詳細: [IOS_APP.md](IOS_APP.md)）
-2. iPhoneのSafariで https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/altstore.html →「AltStoreにソースを追加」
+2. iPhoneのSafariで https://aichirofunakoshi.github.io/BrigeTTS-Nepali/altstore.html →「AltStoreにソースを追加」
 3. AltStoreの Browse から BridgeTTS をインストール
 
 ## トラブルシューティング

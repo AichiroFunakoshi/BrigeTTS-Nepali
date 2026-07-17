@@ -1,0 +1,77 @@
+{
+  "description": "BrigeTTS(Nepali) 日本語・ネパール語翻訳の初期品質評価ケース。表現揺れを許容しつつ、重要語と危険な反転を検査する。",
+  "cases": [
+    {
+      "id": "ja-ne-daily-01",
+      "domain": "daily",
+      "lang": "ja",
+      "critical": false,
+      "source": "こんにちは。今日はよろしくお願いします。",
+      "mustInclude": [["नमस्ते", "नमस्कार"], ["आज"]],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ja-ne-medical-01",
+      "domain": "medical",
+      "lang": "ja",
+      "critical": true,
+      "source": "腰に痛みはありますか。",
+      "mustInclude": [["कम्मर"], ["दुखाइ", "दुख्छ"]],
+      "mustNotInclude": ["दुखाइ छैन"]
+    },
+    {
+      "id": "ja-ne-medical-02",
+      "domain": "medical",
+      "lang": "ja",
+      "critical": true,
+      "source": "この薬を食後に飲んでください。",
+      "mustInclude": [["औषधि"], ["खाना खाएपछि", "खानापछि"]],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ja-ne-daily-02",
+      "domain": "daily",
+      "lang": "ja",
+      "critical": false,
+      "source": "明日の午前10時に来てください。",
+      "mustInclude": [["भोलि"], ["१०", "10"], ["बजे"]],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ne-ja-medical-01",
+      "domain": "medical",
+      "lang": "ne",
+      "critical": true,
+      "source": "मलाई कम्मर दुखेको छ।",
+      "mustInclude": [["腰"], ["痛"]],
+      "mustNotInclude": ["痛くない"]
+    },
+    {
+      "id": "ne-ja-medical-02",
+      "domain": "medical",
+      "lang": "ne",
+      "critical": true,
+      "source": "तपाईंलाई ज्वरो छ?",
+      "mustInclude": [["熱", "発熱"]],
+      "mustNotInclude": ["熱はありません"]
+    },
+    {
+      "id": "ne-ja-medical-03",
+      "domain": "medical",
+      "lang": "ne",
+      "critical": true,
+      "source": "औषधि खान नबिर्सनुहोस्।",
+      "mustInclude": [["薬"], ["忘れ"]],
+      "mustNotInclude": []
+    },
+    {
+      "id": "ne-ja-daily-01",
+      "domain": "daily",
+      "lang": "ne",
+      "critical": false,
+      "source": "आज म अस्पताल जान्छु।",
+      "mustInclude": [["今日"], ["病院"], ["行"]],
+      "mustNotInclude": []
+    }
+  ]
+}

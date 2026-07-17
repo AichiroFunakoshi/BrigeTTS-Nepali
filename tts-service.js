@@ -172,7 +172,7 @@ const TtsService = {
         const isNativeApp = Boolean(window.__BRIDGE_TTS_NATIVE_APP__);
 
         const utterance = new SpeechSynthesisUtterance(text);
-        const targetLang = sourceLanguage === 'ja' ? 'en-US' : 'ja-JP';
+        const targetLang = sourceLanguage === 'ja' ? 'ne-NP' : 'ja-JP';
         utterance.lang = targetLang;
 
         const selectedVoice = this.getBestVoiceForLanguage(targetLang, preferredVoiceName);
@@ -191,7 +191,7 @@ const TtsService = {
         utterance.volume = 1.0;
 
         utterance.onstart = () => {
-            console.log('✓ TTS再生開始:', sourceLanguage === 'ja' ? '英語' : '日本語');
+            console.log('✓ TTS再生開始:', sourceLanguage === 'ja' ? 'ネパール語' : '日本語');
             if (typeof onStart === 'function') {
                 onStart();
             }

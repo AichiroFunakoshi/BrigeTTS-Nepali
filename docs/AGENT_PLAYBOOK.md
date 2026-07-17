@@ -56,7 +56,7 @@ at the bottom as authoritative corrections and fold them into behavior.
 - When Claude needs the verdict, read only the tail via CLI, e.g.:
   `gh pr view <N> --comments | tail -n 40`
   or the last comment only:
-  `gh api repos/AichiroFunakoshi/Bridge-TTS-Codex-/issues/<N>/comments --jq '.[-1].body' | head -c 2000`
+  `gh api repos/AichiroFunakoshi/BrigeTTS-Nepali/issues/<N>/comments --jq '.[-1].body' | head -c 2000`
 - CodeRabbit "pending" does NOT block merging when smoke is green and the change
   is low-risk; the user decides whether to wait.
 
@@ -86,7 +86,7 @@ Per CLAUDE.md checklist; execute the cheap ones always:
 5. Verify with two cheap calls (ipa build ≈ 1-2 min, Pages CDN adds ~1 min):
    ```bash
    gh release view vX.Y.Z --json tagName,assets --jq '{tag:.tagName,assets:[.assets[].name]}'
-   curl -s https://aichirofunakoshi.github.io/Bridge-TTS-Codex-/apps.json | python3 -c "import json,sys; print([v['version'] for v in json.load(sys.stdin)['apps'][0]['versions']])"
+   curl -s https://aichirofunakoshi.github.io/BrigeTTS-Nepali/apps.json | python3 -c "import json,sys; print([v['version'] for v in json.load(sys.stdin)['apps'][0]['versions']])"
    ```
 6. Rollback anchor: tag `stable-fable5-v2.3.0`. Procedure in HANDOFF.md.
 
