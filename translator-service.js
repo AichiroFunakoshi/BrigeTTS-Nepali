@@ -1,7 +1,8 @@
 // OpenAI翻訳APIとの通信とストリーミング解析
 const TranslatorService = {
     endpoint: 'https://api.openai.com/v1/chat/completions',
-    model: 'gpt-4.1-nano',
+    // 固定スナップショットで翻訳品質とレイテンシの再現性を保つ。
+    model: 'gpt-5.4-mini-2026-03-17',
 
     getSourceLanguageLabel: function(sourceLanguage) {
         return sourceLanguage === 'ja' ? '日本語' : 'ネパール語';
@@ -23,7 +24,10 @@ const TranslatorService = {
             ],
             stream: true,
             stream_options: { include_usage: true },
-            temperature: 0.3
+            // 翻訳では推論の深さより、意味・数値・否定の安定性と初動速度を優先する。
+            reasoning_effort: 'none',
+            temperature: 0,
+            verbosity: 'low'
         };
     },
 
