@@ -9,8 +9,9 @@
 
 - **最終更新**: 2026-07-17（日本語・ネパール語版の独立リポジトリ化）
 - **ネパール語版の初期移植（本ブランチ）**: 元の日英版 `Bridge-TTS-Codex-` の履歴を保持した独立コピーとして `BrigeTTS(Nepali)` を開始。言語コードを `en`→`ne`、音声認識/TTSロケールを `en-US`→`ne-NP`、UI・プロンプト・辞書・デバウンス学習・評価ハーネスを日本語⇄ネパール語へ移行。元リポジトリへの誤push防止のため、元接続は `upstream` として扱う
-- **検証**: 変更JSの `node --check`、ネパール語評価11ケースのdry-run、Playwright smoke 14/14合格。実APIによる翻訳品質評価と、iPhone/Android実機での `ne-NP` 音声認識・TTS音声有無の確認は未実施
-- **作業ブランチ**: `codex/nepali-localization`（GitHub新規リポジトリ作成・初回push待ち）
+- **公開状態**: `AichiroFunakoshi/BrigeTTS-Nepali` の `main` へ初回push済み。GitHub Pagesは `https://aichirofunakoshi.github.io/BrigeTTS-Nepali/` で公開済み。AltStoreソースも公開済みだが、初回 `v*` リリース前のため配布バージョンは0件
+- **検証**: 変更JSの `node --check`、ネパール語評価11ケースのdry-run、ローカルPlaywright smoke 14/14合格。GitHub ActionsのWeb Smoke TestsとiOS未署名IPAビルド、Pages公開も成功。実APIによる翻訳品質評価と、iPhone/Android実機での `ne-NP` 音声認識・TTS音声有無の確認は未実施
+- **作業ブランチ**: `main`（初期移植・公開完了）
 - **リポジトリ棚卸し（2026-07-14）**: ①マージ済みPR由来のリモートブランチ37本を全削除（remoteは`main`のみ。全てマージ済みPRとの対応を照合済み）②ログ系Issueを集約: レイテンシ報告#68/#69/#70は要点コメント（訳出開始 中央値703-726ms・確定798-825ms＝ゲート通過）を残してクローズ、TTSエラー#78は#67へ集約しクローズ（**v2.9.2の頭切れ対策後も canceled が再発**した点を#67のコメントに記録。追跡は#67で継続）③READMEをv2.9.3の現状に更新（順送り＝石畳方式が既定・翻訳モード・ユーザー辞書・設定エクスポート・API使用量表示・異常終了検出・日本語読み上げ音声選択・設計文書リンク）
 - **実機フィードバック対応（本PR）**: ①辞書に「誤認識される表記」を追加（「禄寿園」→「60円」問題への決定的置換。数字境界・包含関係ガード付き）②iOSネイティブTTSの頭切れ対策（セッション切替後150ms待機）③日本語読み上げ音声の選択UI ④録音中フリーズ→強制終了の事後検出（ハートビート。次回起動時に直前ログ付きレポート可能）。敵対的レビュー済み（Major2件を修正）
 - **新規Issue**: #71=フリーズ調査（Swift側メインスレッドブロック仮説）、#72=順送りの暫定訳並走表示、#73=順送り既定化の二段階移行提案。ユーザーはA/B比較で順送りを高評価、方式統一を提案中
@@ -22,7 +23,7 @@
 - **最新の申し送り**: [docs/handover-2026-07-17-nepali-fork.md](handover-2026-07-17-nepali-fork.md)
 - **Cowork環境**: サンドボックスでのテスト実行は `scripts/cowork-setup.sh` で構築可（→「⚠️ 既知の注意点」参照）
 - **進捗ダッシュボード**: https://aichirofunakoshi.github.io/BrigeTTS-Nepali/dashboard.html （リリース/CI/Issue/コミットを一望）
-- **次にやること**: ①GitHub CLIへ再ログインし `AichiroFunakoshi/BrigeTTS-Nepali` を作成・初回push ②GitHub Pagesを有効化 ③iPhone/Android実機で日本語⇄ネパール語の音声認識・TTSを確認 ④実APIで `eval/cases-nepali*.json` を実行し、ネパール語品質ベースラインを確定
+- **次にやること**: ①iPhone/Android実機で日本語⇄ネパール語の音声認識・TTSを確認 ②実APIで `eval/cases-nepali*.json` を実行し、ネパール語品質ベースラインを確定 ③初回配布版の版数を決め、`v*` タグでAltStoreへ公開
 
 ---
 

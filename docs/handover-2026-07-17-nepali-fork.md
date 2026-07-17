@@ -14,6 +14,8 @@
 - ネパール語は標準的なデーヴァナーガリー文字で出力し、ヒンディー語化・全文ローマ字化を避ける規則を追加
 - ネパール語デバウンス初期値は、英語版の実測値を流用せず暫定300msとした。既存ロジックにより30件以降は端末別に自動最適化される
 - 評価ハーネスの既定をネパール語ケース8件、`--monotonic` を文脈維持3件へ切り替え
+- 公開リポジトリ `AichiroFunakoshi/BrigeTTS-Nepali` を作成し、検証済みコミットを `main` へpush
+- GitHub PagesをActions方式で有効化し、PWAとAltStoreソースを公開
 
 ## 検証
 
@@ -22,13 +24,15 @@
 - `node eval/run-eval.js --dry-run --monotonic`: 3件合格
 - `npm run test:smoke -- --reporter=line`: 14/14合格
 - smokeには日本語入力時のTTS言語が `ne-NP` になる検査を含む
+- GitHub ActionsのWeb Smoke Tests: 合格
+- GitHub ActionsのiOS未署名IPAビルド: 合格
+- GitHub Pages / AltStore Source公開: 合格（PWAのHTTP 200を確認）
 
 ## 未完了
 
-- GitHub CLIの既存トークンが無効。`gh auth login -h github.com` 後に新規リポジトリを作成し、初回pushする
-- GitHub PagesとAltStore配布は新規リポジトリ作成後に有効化・確認する
 - `OPENAI_API_KEY` を使ったネパール語評価ケースの実行は未実施
 - iPhone/Android実機で `ne-NP` 音声認識が利用できるか、ネパール語TTS音声がインストールされているかを確認する
+- AltStoreソースは公開済みだが、初回 `v*` リリース前のため配布バージョンは0件
 
 ## 注意
 
