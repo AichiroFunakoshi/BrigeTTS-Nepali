@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v2.9.3');
+    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v2.9.4');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startNepaliBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -93,7 +93,7 @@ test('loads the default translation prompt rules', async ({ page }) => {
 
     const dailyPrompt = await page.evaluate(() => window.PromptService.getTranslationSystemPrompt({ domain: 'daily' }));
     expect(dailyPrompt).toContain('日常会話');
-    expect(dailyPrompt).not.toContain('ユーザー辞書');
+    expect(dailyPrompt).not.toContain('【ユーザー辞書（');
 });
 
 test('uses Nepali locale for translated speech', async ({ page }) => {
@@ -326,7 +326,9 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
             expectedModel: window.TranslatorService.model,
             model: payload.model,
             stream: payload.stream,
+            reasoningEffort: payload.reasoning_effort,
             temperature: payload.temperature,
+            verbosity: payload.verbosity,
             systemPrompt: payload.messages[0].content,
             userPrompt: payload.messages[1].content
         };
@@ -339,7 +341,9 @@ test('parses translator service stream lines and payloads', async ({ page }) => 
         ignored: '',
         invalidJson: '',
         stream: true,
-        temperature: 0.3,
+        reasoningEffort: 'none',
+        temperature: 0,
+        verbosity: 'low',
         systemPrompt: 'system prompt',
         userPrompt: '以下の日本語テキストをネパール語に翻訳してください:\n\nこんにちは'
     });

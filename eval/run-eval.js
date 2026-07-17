@@ -29,7 +29,7 @@ require(path.join(__dirname, '..', 'prompt-service.js'));
 const PromptService = global.window.PromptService;
 
 const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
-const DEFAULT_MODEL = 'gpt-4.1-nano';
+const DEFAULT_MODEL = 'gpt-5.4-mini-2026-03-17';
 const CONCURRENCY = 4;
 
 function parseArgs(argv) {
@@ -79,7 +79,7 @@ async function translate(testCase, apiKey, model) {
     const target = testCase.lang === 'ja' ? 'ネパール語' : '日本語';
     // 順送り訳β: 文脈付きチャンク翻訳（app.js buildMonotonicUserContent と同形式）
     const userContent = testCase.context
-        ? `直前の発話（文脈。翻訳しないこと）:\n原文: ${testCase.context.source}\n訳文: ${testCase.context.translation}\n\n以下の${label}テキストは発話の続きである。上の文脈に自然につながる${target}訳のみを出力してください:\n\n${testCase.source}`
+        ? `直前の発話（文脈。翻訳しないこと）:\n原文: ${testCase.context.source}\n訳文: ${testCase.context.translation}\n\n以下の${label}テキストは発話の続きである。上の文脈に自然につながる${target}訳のみを出力してください。代名詞・省略された主語の参照先が直前の文脈で特定できる場合は、聞き手が対象人物を誤解しないよう訳文に明示してください:\n\n${testCase.source}`
         : `以下の${label}テキストを${target}に翻訳してください:\n\n${testCase.source}`;
     const response = await fetch(ENDPOINT, {
         method: 'POST',
@@ -90,7 +90,9 @@ async function translate(testCase, apiKey, model) {
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userContent }
             ],
-            temperature: 0.3
+            reasoning_effort: 'none',
+            temperature: 0,
+            verbosity: 'low'
         })
     });
     if (!response.ok) {

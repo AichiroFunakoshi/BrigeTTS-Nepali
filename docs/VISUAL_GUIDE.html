@@ -155,7 +155,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 <header>
   <h1>BrigeTTS(Nepali) 図解ガイド</h1>
   <p>日本語 ⇔ ネパール語 リアルタイム音声翻訳アプリ — エンドユーザー向け完全ガイド</p>
-  <span class="badge">gpt-4.1-nano 搭載 ／ PWA + iOSネイティブアプリ対応</span>
+  <span class="badge">gpt-5.4-mini 搭載 ／ PWA + iOSネイティブアプリ対応</span>
 </header>
 
 <!-- 目次 -->
@@ -264,7 +264,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <line x1="400" y1="83" x2="450" y2="83" stroke="#bbf7d0" stroke-width="1"/>
       <line x1="400" y1="107" x2="450" y2="107" stroke="#bbf7d0" stroke-width="1"/>
       <text x="425" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d" font-family="sans-serif">AI翻訳</text>
-      <text x="425" y="170" text-anchor="middle" font-size="10" fill="#15803d" font-family="sans-serif">(gpt-4.1-nano)</text>
+      <text x="425" y="170" text-anchor="middle" font-size="10" fill="#15803d" font-family="sans-serif">(gpt-5.4-mini)</text>
 
       <!-- Arrow 3 -->
       <line x1="492" y1="100" x2="528" y2="100" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr)"/>
@@ -280,7 +280,7 @@ footer a { color: #60a5fa; text-decoration: none; }
       <text x="595" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e" font-family="sans-serif">音声読み上げ</text>
       <text x="595" y="170" text-anchor="middle" font-size="10" fill="#92400e" font-family="sans-serif">(TTS／タップで再生)</text>
     </svg>
-    <figcaption>図1 ： 話す → 文字起こし → AI翻訳(gpt-4.1-nano) → 音声読み上げの4ステップパイプライン</figcaption>
+    <figcaption>図1 ： 話す → 文字起こし → AI翻訳(gpt-5.4-mini) → 音声読み上げの4ステップパイプライン</figcaption>
   </figure>
 
   <h3>図2 ： PWA版と iOSアプリ版の構成比較</h3>
@@ -311,7 +311,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 
       <!-- OpenAI -->
       <rect x="80" y="202" width="215" height="38" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
-      <text x="187" y="226" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d" font-family="sans-serif">OpenAI API（gpt-4.1-nano）</text>
+      <text x="187" y="226" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d" font-family="sans-serif">OpenAI API（gpt-5.4-mini）</text>
 
       <!-- Arrow PWA -->
       <line x1="187" y1="184" x2="187" y2="200" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
@@ -904,13 +904,14 @@ footer a { color: #60a5fa; text-decoration: none; }
   <div class="tbl-wrap">
     <table>
       <thead>
-        <tr><th>モデル</th><th>入力</th><th>出力</th><th>1回の翻訳あたりの目安</th></tr>
+        <tr><th>モデル</th><th>入力</th><th>キャッシュ入力</th><th>出力</th><th>1回の翻訳あたりの目安</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td>gpt-4.1-nano</td>
-          <td>$0.10 / 100万トークン</td>
-          <td>$0.40 / 100万トークン</td>
+          <td>gpt-5.4-mini</td>
+          <td>$0.75 / 100万トークン</td>
+          <td>$0.075 / 100万トークン</td>
+          <td>$4.50 / 100万トークン</td>
           <td>通常数百トークン以下 = <strong>0.01円未満が目安</strong></td>
         </tr>
       </tbody>
@@ -963,7 +964,7 @@ footer a { color: #60a5fa; text-decoration: none; }
         </tr>
         <tr>
           <td>翻訳AIモデル</td>
-          <td colspan="2">OpenAI gpt-4.1-nano（低価格・高速）</td>
+          <td colspan="2">OpenAI gpt-5.4-mini（高速・高品質、推論なし）</td>
         </tr>
         <tr>
           <td>音声認識</td>
@@ -1118,7 +1119,7 @@ footer a { color: #60a5fa; text-decoration: none; }
 </main>
 
 <footer>
-  <p>BrigeTTS(Nepali) 図解ガイド ／ 対象アプリ: Bridge-TTS Codex（gpt-4.1-nano搭載）</p>
+  <p>BrigeTTS(Nepali) 図解ガイド ／ 対象アプリ: Bridge-TTS Codex（gpt-5.4-mini搭載）</p>
   <p style="margin-top:6px;">
     <a href="https://github.com/AichiroFunakoshi/BrigeTTS-Nepali">GitHubリポジトリ</a>
     ／

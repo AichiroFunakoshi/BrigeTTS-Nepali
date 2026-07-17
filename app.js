@@ -1525,9 +1525,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ---- API使用量の概算（F15: 使用量の可視化） ----
-    const NANO_PRICE_IN = 0.10 / 1e6;      // USD/トークン（gpt-4.1-nano 非キャッシュ入力）
-    const NANO_PRICE_CACHED = 0.025 / 1e6; // 同キャッシュ済み入力
-    const NANO_PRICE_OUT = 0.40 / 1e6;     // 同出力
+    const MODEL_PRICE_IN = 0.75 / 1e6;      // USD/トークン（gpt-5.4-mini 非キャッシュ入力）
+    const MODEL_PRICE_CACHED = 0.075 / 1e6; // 同キャッシュ済み入力
+    const MODEL_PRICE_OUT = 4.50 / 1e6;     // 同出力
     let usageTotals = AppSettingsStorage.getUsageTotals();
 
     function updateUsageUI() {
@@ -1538,9 +1538,9 @@ document.addEventListener('DOMContentLoaded', function() {
             element.textContent = 'まだ使用データがありません';
             return;
         }
-        const cost = usageTotals.inTokens * NANO_PRICE_IN +
-            usageTotals.cachedTokens * NANO_PRICE_CACHED +
-            usageTotals.outTokens * NANO_PRICE_OUT;
+        const cost = usageTotals.inTokens * MODEL_PRICE_IN +
+            usageTotals.cachedTokens * MODEL_PRICE_CACHED +
+            usageTotals.outTokens * MODEL_PRICE_OUT;
         const since = new Date(usageTotals.since).toLocaleDateString('ja-JP');
         element.textContent = `${since}から 約${totalTokens.toLocaleString()}トークン ≒ $${cost.toFixed(3)}`;
     }
@@ -2446,7 +2446,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 10000);
     }
 
-    // OpenAI API（gpt-4.1-nanoモデル）を使用してテキストを翻訳
+    // OpenAI API（gpt-5.4-miniモデル）を使用してテキストを翻訳
     async function translateText(text) {
         // 翻訳処理の実行条件をチェック
         if (!text || !text.trim()) {
@@ -2668,7 +2668,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const contextTranslation = monoTranslation.slice(-MONO_CONTEXT_TRANSLATION_CHARS);
             context = `直前の発話（文脈。翻訳しないこと）:\n原文: ${contextSource}\n訳文: ${contextTranslation}\n\n`;
         }
-        return `${context}以下の${sourceLabel}テキストは発話の続きである。上の文脈に自然につながる${targetLabel}訳のみを出力してください:\n\n${chunk}`;
+        return `${context}以下の${sourceLabel}テキストは発話の続きである。上の文脈に自然につながる${targetLabel}訳のみを出力してください。代名詞・省略された主語の参照先が直前の文脈で特定できる場合は、聞き手が対象人物を誤解しないよう訳文に明示してください:\n\n${chunk}`;
     }
 
     // 未訳チャンクを発話順に1件ずつ翻訳する（直列実行。順序保証のため並列化しない。

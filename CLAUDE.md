@@ -5,7 +5,7 @@
 
 ## プロジェクト概要
 - **BridgeTTS**: 日本語・ネパール語リアルタイム音声翻訳アプリ。**PWA（ブラウザ）** と **iOSネイティブ（AltStore配布）** の2形態。
-- 翻訳: OpenAI `gpt-4.1-nano`（端末から直接呼び出し）。音声: Web Speech API（iOSは `SFSpeechRecognizer` ブリッジで補完）。
+- 翻訳: OpenAI `gpt-5.4-mini-2026-03-17`（端末から直接呼び出し、推論なし）。音声: Web Speech API（iOSは `SFSpeechRecognizer` ブリッジで補完）。
 - 主要ファイル: `app.js`（本体・認識制御/翻訳トリガー/UI）, `translator-service.js`, `prompt-service.js`, `tts-service.js`, `native-speech.js`, `settings-storage.js`, `error-reporter.js`, `sw.js`, `index.html`, `style.css`, `ios/`。
 
 ## 触れてはいけない核（要・慎重）
