@@ -6,7 +6,7 @@
 
 ```
 ┌─────────────────────────────────────────────┐
-│ BridgeTTS.app (iOS)                          │
+│ BrigeTTSNepali.app (iOS)                     │
 │ ┌──────────────────────────────────────────┐ │
 │ │ WKWebView                                 │ │
 │ │  - バンドル内の www/（PWAのコピー）を表示  │ │
@@ -30,10 +30,10 @@
 
 1. GitHubリポジトリの **Actions** タブ → **Build iOS App (unsigned IPA)** を開く
 2. 最新の成功したワークフロー実行を開く
-3. **Artifacts** から `BridgeTTS-unsigned-ipa` をダウンロード
-4. zipを展開して `BridgeTTS-unsigned.ipa` を取り出す
+3. **Artifacts** から `BrigeTTS-Nepali-unsigned-ipa` をダウンロード
+4. zipを展開して `BrigeTTS-Nepali-unsigned.ipa` を取り出す
 
-`v` で始まるタグ（例 `v2.0.0`）をpushすると、Releaseが自動作成されIPAが添付されます。
+`v` で始まるタグ（例 `v1.0.0`）をpushすると、Releaseが自動作成されIPAが添付されます。
 
 ### 方法2: ローカル（Mac）でビルド
 
@@ -54,8 +54,8 @@ xcodebuild -project ios/BridgeTTS.xcodeproj -scheme BridgeTTS \
   -configuration Release -sdk iphoneos -derivedDataPath ios/build \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
 mkdir -p ios/build/Payload
-cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
-(cd ios/build && zip -qry BridgeTTS-unsigned.ipa Payload)
+cp -R ios/build/Build/Products/Release-iphoneos/BrigeTTSNepali.app ios/build/Payload/
+(cd ios/build && zip -qry BrigeTTS-Nepali-unsigned.ipa Payload)
 ```
 
 ## AltStoreソースからのインストール・更新（推奨）
@@ -64,13 +64,13 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 1. iPhoneのSafariで https://aichirofunakoshi.github.io/BrigeTTS-Nepali/altstore.html を開き「AltStoreにソースを追加」をタップ
    （またはAltStoreの **Sources** → **＋** に `https://aichirofunakoshi.github.io/BrigeTTS-Nepali/apps.json` を貼り付け）
-2. AltStoreの **Browse** にBridgeTTSが表示されるので **FREE** をタップしてインストール
+2. AltStoreの **Browse** にBrigeTTS(Nepali)が表示されるので **FREE** をタップしてインストール
 3. 新バージョンが公開されると **My Apps** に「アップデート」が表示され、ワンタップで更新できます
    （アプリのデータ・APIキー・設定は引き継がれます）
 
 他の人に使ってもらう場合も、このソースURLを伝えるだけです（各自のMac/PCでのAltServerセットアップと、無料Apple IDの場合は7日ごとの更新・3アプリ制限は同様に必要です）。
 
-新しいリリースの公開は `v` で始まるタグ（例 `v2.1.0`）をpushするだけで、IPAビルド→Release添付→ソース(apps.json)更新まで自動で行われます。
+新しいリリースの公開は `v` で始まるタグ（例 `v1.0.1`）をpushするだけで、IPAビルド→Release添付→ソース(apps.json)更新まで自動で行われます。
 
 ## 更新の受け取り
 
@@ -95,7 +95,7 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 ## AltStoreでのインストール手順
 
-> **⚠️ 重要（よくあるつまずき）**: `BridgeTTS-unsigned.ipa` は**Mac上でダブルクリックしてもインストールできません**。未署名のため「整合性を確認できなかったためインストールできませんでした」というエラーになります。これはiOSの仕様で、必ずiPhoneに転送し、**iPhone上のAltStoreから**開いて署名・インストールしてください。
+> **⚠️ 重要（よくあるつまずき）**: `BrigeTTS-Nepali-unsigned.ipa` は**Mac上でダブルクリックしてもインストールできません**。未署名のため「整合性を確認できなかったためインストールできませんでした」というエラーになります。これはiOSの仕様で、必ずiPhoneに転送し、**iPhone上のAltStoreから**開いて署名・インストールしてください。
 
 ### 事前準備（初回のみ）
 
@@ -106,7 +106,7 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 
 
 1. [AltStore](https://altstore.io/) をPC/Mac経由でiPhoneにインストールしておく（AltServerが必要）
-2. `BridgeTTS-unsigned.ipa` をiPhoneに転送（AirDrop、ファイルApp、iCloud Driveなど）
+2. `BrigeTTS-Nepali-unsigned.ipa` をiPhoneに転送（AirDrop、ファイルApp、iCloud Driveなど）
 3. iPhoneでAltStoreを開く → **My Apps** → 左上の **＋** → ダウンロードしたIPAを選択
 4. Apple IDで署名されてインストールされる
 5. 初回起動時にマイクと音声認識の権限を許可する
@@ -116,6 +116,7 @@ cp -R ios/build/Build/Products/Release-iphoneos/BridgeTTS.app ios/build/Payload/
 - **7日間の有効期限**: 無料のApple IDで署名したアプリは7日で期限切れになります。AltStoreのバックグラウンド更新、または手動の「Refresh」で更新してください
 - **3アプリ制限**: 無料Apple IDでサイドロードできるアプリは同時に3つまでです
 - APIキーや設定はアプリ内に保存され、ブラウザ版とは独立しています
+- Bundle IDは `com.a16.bridgetts.nepali` です。日英版（`com.a16.bridgetts`）とは別アプリとして共存します
 
 ## ネイティブ版とPWA版の違い
 

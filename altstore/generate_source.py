@@ -8,6 +8,9 @@ import urllib.request
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "AichiroFunakoshi/BrigeTTS-Nepali")
 PAGES_BASE = "https://aichirofunakoshi.github.io/BrigeTTS-Nepali"
+SOURCE_IDENTIFIER = "com.a16.bridgetts.nepali.source"
+APP_BUNDLE_IDENTIFIER = "com.a16.bridgetts.nepali"
+IPA_FILENAME = "BrigeTTS-Nepali-unsigned.ipa"
 DESCRIPTION = (
     "日本語とネパール語のリアルタイム音声翻訳アプリ。\n"
     "音声認識で文字起こしし、OpenAI APIで翻訳、音声で読み上げます。\n"
@@ -16,6 +19,7 @@ DESCRIPTION = (
 
 
 def fetch_releases():
+    """GitHub APIから公開リリース一覧を取得する。"""
     req = urllib.request.Request(
         f"https://api.github.com/repos/{REPO}/releases?per_page=30",
         headers={"Accept": "application/vnd.github+json"},
@@ -28,12 +32,13 @@ def fetch_releases():
 
 
 def build_versions(releases):
+    """ネパール版固有IPAを持つ公開リリースだけをAltStore形式へ変換する。"""
     versions = []
     for release in releases:
         if release.get("draft") or release.get("prerelease"):
             continue
         asset = next(
-            (a for a in release.get("assets", []) if a["name"].endswith(".ipa")),
+            (a for a in release.get("assets", []) if a["name"] == IPA_FILENAME),
             None,
         )
         if asset is None:
@@ -52,16 +57,17 @@ def build_versions(releases):
 
 
 def main():
+    """AltStoreソースとGitHub Pages用ファイル一式を生成する。"""
     versions = build_versions(fetch_releases())
     source = {
         "name": "BrigeTTS(Nepali) Source",
-        "identifier": "com.a16.bridgetts.source",
+        "identifier": SOURCE_IDENTIFIER,
         "subtitle": "日本語・ネパール語リアルタイム音声翻訳",
         "website": f"https://github.com/{REPO}",
         "iconURL": f"{PAGES_BASE}/icon.png",
         "apps": [{
             "name": "BrigeTTS(Nepali)",
-            "bundleIdentifier": "com.a16.bridgetts",
+            "bundleIdentifier": APP_BUNDLE_IDENTIFIER,
             "developerName": "A_1_6",
             "subtitle": "日本語・ネパール語リアルタイム音声翻訳",
             "localizedDescription": DESCRIPTION,

@@ -6,6 +6,8 @@
 
 このリポジトリは [Bridge-TTS-Codex-](https://github.com/AichiroFunakoshi/Bridge-TTS-Codex-) の履歴を保った独立コピーです。元の日英版へ変更を送らず、日本語・ネパール語版として別に更新します。
 
+iOS版は固有Bundle ID `com.a16.bridgetts.nepali` を使用します。日英版の `com.a16.bridgetts` とは別アプリとして、同じiPhoneへ同時にインストールできます。
+
 > ネパール語の音声認識は `ne-NP` を指定します。認識精度とTTS音声の有無はOS・ブラウザ・インストール済み音声に依存します。ネパール語デバウンスの初期値300msは暫定値で、30件の利用データから端末ごとに自動最適化されます。
 
 - 更新履歴: [CHANGELOG.md](CHANGELOG.md)
@@ -80,7 +82,7 @@ npm run test:smoke -- --reporter=line
 
 ### リリース手順
 
-1. `ios/project.yml` の `MARKETING_VERSION`、`index.html` のバージョン表記（タイトル・フッター）、`tests/smoke.test.js` の期待値を更新
+1. `ios/project.yml` の `MARKETING_VERSION`、`index.html` のバージョン表記（タイトル・フッター）、`package.json`、`tests/smoke.test.js` の期待値を更新
 2. `CHANGELOG.md` に変更内容を記録
 3. PRをmainへマージ後、`git tag vX.Y.Z && git push origin vX.Y.Z`
 4. 以降は自動（IPAビルド → Release添付 → AltStoreソース更新）

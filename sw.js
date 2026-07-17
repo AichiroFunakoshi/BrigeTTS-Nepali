@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'brige-tts-nepali-v29';
+const CACHE_VERSION = 'brige-tts-nepali-v1';
 const APP_SHELL = [
     './',
     './index.html',
