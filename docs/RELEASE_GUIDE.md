@@ -1,6 +1,8 @@
 # BridgeTTS 配信手順書（AltStoreへのアップロードと更新）
 
-最終更新: 2026-07-03
+最終更新: 2026-07-18
+
+ネパール語版は `v1.0.0` から開始し、固有Bundle ID `com.a16.bridgetts.nepali` と固有IPA名 `BrigeTTS-Nepali-unsigned.ipa` を使用します。日英版の版数・Bundle ID・IPAを流用しません。
 
 ## 全体像（何が自動で、何が手動か）
 
@@ -27,7 +29,7 @@
 3. **PR→マージ**（mainは直接push不可）
 4. **タグをpush**:
    ```bash
-   cd ~/Bridge-TTS\(Codex\)
+   cd 'BrigeTTS(Nepali)'
    git checkout main && git pull --ff-only
    git tag vX.Y.Z && git push origin vX.Y.Z
    ```
@@ -44,7 +46,7 @@
 
 更新の通知は二重になっています:
 
-1. **アプリ内バナー（v2.7.1以降・設定不要）**: BridgeTTS起動時に配信ソースを照会し、
+1. **アプリ内バナー（v1.0.0以降・設定不要）**: BrigeTTS(Nepali)起動時に配信ソースを照会し、
    新バージョンがあると画面上部に「新しいバージョン vX.Y.Z が利用可能です」と表示。
    「AltStoreで更新」をタップ→AltStoreが開く→My Appsの「アップデート」をタップで完了。
 2. **AltStore自身の通知（初回のみ設定）**:
@@ -58,7 +60,7 @@
 
 1. Mac/PCにAltServerを導入し、iPhoneにAltStoreを入れる（詳細: [IOS_APP.md](IOS_APP.md)）
 2. iPhoneのSafariで https://aichirofunakoshi.github.io/BrigeTTS-Nepali/altstore.html →「AltStoreにソースを追加」
-3. AltStoreの Browse から BridgeTTS をインストール
+3. AltStoreの Browse から BrigeTTS(Nepali) をインストール
 
 ## トラブルシューティング
 

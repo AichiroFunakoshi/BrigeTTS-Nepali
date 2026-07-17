@@ -3,7 +3,7 @@
 # - mainへのpush / 手動実行（workflow_dispatch）でビルドし、Artifactsにアップロード
 # - v* タグのpushではGitHub Releaseを作成してIPAを添付
 #
-# 生成された BridgeTTS-unsigned.ipa は署名されていないため、
+# 生成された BrigeTTS-Nepali-unsigned.ipa は署名されていないため、
 # AltStore / SideStore で各自のApple IDにより署名してインストールする。
 name: Build iOS App (unsigned IPA)
 
@@ -65,20 +65,20 @@ jobs:
       - name: Package IPA
         run: |
           mkdir -p ios/build/Payload
-          cp -R "ios/build/Build/Products/Release-iphoneos/BridgeTTS.app" ios/build/Payload/
+          cp -R "ios/build/Build/Products/Release-iphoneos/BrigeTTSNepali.app" ios/build/Payload/
           cd ios/build
-          zip -qry BridgeTTS-unsigned.ipa Payload
+          zip -qry BrigeTTS-Nepali-unsigned.ipa Payload
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BridgeTTS-unsigned-ipa
-          path: ios/build/BridgeTTS-unsigned.ipa
+          name: BrigeTTS-Nepali-unsigned-ipa
+          path: ios/build/BrigeTTS-Nepali-unsigned.ipa
           retention-days: 90
 
       - name: Attach IPA to release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ios/build/BridgeTTS-unsigned.ipa
+          files: ios/build/BrigeTTS-Nepali-unsigned.ipa
           generate_release_notes: true

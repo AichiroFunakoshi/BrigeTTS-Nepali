@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v2.9.4');
+    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v1.0.0');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startNepaliBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();

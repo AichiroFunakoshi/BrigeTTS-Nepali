@@ -28,3 +28,6 @@ jobs:
 
       - name: Run smoke tests
         run: npm run test:smoke -- --reporter=line
+
+      - name: Verify independent release identity
+        run: python3 -m unittest tests/test_release_identity.py
