@@ -19,6 +19,7 @@ DESCRIPTION = (
 
 
 def fetch_releases():
+    """GitHub APIから公開リリース一覧を取得する。"""
     req = urllib.request.Request(
         f"https://api.github.com/repos/{REPO}/releases?per_page=30",
         headers={"Accept": "application/vnd.github+json"},
@@ -31,6 +32,7 @@ def fetch_releases():
 
 
 def build_versions(releases):
+    """ネパール版固有IPAを持つ公開リリースだけをAltStore形式へ変換する。"""
     versions = []
     for release in releases:
         if release.get("draft") or release.get("prerelease"):
@@ -55,6 +57,7 @@ def build_versions(releases):
 
 
 def main():
+    """AltStoreソースとGitHub Pages用ファイル一式を生成する。"""
     versions = build_versions(fetch_releases())
     source = {
         "name": "BrigeTTS(Nepali) Source",

@@ -12,7 +12,10 @@ SPEC.loader.exec_module(GENERATE_SOURCE)
 
 
 class IndependentReleaseIdentityTests(unittest.TestCase):
+    """日英版とネパール版の配布識別子が再び混同されないことを検証する。"""
+
     def test_nepali_app_has_independent_identifiers(self):
+        """Bundle IDとAltStoreソースIDがネパール版固有であることを確認する。"""
         self.assertEqual(
             GENERATE_SOURCE.APP_BUNDLE_IDENTIFIER,
             "com.a16.bridgetts.nepali",
@@ -33,6 +36,7 @@ class IndependentReleaseIdentityTests(unittest.TestCase):
         )
 
     def test_first_release_version_and_artifact_names_are_consistent(self):
+        """初回版数と固有IPA名がビルド設定全体で一致することを確認する。"""
         project = (ROOT / "ios" / "project.yml").read_text(encoding="utf-8")
         package = (ROOT / "package.json").read_text(encoding="utf-8")
         index = (ROOT / "index.html").read_text(encoding="utf-8")
@@ -47,6 +51,7 @@ class IndependentReleaseIdentityTests(unittest.TestCase):
         self.assertNotIn("BridgeTTS-unsigned.ipa", workflow)
 
     def test_only_nepali_ipa_is_published(self):
+        """英語版IPAを無視し、ネパール版IPAだけを配布対象にすることを確認する。"""
         releases = [{
             "tag_name": "v1.0.0",
             "published_at": "2026-07-18T00:00:00Z",
