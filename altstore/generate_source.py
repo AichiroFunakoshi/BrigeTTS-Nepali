@@ -56,10 +56,9 @@ def build_versions(releases):
     return versions
 
 
-def main():
-    """AltStoreソースとGitHub Pages用ファイル一式を生成する。"""
-    versions = build_versions(fetch_releases())
-    source = {
+def build_source(versions):
+    """ネパール版固有の識別情報でAltStoreソース本文を組み立てる。"""
+    return {
         "name": "BrigeTTS(Nepali) Source",
         "identifier": SOURCE_IDENTIFIER,
         "subtitle": "日本語・ネパール語リアルタイム音声翻訳",
@@ -77,6 +76,12 @@ def main():
             "versions": versions,
         }],
     }
+
+
+def main():
+    """AltStoreソースとGitHub Pages用ファイル一式を生成する。"""
+    versions = build_versions(fetch_releases())
+    source = build_source(versions)
 
     os.makedirs("_site", exist_ok=True)
     with open("_site/apps.json", "w", encoding="utf-8") as f:

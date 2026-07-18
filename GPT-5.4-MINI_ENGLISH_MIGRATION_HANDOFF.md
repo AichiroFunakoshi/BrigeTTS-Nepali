@@ -10,6 +10,30 @@
 
 作業開始時に、ユーザーが別途指定する英語版のローカル作業フォルダを正として扱います。
 
+### 英語版の配布識別情報（変更禁止）
+
+この作業は既存の日英版アプリのモデル移行です。新規アプリ化ではないため、次の値を維持します。
+
+| 項目 | 日英版の固定値 |
+|---|---|
+| GitHub | `AichiroFunakoshi/Bridge-TTS-Codex-` |
+| Bundle ID | `com.a16.bridgetts` |
+| AltStore Source ID | `com.a16.bridgetts.source` |
+| Xcode `PRODUCT_NAME` | `BridgeTTS` |
+| アプリ本体 | `BridgeTTS.app` |
+| 配布IPA | `BridgeTTS-unsigned.ipa` |
+| Actions Artifact | `BridgeTTS-unsigned-ipa` |
+
+次のネパール版固有値を日英版へコピーしてはいけません。
+
+```text
+com.a16.bridgetts.nepali
+com.a16.bridgetts.nepali.source
+BrigeTTSNepali
+BrigeTTS-Nepali-unsigned.ipa
+BrigeTTS-Nepali-unsigned-ipa
+```
+
 ## 2. 変更方針
 
 - 対象モデル: `gpt-5.4-mini-2026-03-17`
@@ -21,6 +45,7 @@
 - 使用量: `stream_options: { include_usage: true }`
 - モデルエイリアスではなく固定スナップショットを使い、品質評価を再現可能にする
 - Responses APIへの移行や音声認識・TTS方式の変更は、このPRに混ぜない
+- Bundle ID、製品名、IPA名、AltStore Source ID、Pages URL、GitHub参照先を変更しない
 
 標準ペイロードの目安:
 
@@ -47,13 +72,15 @@
 4. `OPENAI_API_KEY` の有無を値を表示せず確認する。
 5. APIキーを保存する場合は、Gitに無視された `.env` または既存規約のenvファイルだけを使う。
 6. `.env`、評価結果、APIキーをコミットしない。
+7. GitHubの最新Releaseとローカルの版数を確認する。2026-07-18時点の正式版は `v2.9.3` なので、変更がなければ移行版は `v2.9.4`。すでに新版がある場合は、その次のパッチ版を使う。
+8. 作業前の配布識別情報を記録し、上表の固定値と一致しなければ作業を止めて原因を確認する。
 
 ## 4. コード調査
 
 最低限、次の文字列を全リポジトリで検索します。
 
 ```bash
-rg -n "gpt-4|gpt-5|temperature|chat/completions|NANO_PRICE|CACHE_VERSION|MARKETING_VERSION" . \
+rg -n "gpt-4|gpt-5|temperature|chat/completions|NANO_PRICE|CACHE_VERSION|MARKETING_VERSION|PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|bundleIdentifier|BridgeTTS-unsigned" . \
   --glob '!node_modules' --glob '!.git'
 ```
 
@@ -69,6 +96,7 @@ rg -n "gpt-4|gpt-5|temperature|chat/completions|NANO_PRICE|CACHE_VERSION|MARKETI
 - `package.json`、`package-lock.json`: アプリ版数
 - `ios/project.yml`: iOS `MARKETING_VERSION`
 - README、CHANGELOG、図解・引き継ぎ文書
+- `.github/workflows/ios-build.yml`、`altstore/generate_source.py`: 日英版固有のアプリ名・IPA名・Bundle ID・Source ID
 
 過去のリリース履歴や旧評価の記録は、現在仕様の説明と混同しない限り書き換えません。
 
@@ -99,13 +127,15 @@ gpt-5.4-miniの概算単価を、コードと文書で統一します。
 
 ## 7. 版数とキャッシュ
 
-モデル変更を利用端末へ確実に配信するため、次を同時に更新します。
+モデル変更を利用端末へ確実に配信するため、既存の日英版系列の次のパッチ版へ更新します。
 
 - パッチ版数（Web、package、iOS）
 - Service Workerの`CACHE_VERSION`
 - UIに表示する版数
 - テストで期待する版数
 - CHANGELOGの現在変更欄
+
+日英版は既存アプリなので、版数を `1.0.0` に戻してはいけません。ネパール版の版数もコピーしません。作業時点で `v2.9.3` が最新なら `v2.9.4`、より新しいReleaseがあればその次のパッチ版を選びます。
 
 キャッシュ番号を更新しないと、PWAで旧 `translator-service.js` が残る可能性があります。
 
@@ -133,6 +163,7 @@ node --check eval/run-eval.js
 node eval/run-eval.js --dry-run
 node eval/run-eval.js --dry-run --monotonic
 npm run test:smoke -- --reporter=line
+python3 -m unittest tests/test_release_identity.py
 git diff --check
 ```
 
@@ -154,6 +185,35 @@ node eval/run-eval.js --monotonic
 - 実APIがモデル名、`reasoning_effort`、temperature、verbosityを受理
 - ストリーミングの先頭出力と最終結果が正常
 - APIキーや `.env` が差分に含まれない
+- 日英版のBundle ID、Source ID、製品名、IPA名が変更されていない
+- ネパール版固有の識別子・製品名・IPA名が差分や生成物に含まれない
+
+### 実IPAの配布識別情報を検査する
+
+PRブランチからiOSワークフローを手動実行し、生成されたIPAを展開して `Info.plist` を確認します。
+
+```bash
+gh workflow run ios-build.yml --ref codex/gpt-5-4-mini
+# 完了後、run IDを指定
+gh run download RUN_ID --name BridgeTTS-unsigned-ipa --dir /tmp/bridgetts-english-ipa
+unzip -q /tmp/bridgetts-english-ipa/BridgeTTS-unsigned.ipa -d /tmp/bridgetts-english-ipa/extracted
+/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' /tmp/bridgetts-english-ipa/extracted/Payload/BridgeTTS.app/Info.plist
+/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' /tmp/bridgetts-english-ipa/extracted/Payload/BridgeTTS.app/Info.plist
+/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' /tmp/bridgetts-english-ipa/extracted/Payload/BridgeTTS.app/Info.plist
+```
+
+必須結果は、Bundle IDが `com.a16.bridgetts`、表示名が既存の日英版名、版数が今回のリリース予定版です。
+
+### 配布識別情報の回帰テスト
+
+CIに次の固定値を検査するテストを追加または維持します。
+
+- `PRODUCT_BUNDLE_IDENTIFIER: com.a16.bridgetts`
+- AltStore `bundleIdentifier: com.a16.bridgetts`
+- Source ID `com.a16.bridgetts.source`
+- `PRODUCT_NAME: BridgeTTS`
+- `BridgeTTS.app`、`BridgeTTS-unsigned.ipa`、`BridgeTTS-unsigned-ipa`
+- ネパール版固有値が混入していないこと
 
 ## 10. GitHubとCodeRabbit
 
@@ -166,6 +226,9 @@ node eval/run-eval.js --monotonic
 7. 妥当な指摘は最小修正し、再テスト・追加push・再レビューを行う。
 8. ユーザーが「確認して」と指示するまでマージしない。
 9. 指示後、未解決指摘とCIを再確認し、問題がなければmainへマージしてブランチを整理する。
+10. 正式リリース前に実IPAのBundle IDを検査する。ユーザーのリリース指示後にだけタグをpushする。
+11. リリース後、GitHub ReleaseのIPA名、公開 `apps.json` のSource ID・Bundle ID・版数・URL、公開IPA内部の `Info.plist` を再確認する。
+12. 既存の日英版Releaseやタグを削除・改名・上書きしない。
 
 ## 11. ロールバック
 

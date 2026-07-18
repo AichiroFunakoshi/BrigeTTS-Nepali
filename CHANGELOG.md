@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-18
+
+### Changed
+- 英語版GPT-5.4 mini移行の申し送りに、日英版固有のBundle ID・AltStore Source ID・製品名・IPA名・版数系列を変更禁止事項として追加
+- 英語版の実IPA検査、配布識別情報のCI回帰テスト、リリース後のAltStore JSON・IPA再検証手順を追加
+- ネパール版のAltStoreソース生成をテスト可能な関数へ分離し、Bundle ID、Source ID、GitHub/Pages URL、製品名、表示名、IPA名の回帰検証を強化
+
 ## [1.0.0] - 2026-07-18
 
 ### Added
