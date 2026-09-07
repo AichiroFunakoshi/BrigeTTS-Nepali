@@ -156,6 +156,13 @@ const TtsService = {
             this.initializeForIOS();
         }
 
+        const targetLang = sourceLanguage === 'ja' ? 'ne-NP' : 'ja-JP';
+        const selectedVoice = this.getBestVoiceForLanguage(targetLang, preferredVoiceName);
+        if (targetLang === 'ne-NP' && !selectedVoice) {
+            console.info('この端末ではネパール語の音声を利用できないため再生しません');
+            return;
+        }
+
         if (window.speechSynthesis.speaking) {
             console.log('前のTTS再生を停止');
             window.speechSynthesis.cancel();
@@ -172,10 +179,8 @@ const TtsService = {
         const isNativeApp = Boolean(window.__BRIDGE_TTS_NATIVE_APP__);
 
         const utterance = new SpeechSynthesisUtterance(text);
-        const targetLang = sourceLanguage === 'ja' ? 'ne-NP' : 'ja-JP';
         utterance.lang = targetLang;
 
-        const selectedVoice = this.getBestVoiceForLanguage(targetLang, preferredVoiceName);
         if (selectedVoice) {
             utterance.voice = selectedVoice;
         }

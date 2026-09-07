@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sourceLanguage: language,
             enabled: isTTSEnabled,
             speed: ttsSpeed,
-            // 発話言語は入力言語の反転（ja入力→en発話）。日本語で発話する場合のみ
+            // 発話言語は入力言語の反転（ne入力→ja発話）。日本語で発話する場合のみ
             // ユーザー指定の日本語音声を渡す
             preferredVoiceName: language === 'ja' ? '' : ttsVoiceJa,
             onBeforeSpeak: () => {

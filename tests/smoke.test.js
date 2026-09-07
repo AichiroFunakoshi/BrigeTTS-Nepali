@@ -96,23 +96,25 @@ test('loads the default translation prompt rules', async ({ page }) => {
     expect(dailyPrompt).not.toContain('【ユーザー辞書（');
 });
 
-test('uses Nepali locale for translated speech', async ({ page }) => {
+test('does not attempt unavailable Nepali speech', async ({ page }) => {
     await page.goto('/');
 
-    const targetLanguage = await page.evaluate(() => {
+    const currentUtterance = await page.evaluate(() => {
         window.TtsService.initialized = true;
+        window.TtsService.currentUtterance = null;
+        const originalGetBestVoice = window.TtsService.getBestVoiceForLanguage;
+        window.TtsService.getBestVoiceForLanguage = () => null;
         window.TtsService.speak({
             text: 'नमस्ते',
             sourceLanguage: 'ja',
             enabled: true,
             speed: 1
         });
-        const lang = window.TtsService.currentUtterance?.lang;
-        window.TtsService.stop();
-        return lang;
+        window.TtsService.getBestVoiceForLanguage = originalGetBestVoice;
+        return window.TtsService.currentUtterance;
     });
 
-    expect(targetLanguage).toBe('ne-NP');
+    expect(currentUtterance).toBeNull();
 });
 
 test('supports monotonic translation mode modules', async ({ page }) => {
