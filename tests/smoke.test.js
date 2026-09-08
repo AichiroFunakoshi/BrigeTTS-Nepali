@@ -117,6 +117,44 @@ test('does not attempt unavailable Nepali speech', async ({ page }) => {
     expect(currentUtterance).toBeNull();
 });
 
+test('retries Nepali speech after voices finish loading', async ({ page }) => {
+    await page.goto('/');
+
+    const result = await page.evaluate(() => {
+        window.TtsService.initialized = true;
+        window.TtsService.bindVoiceChanges();
+        const originalLoadVoices = window.TtsService.loadVoices;
+        const originalGetBestVoice = window.TtsService.getBestVoiceForLanguage;
+        let voiceLookupCount = 0;
+        window.TtsService.loadVoices = () => {};
+        window.TtsService.getBestVoiceForLanguage = () => {
+            voiceLookupCount += 1;
+            return null;
+        };
+        window.TtsService.voices = [];
+        window.TtsService.currentUtterance = null;
+        window.TtsService.speak({
+            text: 'नमस्ते',
+            sourceLanguage: 'ja',
+            enabled: true,
+            speed: 1
+        });
+        const pendingBeforeVoiceLoad = Boolean(window.TtsService.pendingNepaliSpeak);
+        window.TtsService.voices = [{}];
+        window.speechSynthesis.onvoiceschanged();
+        const pendingAfterVoiceLoad = Boolean(window.TtsService.pendingNepaliSpeak);
+        window.TtsService.loadVoices = originalLoadVoices;
+        window.TtsService.getBestVoiceForLanguage = originalGetBestVoice;
+        return { pendingBeforeVoiceLoad, pendingAfterVoiceLoad, voiceLookupCount };
+    });
+
+    expect(result).toEqual({
+        pendingBeforeVoiceLoad: true,
+        pendingAfterVoiceLoad: false,
+        voiceLookupCount: 2
+    });
+});
+
 test('supports monotonic translation mode modules', async ({ page }) => {
     await page.goto('/');
 

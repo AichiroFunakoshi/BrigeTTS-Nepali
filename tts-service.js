@@ -4,6 +4,7 @@ const TtsService = {
     playing: false,
     currentUtterance: null,
     voices: [],
+    pendingNepaliSpeak: null,
 
     isSupported: function() {
         return 'speechSynthesis' in window;
@@ -35,7 +36,14 @@ const TtsService = {
         }
 
         this.loadVoices();
-        window.speechSynthesis.onvoiceschanged = () => this.loadVoices();
+        window.speechSynthesis.onvoiceschanged = () => {
+            this.loadVoices();
+            const pendingSpeak = this.pendingNepaliSpeak;
+            this.pendingNepaliSpeak = null;
+            if (pendingSpeak) {
+                this.speak(pendingSpeak);
+            }
+        };
     },
 
     initializeForIOS: function() {
@@ -127,7 +135,20 @@ const TtsService = {
         return null;
     },
 
-    speak: function({ text, sourceLanguage, enabled, speed, preferredVoiceName, onBeforeSpeak, onStart, onEnd, onError, onPlayingChange }) {
+    speak: function(options) {
+        const {
+            text,
+            sourceLanguage,
+            enabled,
+            speed,
+            preferredVoiceName,
+            onBeforeSpeak,
+            onStart,
+            onEnd,
+            onError,
+            onPlayingChange,
+            retryAfterVoiceLoad = true
+        } = options;
         console.log('speakTranslation呼び出し:', {
             text: text ? text.substring(0, 50) + '...' : 'null',
             language: sourceLanguage,
@@ -159,6 +180,11 @@ const TtsService = {
         const targetLang = sourceLanguage === 'ja' ? 'ne-NP' : 'ja-JP';
         const selectedVoice = this.getBestVoiceForLanguage(targetLang, preferredVoiceName);
         if (targetLang === 'ne-NP' && !selectedVoice) {
+            if (this.voices.length === 0 && retryAfterVoiceLoad) {
+                this.pendingNepaliSpeak = { ...options, retryAfterVoiceLoad: false };
+                console.info('ネパール語の音声一覧を読み込み中のため、読み込み後に再試行します');
+                return;
+            }
             console.info('この端末ではネパール語の音声を利用できないため再生しません');
             return;
         }
