@@ -155,6 +155,39 @@ test('retries Nepali speech after voices finish loading', async ({ page }) => {
     });
 });
 
+test('does not retry a stopped Nepali speech request after voices finish loading', async ({ page }) => {
+    await page.goto('/');
+
+    const result = await page.evaluate(() => {
+        window.TtsService.initialized = true;
+        window.TtsService.bindVoiceChanges();
+        const originalLoadVoices = window.TtsService.loadVoices;
+        const originalGetBestVoice = window.TtsService.getBestVoiceForLanguage;
+        let voiceLookupCount = 0;
+        window.TtsService.loadVoices = () => {};
+        window.TtsService.getBestVoiceForLanguage = () => {
+            voiceLookupCount += 1;
+            return null;
+        };
+        window.TtsService.voices = [];
+        window.TtsService.speak({
+            text: 'नमस्ते',
+            sourceLanguage: 'ja',
+            enabled: true,
+            speed: 1
+        });
+        window.TtsService.stop();
+        window.TtsService.voices = [{}];
+        window.speechSynthesis.onvoiceschanged();
+        const pendingAfterStop = Boolean(window.TtsService.pendingNepaliSpeak);
+        window.TtsService.loadVoices = originalLoadVoices;
+        window.TtsService.getBestVoiceForLanguage = originalGetBestVoice;
+        return { pendingAfterStop, voiceLookupCount };
+    });
+
+    expect(result).toEqual({ pendingAfterStop: false, voiceLookupCount: 1 });
+});
+
 test('supports monotonic translation mode modules', async ({ page }) => {
     await page.goto('/');
 

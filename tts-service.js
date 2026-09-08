@@ -177,6 +177,7 @@ const TtsService = {
             this.initializeForIOS();
         }
 
+        this.pendingNepaliSpeak = null;
         const targetLang = sourceLanguage === 'ja' ? 'ne-NP' : 'ja-JP';
         const selectedVoice = this.getBestVoiceForLanguage(targetLang, preferredVoiceName);
         if (targetLang === 'ne-NP' && !selectedVoice) {
@@ -297,6 +298,7 @@ const TtsService = {
             window.speechSynthesis.cancel();
         }
 
+        this.pendingNepaliSpeak = null;
         this.currentUtterance = null;
         this.playing = false;
         if (typeof onPlayingChange === 'function') {
