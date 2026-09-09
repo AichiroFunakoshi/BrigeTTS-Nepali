@@ -16,7 +16,7 @@ test('loads app shell and core browser modules', async ({ page }) => {
     const response = await page.goto('/', { waitUntil: 'networkidle' });
 
     expect(response.status()).toBe(200);
-    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v1.0.1');
+    await expect(page.locator('.app-title')).toHaveText('BrigeTTS(Nepali) v1.0.2');
     await expect(page.locator('#startJapaneseBtn')).toBeVisible();
     await expect(page.locator('#startNepaliBtn')).toBeVisible();
     await expect(page.locator('#translationBox')).toBeVisible();
@@ -96,23 +96,96 @@ test('loads the default translation prompt rules', async ({ page }) => {
     expect(dailyPrompt).not.toContain('【ユーザー辞書（');
 });
 
-test('uses Nepali locale for translated speech', async ({ page }) => {
+test('does not attempt unavailable Nepali speech', async ({ page }) => {
     await page.goto('/');
 
-    const targetLanguage = await page.evaluate(() => {
+    const currentUtterance = await page.evaluate(() => {
         window.TtsService.initialized = true;
+        window.TtsService.currentUtterance = null;
+        const originalGetBestVoice = window.TtsService.getBestVoiceForLanguage;
+        window.TtsService.getBestVoiceForLanguage = () => null;
         window.TtsService.speak({
             text: 'नमस्ते',
             sourceLanguage: 'ja',
             enabled: true,
             speed: 1
         });
-        const lang = window.TtsService.currentUtterance?.lang;
-        window.TtsService.stop();
-        return lang;
+        window.TtsService.getBestVoiceForLanguage = originalGetBestVoice;
+        return window.TtsService.currentUtterance;
     });
 
-    expect(targetLanguage).toBe('ne-NP');
+    expect(currentUtterance).toBeNull();
+});
+
+test('retries Nepali speech after voices finish loading', async ({ page }) => {
+    await page.goto('/');
+
+    const result = await page.evaluate(() => {
+        window.TtsService.initialized = true;
+        window.TtsService.bindVoiceChanges();
+        const originalLoadVoices = window.TtsService.loadVoices;
+        const originalGetBestVoice = window.TtsService.getBestVoiceForLanguage;
+        let voiceLookupCount = 0;
+        window.TtsService.loadVoices = () => {};
+        window.TtsService.getBestVoiceForLanguage = () => {
+            voiceLookupCount += 1;
+            return null;
+        };
+        window.TtsService.voices = [];
+        window.TtsService.currentUtterance = null;
+        window.TtsService.speak({
+            text: 'नमस्ते',
+            sourceLanguage: 'ja',
+            enabled: true,
+            speed: 1
+        });
+        const pendingBeforeVoiceLoad = Boolean(window.TtsService.pendingNepaliSpeak);
+        window.TtsService.voices = [{}];
+        window.speechSynthesis.onvoiceschanged();
+        const pendingAfterVoiceLoad = Boolean(window.TtsService.pendingNepaliSpeak);
+        window.TtsService.loadVoices = originalLoadVoices;
+        window.TtsService.getBestVoiceForLanguage = originalGetBestVoice;
+        return { pendingBeforeVoiceLoad, pendingAfterVoiceLoad, voiceLookupCount };
+    });
+
+    expect(result).toEqual({
+        pendingBeforeVoiceLoad: true,
+        pendingAfterVoiceLoad: false,
+        voiceLookupCount: 2
+    });
+});
+
+test('does not retry a stopped Nepali speech request after voices finish loading', async ({ page }) => {
+    await page.goto('/');
+
+    const result = await page.evaluate(() => {
+        window.TtsService.initialized = true;
+        window.TtsService.bindVoiceChanges();
+        const originalLoadVoices = window.TtsService.loadVoices;
+        const originalGetBestVoice = window.TtsService.getBestVoiceForLanguage;
+        let voiceLookupCount = 0;
+        window.TtsService.loadVoices = () => {};
+        window.TtsService.getBestVoiceForLanguage = () => {
+            voiceLookupCount += 1;
+            return null;
+        };
+        window.TtsService.voices = [];
+        window.TtsService.speak({
+            text: 'नमस्ते',
+            sourceLanguage: 'ja',
+            enabled: true,
+            speed: 1
+        });
+        window.TtsService.stop();
+        window.TtsService.voices = [{}];
+        window.speechSynthesis.onvoiceschanged();
+        const pendingAfterStop = Boolean(window.TtsService.pendingNepaliSpeak);
+        window.TtsService.loadVoices = originalLoadVoices;
+        window.TtsService.getBestVoiceForLanguage = originalGetBestVoice;
+        return { pendingAfterStop, voiceLookupCount };
+    });
+
+    expect(result).toEqual({ pendingAfterStop: false, voiceLookupCount: 1 });
 });
 
 test('supports monotonic translation mode modules', async ({ page }) => {
